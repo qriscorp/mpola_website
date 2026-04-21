@@ -27,6 +27,7 @@ function getPostAuthRoute(role: string): string {
   const phoneVerified = getCookie("lf_phone_verified");
   if (verified !== "true") return "/auth/verify-email";
   if (phoneVerified !== "true") return "/auth/verify-phone";
+  if (role === "admin" || role === "super_admin") return "/admin";
   return role === "lender" ? "/lender" : "/dashboard";
 }
 
@@ -170,6 +171,74 @@ export function useVerifyPhoneOtp() {
         const role = getCookie("lf_role") || "borrower";
         router.push(role === "lender" ? "/lender" : "/dashboard");
       }
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Invalid code. Please try again.");
+    },
+  });
+}
+
+// ─── Forgot-password hooks ────────────────────────────────
+
+export function useSendPasswordResetCode() {
+  return useMutation({
+    mutationFn: (identifier: string) => api.sendPasswordResetCode(identifier),
+    onError: (error: Error) => {
+      toast.error(error.message || "Failed to send reset code.");
+    },
+  });
+}
+
+export function useVerifyPasswordResetCode() {
+  return useMutation({
+    mutationFn: ({ identifier, code }: { identifier: string; code: string }) =>
+      api.verifyPasswordResetCode(identifier, code),
+    onError: (error: Error) => {
+      toast.error(error.message || "Invalid code. Please try again.");
+    },
+  });
+}
+
+export function useResetPassword() {
+  return useMutation({
+    mutationFn: ({
+      newPassword,
+      accessToken,
+    }: {
+      newPassword: string;
+      accessToken: string;
+    }) => api.resetPassword(newPassword, accessToken),
+    onError: (error: Error) => {
+      toast.error(error.message || "Failed to reset password.");
+    },
+  });
+}
+
+// ─── Sign-in with phone OTP hooks ────────────────────────
+
+export function useSendLoginPhoneOtp() {
+  return useMutation({
+    mutationFn: (phoneNumber: string) => api.sendLoginPhoneOtp(phoneNumber),
+    onError: (error: Error) => {
+      toast.error(error.message || "Failed to send OTP. Please try again.");
+    },
+  });
+}
+
+export function useVerifyLoginPhoneOtp() {
+  const router = useRouter();
+  return useMutation({
+    mutationFn: ({
+      phoneNumber,
+      code,
+    }: {
+      phoneNumber: string;
+      code: string;
+    }) => api.verifyLoginPhoneOtp(phoneNumber, code),
+    onSuccess: () => {
+      toast.success("Signed in!");
+      const role = getCookie("lf_role") || "borrower";
+      router.push(getPostAuthRoute(role));
     },
     onError: (error: Error) => {
       toast.error(error.message || "Invalid code. Please try again.");

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -10,9 +11,11 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useLenderSignIn } from "@/hooks/use-auth";
 import { signInSchema, type SignInFormData } from "@/lib/schemas";
+import { PhoneOtpSigninModal } from "@/components/phone-otp-signin-modal";
 
 export default function LenderSignInPage() {
   const { mutate: signIn, isPending } = useLenderSignIn();
+  const [otpModalOpen, setOtpModalOpen] = useState(false);
 
   const {
     register,
@@ -113,7 +116,7 @@ export default function LenderSignInPage() {
                 <div className="flex items-center justify-between">
                   <Label htmlFor="password">Password</Label>
                   <Link
-                    href="/auth/forgot-password"
+                    href="/auth/forgot-password?from=lender"
                     className="text-[#2BB5A0] text-xs font-medium hover:underline"
                   >
                     Forgot password?
@@ -172,12 +175,18 @@ export default function LenderSignInPage() {
               </div>
             </div>
 
-            <Link
-              href="/auth/verify"
+            <button
+              type="button"
+              onClick={() => setOtpModalOpen(true)}
               className="w-full border border-gray-200 dark:border-gray-700 py-3 rounded-lg font-medium text-sm inline-flex items-center justify-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
             >
               <Phone className="w-4 h-4" /> Sign in with OTP (SMS)
-            </Link>
+            </button>
+
+            <PhoneOtpSigninModal
+              open={otpModalOpen}
+              onClose={() => setOtpModalOpen(false)}
+            />
 
             <p className="text-center text-sm text-gray-500 mt-6">
               New to Welend?{" "}

@@ -258,6 +258,53 @@ export const api = {
     return res;
   },
 
+  // ─── Forgot-password flow ─────────────────────────────
+
+  sendPasswordResetCode: async (
+    identifier: string,
+  ): Promise<{ status: number; message: string }> => {
+    return apiPost("/auth/send_password_reset_code", { identifier });
+  },
+
+  verifyPasswordResetCode: async (
+    identifier: string,
+    code: string,
+  ): Promise<{ status: number; access_token: string; message: string }> => {
+    return apiPost("/auth/verify_password_reset_code", { identifier, code });
+  },
+
+  resetPassword: async (
+    newPassword: string,
+    accessToken: string,
+  ): Promise<{ status: number; message: string }> => {
+    return apiPost("/auth/reset_password", {
+      new_password: newPassword,
+      access_token: accessToken,
+    });
+  },
+
+  // ─── Sign-in with phone OTP ───────────────────────────
+
+  sendLoginPhoneOtp: async (
+    phoneNumber: string,
+  ): Promise<{ status: number; message: string }> => {
+    return apiPost("/auth/send_login_phone_otp", {
+      phone_number: normalizePhone(phoneNumber),
+    });
+  },
+
+  verifyLoginPhoneOtp: async (
+    phoneNumber: string,
+    code: string,
+  ): Promise<AuthResponse> => {
+    const res = await apiPost<AuthResponse>("/auth/verify_login_phone_otp", {
+      phone_number: normalizePhone(phoneNumber),
+      code,
+    });
+    storeTokens(res);
+    return res;
+  },
+
   refreshToken: async (): Promise<string | null> => {
     const cookies = document.cookie.split("; ");
     const refreshCookie = cookies.find((c) => c.startsWith("lf_refresh="));
