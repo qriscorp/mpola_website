@@ -9,7 +9,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "LendFlow – Borrower Portal",
+  title: "Welend – Borrower Portal",
   description:
     "Fair credit, on your terms. Apply once. Compare offers from licensed lenders side-by-side.",
 };

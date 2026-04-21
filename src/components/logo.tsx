@@ -13,7 +13,7 @@ export function Logo({
       <div className="w-8 h-8 rounded-lg bg-[#2BB5A0] flex items-center justify-center">
         <span className="text-white font-bold text-sm">L</span>
       </div>
-      <span className={`font-semibold text-lg ${textColor}`}>LendFlow</span>
+      <span className={`font-semibold text-lg ${textColor}`}>Welend</span>
     </>
   );
 

@@ -26,7 +26,7 @@ export function AdminTopNav() {
         <div className="flex items-center gap-2 lg:hidden">
           <Shield className="h-5 w-5 text-[#2BB5A0]" />
           <span className="font-bold text-[#1B2B3A] dark:text-white text-sm">
-            LendFlow Admin
+            Welend Admin
           </span>
         </div>
         <div className="hidden sm:block relative">

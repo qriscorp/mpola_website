@@ -3,9 +3,9 @@ import { LenderSidebar } from "@/components/lender-sidebar";
 import { LenderTopNav } from "@/components/lender-top-nav";
 
 export const metadata: Metadata = {
-  title: "Lender Portal – LendFlow",
+  title: "Lender Portal – Welend",
   description:
-    "Manage your lending portfolio, browse borrowers, and track returns on LendFlow.",
+    "Manage your lending portfolio, browse borrowers, and track returns on Welend.",
 };
 
 export default function LenderLayout({

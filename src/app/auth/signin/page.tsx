@@ -61,7 +61,7 @@ export default function SignInPage() {
           </div>
 
           <p className="mt-8 lg:mt-0 text-xs text-gray-400">
-            © 2026 LendFlow Uganda Ltd. · Tier IV Credit Licence #TCI-2024-0418
+            © 2026 Welend Uganda Ltd. · Tier IV Credit Licence #TCI-2024-0418
           </p>
         </div>
 
@@ -91,7 +91,7 @@ export default function SignInPage() {
                 <Label htmlFor="phoneOrEmail">Phone number or email</Label>
                 <div className="mt-1.5 relative flex">
                   <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-input bg-muted text-sm text-muted-foreground">
-                    🇺🇬 +256
+                    +256
                   </span>
                   <Input
                     id="phoneOrEmail"
@@ -178,7 +178,7 @@ export default function SignInPage() {
             </Link>
 
             <p className="text-center text-sm text-gray-500 mt-6">
-              New to LendFlow?{" "}
+              New to Welend?{" "}
               <Link
                 href="/auth/register"
                 className="text-[#2BB5A0] font-medium inline-flex items-center gap-1 hover:underline"

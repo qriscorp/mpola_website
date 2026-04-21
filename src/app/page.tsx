@@ -144,7 +144,7 @@ export default function LandingPage() {
             <Link href="#" className="hover:text-gray-600">
               Help Centre
             </Link>
-            <span>© 2026 LendFlow Uganda Ltd.</span>
+            <span>© 2026 Welend Uganda Ltd.</span>
           </div>
         </div>
       </div>

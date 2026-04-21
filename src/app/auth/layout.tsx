@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Sign In – LendFlow Borrower Portal",
+  title: "Sign In – Welend Borrower Portal",
   description:
-    "Sign in to your LendFlow borrower account to manage loans, track repayments, and review offers.",
+    "Sign in to your Welend borrower account to manage loans, track repayments, and review offers.",
 };
 
 export default function AuthLayout({

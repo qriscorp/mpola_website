@@ -3,9 +3,9 @@ import { AdminSidebar } from "@/components/admin-sidebar";
 import { AdminTopNav } from "@/components/admin-top-nav";
 
 export const metadata: Metadata = {
-  title: "Admin Dashboard – LendFlow",
+  title: "Admin Dashboard – Welend",
   description:
-    "LendFlow administrative dashboard for managing users, loans, and applications.",
+    "Welend administrative dashboard for managing users, loans, and applications.",
 };
 
 export default function AdminLayout({

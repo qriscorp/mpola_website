@@ -23,7 +23,7 @@ export default function AdminSettingsPage() {
           Platform Settings
         </h1>
         <p className="text-sm text-muted-foreground">
-          Configure LendFlow platform settings
+          Configure Welend platform settings
         </p>
       </div>
 
@@ -41,11 +41,11 @@ export default function AdminSettingsPage() {
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label>Platform Name</Label>
-              <Input defaultValue="LendFlow Uganda" />
+              <Input defaultValue="Welend Uganda" />
             </div>
             <div className="space-y-2">
               <Label>Support Email</Label>
-              <Input defaultValue="support@lendflow.ug" />
+              <Input defaultValue="support@welend.ug" />
             </div>
             <div className="space-y-2">
               <Label>Currency</Label>

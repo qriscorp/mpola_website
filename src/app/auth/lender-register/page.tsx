@@ -167,17 +167,26 @@ export default function LenderRegisterPage() {
                     />
                     <p className="text-xs text-muted-foreground">
                       I agree to the{" "}
-                      <span className="text-[#2BB5A0] hover:underline cursor-pointer">
+                      <Link
+                        href="/platform-terms"
+                        className="text-[#2BB5A0] hover:underline cursor-pointer"
+                      >
                         Platform Terms
-                      </span>
+                      </Link>
                       ,{" "}
-                      <span className="text-[#2BB5A0] hover:underline cursor-pointer">
+                      <Link
+                        href="/privacy-policy"
+                        className="text-[#2BB5A0] hover:underline cursor-pointer"
+                      >
                         Privacy Policy
-                      </span>
+                      </Link>
                       , and{" "}
-                      <span className="text-[#2BB5A0] hover:underline cursor-pointer">
+                      <Link
+                        href="/lender-code-of-conduct"
+                        className="text-[#2BB5A0] hover:underline cursor-pointer"
+                      >
                         Lender Code of Conduct
-                      </span>
+                      </Link>
                       . I confirm I am 18+ and a resident of Uganda.
                     </p>
                   </div>

@@ -16,9 +16,9 @@ import {
 } from "lucide-react";
 
 export const metadata = {
-  title: "How It Works – LendFlow for Borrowers",
+  title: "How It Works – Welend for Borrowers",
   description:
-    "Learn how to apply for a loan, compare offers, and get funded through LendFlow Uganda.",
+    "Learn how to apply for a loan, compare offers, and get funded through Welend Uganda.",
 };
 
 export default function HowItWorksPage() {
@@ -216,12 +216,12 @@ export default function HowItWorksPage() {
         </div>
       </section>
 
-      {/* Why LendFlow */}
+      {/* Why Welend */}
       <section className="py-20 lg:py-28">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <p className="text-[#2BB5A0] text-xs font-semibold uppercase tracking-widest mb-3">
-              Why LendFlow
+              Why Welend
             </p>
             <h2 className="text-3xl lg:text-4xl font-bold text-[#1B2B3A]">
               Borrowing that respects you
@@ -248,12 +248,12 @@ export default function HowItWorksPage() {
               {
                 icon: ShieldCheck,
                 title: "Regulated & Safe",
-                desc: "LendFlow is licensed by the Bank of Uganda. Your data is encrypted, your funds are protected.",
+                desc: "Welend is licensed by the Bank of Uganda. Your data is encrypted, your funds are protected.",
               },
               {
                 icon: Wallet,
                 title: "Flexible Payments",
-                desc: "Pay via LendFlow Wallet, MTN MoMo, or Airtel Money. Track your repayment schedule in real-time.",
+                desc: "Pay via Welend Wallet, MTN MoMo, or Airtel Money. Track your repayment schedule in real-time.",
               },
               {
                 icon: MessageCircle,
@@ -321,7 +321,7 @@ export default function HowItWorksPage() {
               },
               {
                 q: "Do I need a credit score?",
-                a: "LendFlow builds your credit score based on your repayment history on the platform. First-time borrowers can still apply — guarantors and documentation strengthen your application.",
+                a: "Welend builds your credit score based on your repayment history on the platform. First-time borrowers can still apply — guarantors and documentation strengthen your application.",
               },
               {
                 q: "What happens if I can't make a payment?",
@@ -329,7 +329,7 @@ export default function HowItWorksPage() {
               },
               {
                 q: "Is my data safe?",
-                a: "Absolutely. LendFlow uses bank-grade encryption, is licensed by the Bank of Uganda, and never shares your data without consent.",
+                a: "Absolutely. Welend uses bank-grade encryption, is licensed by the Bank of Uganda, and never shares your data without consent.",
               },
             ].map((faq) => (
               <div
@@ -389,7 +389,7 @@ export default function HowItWorksPage() {
             <Link href="#" className="hover:text-white transition-colors">
               Help Centre
             </Link>
-            <span>© 2026 LendFlow Uganda Ltd.</span>
+            <span>© 2026 Welend Uganda Ltd.</span>
           </div>
         </div>
       </footer>

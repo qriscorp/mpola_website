@@ -1,8 +1,7 @@
-export const APP_NAME = "LendFlow";
+export const APP_NAME = "Welend";
 export const PORTAL_NAME = "BORROWER PORTAL";
 
-export const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL;
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export const COLORS = {
   navy: "#1B2B3A",
@@ -84,7 +83,7 @@ export const DOCUMENT_TYPES = {
 } as const;
 
 export const PAYMENT_METHODS = [
-  "LendFlow Wallet",
+  "Welend Wallet",
   "MTN MoMo",
   "Airtel Money",
 ] as const;

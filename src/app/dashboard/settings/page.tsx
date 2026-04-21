@@ -61,7 +61,7 @@ export default function SettingsPage() {
               },
               {
                 label: "Promotional offers",
-                desc: "Special deals from LendFlow partners",
+                desc: "Special deals from Welend partners",
                 sms: false,
                 email: false,
                 push: false,

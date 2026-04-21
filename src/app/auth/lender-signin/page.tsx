@@ -62,7 +62,7 @@ export default function LenderSignInPage() {
           </div>
 
           <p className="mt-8 lg:mt-0 text-xs text-gray-500">
-            © 2026 LendFlow Uganda Ltd. · Tier IV Credit Licence #TCI-2024-0418
+            © 2026 Welend Uganda Ltd. · Tier IV Credit Licence #TCI-2024-0418
           </p>
         </div>
 
@@ -180,7 +180,7 @@ export default function LenderSignInPage() {
             </Link>
 
             <p className="text-center text-sm text-gray-500 mt-6">
-              New to LendFlow?{" "}
+              New to Welend?{" "}
               <Link
                 href="/auth/lender-register"
                 className="text-[#2BB5A0] font-medium inline-flex items-center gap-1 hover:underline"

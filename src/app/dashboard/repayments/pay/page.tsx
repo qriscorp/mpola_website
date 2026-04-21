@@ -12,14 +12,14 @@ import { useInstalments } from "@/hooks/use-repayments";
 import { useWalletBalance } from "@/hooks/use-wallet";
 import { formatCurrency } from "@/lib/format";
 
-const METHODS = ["LendFlow Wallet", "MTN MoMo", "Airtel Money"] as const;
+const METHODS = ["Welend Wallet", "MTN MoMo", "Airtel Money"] as const;
 
 export default function PayPage() {
   const { data: loan } = useActiveLoan();
   const { data: instalments } = useInstalments();
   const { data: walletBalance } = useWalletBalance();
   const [method, setMethod] =
-    useState<(typeof METHODS)[number]>("LendFlow Wallet");
+    useState<(typeof METHODS)[number]>("Welend Wallet");
 
   const dueInstalment = instalments?.find((i) => i.status === "due");
   const upcomingInstalments =
@@ -117,7 +117,7 @@ export default function PayPage() {
                 ))}
               </div>
 
-              {method === "LendFlow Wallet" && (
+              {method === "Welend Wallet" && (
                 <div className="mt-5 space-y-3">
                   <div className="flex justify-between text-sm py-2">
                     <span className="text-gray-500">Available Balance</span>

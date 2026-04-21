@@ -371,7 +371,7 @@ export const adminUsers: AdminUser[] = [
   {
     id: "usr_001",
     fullName: "Sarah Nakato",
-    email: "sarah@lendflow.ug",
+    email: "sarah@welend.ug",
     phone: "+256 700 123 456",
     accountType: "individual",
     kycStatus: "verified",
@@ -383,7 +383,7 @@ export const adminUsers: AdminUser[] = [
   {
     id: "usr_002",
     fullName: "James Okello",
-    email: "james.okello@mail.com",
+    email: "james.okello@welend.ug",
     phone: "+256 771 234 567",
     accountType: "individual",
     kycStatus: "verified",

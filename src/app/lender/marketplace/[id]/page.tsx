@@ -285,7 +285,7 @@ export default function BorrowerProfilePage({
               <Card className="bg-emerald-50/50 dark:bg-emerald-900/10 border-emerald-200 dark:border-emerald-800">
                 <CardContent className="p-5">
                   <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-                    LendFlow Risk Assessment
+                    Welend Risk Assessment
                   </p>
                   <div className="flex items-center gap-2 mb-2">
                     <ShieldCheck className="h-5 w-5 text-[#2BB5A0]" />

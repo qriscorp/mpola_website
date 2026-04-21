@@ -3,9 +3,9 @@ import { TopNav } from "@/components/top-nav";
 import { Sidebar } from "@/components/sidebar";
 
 export const metadata: Metadata = {
-  title: "Dashboard – LendFlow Borrower Portal",
+  title: "Dashboard – Welend Borrower Portal",
   description:
-    "Manage your loans, track repayments, and review offers on LendFlow.",
+    "Manage your loans, track repayments, and review offers on Welend.",
 };
 
 export default function DashboardLayout({

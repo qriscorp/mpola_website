@@ -895,21 +895,30 @@ export default function ApplyPage() {
                     my knowledge
                   </li>
                   <li>
-                    I understand LendFlow will share my application with the
+                    I understand Welend will share my application with the
                     selected lenders only
                   </li>
                   <li>I authorize credit bureau checks and KYC verification</li>
                   <li>
                     I agree to the{" "}
-                    <Link href="#" className="text-[#2BB5A0] hover:underline">
+                    <Link
+                      href="/platform-terms"
+                      className="text-[#2BB5A0] hover:underline"
+                    >
                       Platform Terms
                     </Link>
                     ,{" "}
-                    <Link href="#" className="text-[#2BB5A0] hover:underline">
+                    <Link
+                      href="/privacy-policy"
+                      className="text-[#2BB5A0] hover:underline"
+                    >
                       Privacy Policy
                     </Link>
                     , and{" "}
-                    <Link href="#" className="text-[#2BB5A0] hover:underline">
+                    <Link
+                      href="/borrower-code-of-conduct"
+                      className="text-[#2BB5A0] hover:underline"
+                    >
                       Borrower Code of Conduct
                     </Link>
                   </li>
@@ -971,8 +980,8 @@ export default function ApplyPage() {
 
       {step === 4 && (
         <p className="text-center text-xs text-gray-400">
-          By submitting, you authorize LendFlow to forward your application to
-          the selected lenders. No charges will be applied until you accept an
+          By submitting, you authorize Welend to forward your application to the
+          selected lenders. No charges will be applied until you accept an
           offer.
         </p>
       )}

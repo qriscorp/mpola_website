@@ -22,7 +22,7 @@ const TERMS = [
   "I have read and understood the full loan agreement terms.",
   "I agree to make all scheduled repayments on time.",
   "I understand that late payments may incur penalty fees.",
-  "I authorise the lender to disburse funds to my LendFlow wallet.",
+  "I authorise the lender to disburse funds to my Welend wallet.",
   "I confirm that all information provided is accurate and truthful.",
 ];
 
@@ -138,7 +138,7 @@ export default function AcceptOfferPage() {
                 <p className="mb-3">
                   This Loan Agreement (&quot;Agreement&quot;) is entered into
                   between Kampala Capital Partners (&quot;Lender&quot;) and
-                  Sarah Nakato (&quot;Borrower&quot;) through the LendFlow
+                  Sarah Nakato (&quot;Borrower&quot;) through the Welend
                   platform.
                 </p>
                 <h4 className="mb-1 font-semibold text-foreground">
@@ -160,7 +160,7 @@ export default function AcceptOfferPage() {
                   3. Disbursement
                 </h4>
                 <p className="mb-3">
-                  Funds will be disbursed to the Borrower&apos;s LendFlow wallet
+                  Funds will be disbursed to the Borrower&apos;s Welend wallet
                   within 24 hours of agreement execution.
                 </p>
                 <h4 className="mb-1 font-semibold text-foreground">

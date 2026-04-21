@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { LogOut, AlertTriangle } from "lucide-react";
 
 import { useSignOut } from "@/hooks/use-auth";
+import { APP_NAME } from "@/lib/constants";
 
 interface SignOutModalProps {
   open: boolean;
@@ -33,7 +34,7 @@ export function SignOutModal({ open, onOpenChange }: SignOutModalProps) {
             <AlertTriangle className="h-6 w-6 text-red-500" />
           </div>
           <DialogTitle className="text-center text-[#1B2B3A] dark:text-white">
-            Sign out of LendFlow?
+            Sign out of {APP_NAME}?
           </DialogTitle>
           <DialogDescription className="text-center">
             You will need to sign in again to access your account. Any unsaved

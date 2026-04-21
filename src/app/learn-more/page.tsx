@@ -16,9 +16,9 @@ import {
 } from "lucide-react";
 
 export const metadata = {
-  title: "Learn More – LendFlow for Lenders",
+  title: "Learn More – Welend for Lenders",
   description:
-    "Discover how LendFlow connects licensed lenders with vetted borrowers in Uganda.",
+    "Discover how Welend connects licensed lenders with vetted borrowers in Uganda.",
 };
 
 export default function LearnMorePage() {
@@ -59,10 +59,10 @@ export default function LearnMorePage() {
             <span className="text-[#C4A55A] italic">Their opportunity.</span>
           </h1>
           <p className="mt-6 text-lg text-gray-300 max-w-2xl mx-auto leading-relaxed">
-            LendFlow is Uganda&apos;s regulated peer-to-peer lending
-            marketplace. We connect licensed lenders with pre-vetted borrowers,
-            handling KYC, documentation, and repayment tracking so you can focus
-            on deploying capital confidently.
+            Welend is Uganda&apos;s regulated peer-to-peer lending marketplace.
+            We connect licensed lenders with pre-vetted borrowers, handling KYC,
+            documentation, and repayment tracking so you can focus on deploying
+            capital confidently.
           </p>
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
@@ -81,12 +81,12 @@ export default function LearnMorePage() {
         </div>
       </section>
 
-      {/* Why LendFlow */}
+      {/* Why Welend */}
       <section className="py-20 lg:py-28">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <p className="text-[#2BB5A0] text-xs font-semibold uppercase tracking-widest mb-3">
-              Why LendFlow
+              Why Welend
             </p>
             <h2 className="text-3xl lg:text-4xl font-bold text-[#1B2B3A]">
               Built for serious lenders
@@ -247,7 +247,7 @@ export default function LearnMorePage() {
                 Regulated lending, reduced risk
               </h2>
               <p className="mt-4 text-gray-500 leading-relaxed">
-                LendFlow operates under a Bank of Uganda Tier IV Credit
+                Welend operates under a Bank of Uganda Tier IV Credit
                 Institution licence. All lending activities comply with Ugandan
                 financial regulation and consumer protection law.
               </p>
@@ -281,7 +281,7 @@ export default function LearnMorePage() {
             ))}
           </div>
           <blockquote className="text-xl lg:text-2xl font-medium text-[#1B2B3A] italic leading-relaxed">
-            &ldquo;LendFlow has transformed how I deploy capital. The borrower
+            &ldquo;Welend has transformed how I deploy capital. The borrower
             vetting is thorough, the guarantor system gives me confidence, and
             the dashboard makes tracking effortless.&rdquo;
           </blockquote>
@@ -340,7 +340,7 @@ export default function LearnMorePage() {
             <Link href="#" className="hover:text-white transition-colors">
               Help Centre
             </Link>
-            <span>© 2026 LendFlow Uganda Ltd.</span>
+            <span>© 2026 Welend Uganda Ltd.</span>
           </div>
         </div>
       </footer>

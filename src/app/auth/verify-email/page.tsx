@@ -1,0 +1,158 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { MailCheck, RefreshCw } from "lucide-react";
+import { Logo } from "@/components/logo";
+import { Input } from "@/components/ui/input";
+import { useSendOtp, useVerifyOtp } from "@/hooks/use-auth";
+
+function getCookie(name: string): string | undefined {
+  return document.cookie
+    .split("; ")
+    .find((c) => c.startsWith(`${name}=`))
+    ?.split("=")[1];
+}
+
+export default function VerifyEmailPage() {
+  const router = useRouter();
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [code, setCode] = useState(["", "", "", "", "", ""]);
+  const inputs = useRef<(HTMLInputElement | null)[]>([]);
+  const autoSentRef = useRef(false);
+
+  const { mutate: sendOtp, isPending: isSending } = useSendOtp();
+  const { mutate: verifyOtp, isPending: isVerifying } = useVerifyOtp();
+
+  useEffect(() => {
+    const u = getCookie("lf_username") || "";
+    const e = decodeURIComponent(getCookie("lf_email") || "");
+    const verified = getCookie("lf_verified");
+
+    if (!u) {
+      router.replace("/auth/signin");
+      return;
+    }
+    if (verified === "true") {
+      const phoneVerified = getCookie("lf_phone_verified");
+      router.replace(
+        phoneVerified === "true" ? "/dashboard" : "/auth/verify-phone",
+      );
+      return;
+    }
+
+    setUsername(u);
+    setEmail(e);
+
+    // Auto-send OTP on first mount so the user always has a fresh code
+    if (!autoSentRef.current) {
+      autoSentRef.current = true;
+      sendOtp(u);
+    }
+  }, [router, sendOtp]);
+
+  function handleDigit(index: number, value: string) {
+    const digit = value.replace(/\D/g, "").slice(-1);
+    const next = [...code];
+    next[index] = digit;
+    setCode(next);
+    if (digit && index < 5) inputs.current[index + 1]?.focus();
+  }
+
+  function handleKeyDown(index: number, e: React.KeyboardEvent) {
+    if (e.key === "Backspace" && !code[index] && index > 0) {
+      inputs.current[index - 1]?.focus();
+    }
+  }
+
+  function handlePaste(e: React.ClipboardEvent) {
+    const pasted = e.clipboardData
+      .getData("text")
+      .replace(/\D/g, "")
+      .slice(0, 6);
+    if (pasted.length === 6) {
+      setCode(pasted.split(""));
+      inputs.current[5]?.focus();
+    }
+  }
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const fullCode = code.join("");
+    if (fullCode.length < 6) return;
+    verifyOtp({ username, code: fullCode });
+  }
+
+  function handleResend() {
+    if (username) sendOtp(username);
+  }
+
+  return (
+    <div className="min-h-screen flex flex-col bg-[#f4f8f7]">
+      <div className="h-1 bg-[#2BB5A0]" />
+      <div className="flex-1 flex items-center justify-center p-6">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 w-full max-w-md p-10">
+          <Logo />
+
+          <div className="mt-8 flex flex-col items-center text-center">
+            <div className="w-14 h-14 bg-[#E8F8F5] rounded-full flex items-center justify-center mb-4">
+              <MailCheck className="w-7 h-7 text-[#2BB5A0]" />
+            </div>
+            <h1 className="text-2xl font-bold text-[#1B2B3A]">
+              Verify your email
+            </h1>
+            <p className="text-gray-500 text-sm mt-2 leading-relaxed">
+              We sent a 6-digit code to{" "}
+              <span className="font-medium text-[#1B2B3A]">
+                {email || "your registered email"}
+              </span>
+              . Enter it below.
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+            <div className="flex gap-2 justify-center" onPaste={handlePaste}>
+              {code.map((digit, i) => (
+                <Input
+                  key={i}
+                  ref={(el) => {
+                    inputs.current[i] = el;
+                  }}
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={1}
+                  value={digit}
+                  onChange={(e) => handleDigit(i, e.target.value)}
+                  onKeyDown={(e) => handleKeyDown(i, e)}
+                  className="w-12 h-14 text-center text-xl font-bold tracking-widest"
+                  aria-label={`Digit ${i + 1}`}
+                />
+              ))}
+            </div>
+
+            <button
+              type="submit"
+              disabled={isVerifying || code.join("").length < 6}
+              className="w-full bg-[#2BB5A0] text-white py-3 rounded-lg font-medium text-sm hover:bg-[#239E8C] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isVerifying ? "Verifying…" : "Verify Email"}
+            </button>
+          </form>
+
+          <p className="text-center text-sm text-gray-500 mt-6">
+            Didn&apos;t receive it?{" "}
+            <button
+              onClick={handleResend}
+              disabled={isSending}
+              className="text-[#2BB5A0] font-medium hover:underline inline-flex items-center gap-1 disabled:opacity-50"
+            >
+              <RefreshCw className="w-3 h-3" />
+              {isSending ? "Sending…" : "Resend code"}
+            </button>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}

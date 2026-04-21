@@ -61,6 +61,7 @@ export interface AuthResponse {
     role: string;
     is_active: boolean;
     is_verified: boolean;
+    is_phone_verified: boolean;
     is_kyc_verified: boolean;
     kyc_status: string;
     credit_score: number | null;
@@ -100,10 +101,17 @@ function mapAuthUser(data: AuthResponse): User {
 function storeTokens(data: AuthResponse) {
   // Set HTTP-only-style cookie via document.cookie (15 min for access token)
   const maxAge = 15 * 60; // match JWT expiry
+  const longAge = 7 * 24 * 60 * 60;
   document.cookie = `lf_token=${data.access_token}; path=/; max-age=${maxAge}; SameSite=Lax`;
-  document.cookie = `lf_refresh=${data.refresh_token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
-  // Also keep role for middleware routing
-  document.cookie = `lf_role=${data.user.role}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
+  document.cookie = `lf_refresh=${data.refresh_token}; path=/; max-age=${longAge}; SameSite=Lax`;
+  document.cookie = `lf_role=${data.user.role}; path=/; max-age=${longAge}; SameSite=Lax`;
+  document.cookie = `lf_verified=${data.user.is_verified}; path=/; max-age=${longAge}; SameSite=Lax`;
+  document.cookie = `lf_phone_verified=${data.user.is_phone_verified}; path=/; max-age=${longAge}; SameSite=Lax`;
+  document.cookie = `lf_username=${data.user.username}; path=/; max-age=${longAge}; SameSite=Lax`;
+  document.cookie = `lf_email=${encodeURIComponent(data.user.email)}; path=/; max-age=${longAge}; SameSite=Lax`;
+  if (data.user.phone_number) {
+    document.cookie = `lf_phone=${data.user.phone_number}; path=/; max-age=${longAge}; SameSite=Lax`;
+  }
 }
 
 // Normalize phone: if user typed 9 digits, prepend 256
@@ -191,6 +199,63 @@ export const api = {
     document.cookie = "lf_token=; path=/; max-age=0";
     document.cookie = "lf_refresh=; path=/; max-age=0";
     document.cookie = "lf_role=; path=/; max-age=0";
+    document.cookie = "lf_verified=; path=/; max-age=0";
+    document.cookie = "lf_phone_verified=; path=/; max-age=0";
+    document.cookie = "lf_username=; path=/; max-age=0";
+    document.cookie = "lf_email=; path=/; max-age=0";
+    document.cookie = "lf_phone=; path=/; max-age=0";
+  },
+
+  // ─── OTP / Verification ───────────────────────────────────
+
+  sendOtp: async (
+    username: string,
+  ): Promise<{ status: number; message: string }> => {
+    return apiPost("/auth/send_otp", { username });
+  },
+
+  verifyOtp: async (
+    username: string,
+    code: string,
+  ): Promise<{ status: number; message: string }> => {
+    const res = await apiPost<{ status: number; message: string }>(
+      "/auth/verify_otp",
+      {
+        username,
+        code,
+      },
+    );
+    // Mark email as verified in cookie
+    document.cookie = `lf_verified=true; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
+    return res;
+  },
+
+  sendPhoneOtp: async (
+    username: string,
+    phoneNumber: string,
+  ): Promise<{ status: number; message: string }> => {
+    return apiPost("/auth/send_phone_otp", {
+      username,
+      phone_number: normalizePhone(phoneNumber),
+    });
+  },
+
+  verifyPhoneOtp: async (
+    username: string,
+    phoneNumber: string,
+    code: string,
+  ): Promise<{ status: number; message: string }> => {
+    const res = await apiPost<{ status: number; message: string }>(
+      "/auth/verify_phone_otp",
+      {
+        username,
+        phone_number: normalizePhone(phoneNumber),
+        code,
+      },
+    );
+    // Mark phone as verified in cookie
+    document.cookie = `lf_phone_verified=true; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
+    return res;
   },
 
   refreshToken: async (): Promise<string | null> => {

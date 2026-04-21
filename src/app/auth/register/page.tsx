@@ -176,7 +176,7 @@ export default function RegisterPage() {
               <Label>Phone Number</Label>
               <div className="mt-1.5 flex">
                 <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-input bg-muted text-sm text-muted-foreground">
-                  🇺🇬 +256
+                  +256
                 </span>
                 <Input
                   placeholder="772 000 000"
@@ -242,33 +242,39 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            <div className="flex items-start gap-2 pt-2">
+            <div className="flex items-start gap-2">
               <Checkbox
                 id="terms"
                 checked={watch("agreeToTerms") as boolean}
                 onCheckedChange={(checked) =>
                   setValue("agreeToTerms" as never, !!checked as never)
                 }
-                className="mt-0.5 data-[state=checked]:bg-[#2BB5A0] data-[state=checked]:border-[#2BB5A0]"
+                className="mt-1 data-[state=checked]:bg-[#2BB5A0] data-[state=checked]:border-[#2BB5A0]"
               />
-              <Label
-                htmlFor="terms"
-                className="text-xs font-normal text-gray-600 leading-relaxed"
-              >
-                I agree to the{" "}
-                <Link href="#" className="text-[#2BB5A0] hover:underline">
+              <p className="text-xs text-muted-foreground">
+                I agree to the
+                <Link
+                  href="/platform-terms"
+                  className="text-[#2BB5A0] hover:underline"
+                >
                   Platform Terms
                 </Link>
                 ,{" "}
-                <Link href="#" className="text-[#2BB5A0] hover:underline">
+                <Link
+                  href="/privacy-policy"
+                  className="text-[#2BB5A0] hover:underline"
+                >
                   Privacy Policy
                 </Link>
                 , and{" "}
-                <Link href="#" className="text-[#2BB5A0] hover:underline">
+                <Link
+                  href="/borrower-code-of-conduct"
+                  className="text-[#2BB5A0] hover:underline"
+                >
                   Borrower Code of Conduct
                 </Link>
                 . I confirm I am 18+ and a resident of Uganda.
-              </Label>
+              </p>
             </div>
 
             <button
