@@ -184,6 +184,7 @@ export default function SignInPage() {
             <PhoneOtpSigninModal
               open={otpModalOpen}
               onClose={() => setOtpModalOpen(false)}
+              portal="borrower"
             />
 
             <p className="text-center text-sm text-gray-500 mt-6">

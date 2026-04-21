@@ -95,7 +95,7 @@ export default function LenderSignInPage() {
                 <Label htmlFor="phoneOrEmail">Phone number or email</Label>
                 <div className="mt-1.5 relative flex">
                   <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-input bg-muted text-sm text-muted-foreground">
-                    🇺🇬 +256
+                    +256
                   </span>
                   <Input
                     id="phoneOrEmail"
@@ -186,6 +186,7 @@ export default function LenderSignInPage() {
             <PhoneOtpSigninModal
               open={otpModalOpen}
               onClose={() => setOtpModalOpen(false)}
+              portal="lender"
             />
 
             <p className="text-center text-sm text-gray-500 mt-6">

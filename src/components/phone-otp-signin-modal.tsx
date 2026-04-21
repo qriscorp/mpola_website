@@ -14,9 +14,10 @@ import { useSendLoginPhoneOtp, useVerifyLoginPhoneOtp } from "@/hooks/use-auth";
 interface Props {
   open: boolean;
   onClose: () => void;
+  portal?: "borrower" | "lender";
 }
 
-export function PhoneOtpSigninModal({ open, onClose }: Props) {
+export function PhoneOtpSigninModal({ open, onClose, portal }: Props) {
   const [step, setStep] = useState<"phone" | "otp">("phone");
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState(["", "", "", "", "", ""]);
@@ -24,7 +25,7 @@ export function PhoneOtpSigninModal({ open, onClose }: Props) {
 
   const { mutate: sendOtp, isPending: isSending } = useSendLoginPhoneOtp();
   const { mutate: verifyOtp, isPending: isVerifying } =
-    useVerifyLoginPhoneOtp();
+    useVerifyLoginPhoneOtp(portal);
 
   // Reset state when modal is closed
   useEffect(() => {
@@ -126,6 +127,8 @@ export function PhoneOtpSigninModal({ open, onClose }: Props) {
             <p className="text-sm text-gray-500 -mt-2 mb-4">
               Enter the 6-digit code sent to{" "}
               <span className="font-medium text-[#1B2B3A]">+256 {phone}</span>.
+              If you don&apos;t receive a code, the number may not be
+              registered.
             </p>
             <form onSubmit={handleVerify} className="space-y-5">
               <div className="flex gap-2 justify-center" onPaste={handlePaste}>

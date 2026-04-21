@@ -127,7 +127,7 @@ export default function LenderRegisterPage() {
                     <Label>Phone Number</Label>
                     <div className="flex">
                       <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-input bg-muted text-sm text-muted-foreground">
-                        🇺🇬 +256
+                        +256
                       </span>
                       <Input
                         placeholder="772 000 000"
@@ -238,7 +238,7 @@ export default function LenderRegisterPage() {
                     <Label>Phone / Account Number</Label>
                     <div className="flex">
                       <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-input bg-muted text-sm text-muted-foreground">
-                        🇺🇬 +256
+                        +256
                       </span>
                       <Input
                         placeholder="772 000 000"

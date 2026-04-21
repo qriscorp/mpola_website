@@ -22,14 +22,8 @@ export function LenderTopNav() {
       <div className="flex items-center gap-3">
         {/* Mobile hamburger */}
         <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-          <SheetTrigger>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="lg:hidden text-white hover:bg-white/10 p-1.5"
-            >
-              <Menu className="h-5 w-5" />
-            </Button>
+          <SheetTrigger className="lg:hidden inline-flex items-center justify-center rounded-lg p-1.5 text-white hover:bg-white/10 transition-colors [&_svg]:pointer-events-none [&_svg]:shrink-0">
+            <Menu className="h-5 w-5" />
           </SheetTrigger>
           <SheetContent side="left" className="p-0 w-64">
             <LenderSidebarContent onNavigate={() => setMobileOpen(false)} />

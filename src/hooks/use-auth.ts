@@ -70,7 +70,8 @@ export function useLenderSignIn() {
       api.lenderSignIn(data),
     onSuccess: () => {
       toast.success("Welcome back!");
-      router.push(getPostAuthRoute("lender"));
+      const role = getCookie("lf_role") || "lender";
+      router.push(getPostAuthRoute(role));
     },
     onError: (error: Error) => {
       toast.error(error.message || "Invalid credentials. Please try again.");
@@ -219,13 +220,16 @@ export function useResetPassword() {
 export function useSendLoginPhoneOtp() {
   return useMutation({
     mutationFn: (phoneNumber: string) => api.sendLoginPhoneOtp(phoneNumber),
+    onSuccess: () => {
+      toast.success("If this number is registered, a code has been sent.");
+    },
     onError: (error: Error) => {
       toast.error(error.message || "Failed to send OTP. Please try again.");
     },
   });
 }
 
-export function useVerifyLoginPhoneOtp() {
+export function useVerifyLoginPhoneOtp(portal?: "borrower" | "lender") {
   const router = useRouter();
   return useMutation({
     mutationFn: ({
@@ -235,9 +239,30 @@ export function useVerifyLoginPhoneOtp() {
       phoneNumber: string;
       code: string;
     }) => api.verifyLoginPhoneOtp(phoneNumber, code),
-    onSuccess: () => {
+    onSuccess: (data) => {
+      const role = data.user.role;
+      const isAdmin = role === "admin" || role === "super_admin";
+      const isLenderRole = role === "lender" || isAdmin;
+
+      // Admins can sign in from either portal — skip portal enforcement for them
+      if (!isAdmin) {
+        if (portal === "borrower" && isLenderRole) {
+          api.signOut();
+          toast.error(
+            "This number belongs to a lender account. Please sign in from the Lender portal.",
+          );
+          return;
+        }
+        if (portal === "lender" && !isLenderRole) {
+          api.signOut();
+          toast.error(
+            "This number belongs to a borrower account. Please sign in from the Borrower portal.",
+          );
+          return;
+        }
+      }
+
       toast.success("Signed in!");
-      const role = getCookie("lf_role") || "borrower";
       router.push(getPostAuthRoute(role));
     },
     onError: (error: Error) => {
