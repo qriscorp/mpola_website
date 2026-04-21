@@ -19,8 +19,8 @@ export function useSignIn() {
       toast.success("Welcome back!");
       router.push("/dashboard");
     },
-    onError: () => {
-      toast.error("Invalid credentials. Please try again.");
+    onError: (error: Error) => {
+      toast.error(error.message || "Invalid credentials. Please try again.");
     },
   });
 }
@@ -34,8 +34,45 @@ export function useRegister() {
       toast.success("Account created successfully!");
       router.push("/dashboard");
     },
-    onError: () => {
-      toast.error("Registration failed. Please try again.");
+    onError: (error: Error) => {
+      toast.error(error.message || "Registration failed. Please try again.");
     },
   });
+}
+
+export function useLenderSignIn() {
+  const router = useRouter();
+  return useMutation({
+    mutationFn: (data: { phoneOrEmail: string; password: string }) =>
+      api.lenderSignIn(data),
+    onSuccess: () => {
+      toast.success("Welcome back!");
+      router.push("/lender");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Invalid credentials. Please try again.");
+    },
+  });
+}
+
+export function useLenderRegister() {
+  const router = useRouter();
+  return useMutation({
+    mutationFn: (data: Record<string, unknown>) => api.lenderRegister(data),
+    onSuccess: () => {
+      toast.success("Lender account created!");
+      router.push("/lender");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Registration failed. Please try again.");
+    },
+  });
+}
+
+export function useSignOut() {
+  const router = useRouter();
+  return () => {
+    api.signOut();
+    router.push("/");
+  };
 }

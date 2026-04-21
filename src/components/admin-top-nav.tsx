@@ -1,15 +1,28 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { Bell, Search, Shield } from "lucide-react";
+import { Bell, Menu, Search, Shield, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { AdminSidebarContent } from "@/components/admin-sidebar";
 
 export function AdminTopNav() {
+  const [open, setOpen] = useState(false);
+
   return (
     <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b bg-white dark:bg-gray-950 px-4 sm:px-6 lg:px-8">
       <div className="flex items-center gap-4">
+        <Sheet open={open} onOpenChange={setOpen}>
+          <SheetTrigger className="lg:hidden p-2 -ml-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+            <Menu className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+          </SheetTrigger>
+          <SheetContent side="left" className="w-64 p-0">
+            <AdminSidebarContent onNavigate={() => setOpen(false)} />
+          </SheetContent>
+        </Sheet>
         <div className="flex items-center gap-2 lg:hidden">
           <Shield className="h-5 w-5 text-[#2BB5A0]" />
           <span className="font-bold text-[#1B2B3A] dark:text-white text-sm">

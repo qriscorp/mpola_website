@@ -1,28 +1,32 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowRight, ArrowLeft, ShieldCheck, Zap, Phone } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { toast } from "sonner";
+import { useLenderSignIn } from "@/hooks/use-auth";
+import { signInSchema, type SignInFormData } from "@/lib/schemas";
 
 export default function LenderSignInPage() {
-  const router = useRouter();
-  const [isPending, setIsPending] = useState(false);
+  const { mutate: signIn, isPending } = useLenderSignIn();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsPending(true);
-    setTimeout(() => {
-      setIsPending(false);
-      toast.success("Signed in successfully!");
-      router.push("/lender");
-    }, 600);
-  };
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm<SignInFormData>({
+    resolver: zodResolver(signInSchema),
+    defaultValues: { rememberMe: true },
+  });
+
+  const onSubmit = (data: SignInFormData) =>
+    signIn({ phoneOrEmail: data.phoneOrEmail, password: data.password });
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -83,19 +87,26 @@ export default function LenderSignInPage() {
               Enter your phone or email and password to continue.
             </p>
 
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
               <div>
                 <Label htmlFor="phoneOrEmail">Phone number or email</Label>
-                <div className="mt-1.5 relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm">
-                    🇺🇬
+                <div className="mt-1.5 relative flex">
+                  <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-input bg-muted text-sm text-muted-foreground">
+                    🇺🇬 +256
                   </span>
                   <Input
                     id="phoneOrEmail"
-                    placeholder="+256772 100 842"
-                    className="pl-10"
+                    placeholder="772 100 842 or email"
+                    className="rounded-l-none"
+                    aria-invalid={!!errors.phoneOrEmail}
+                    {...register("phoneOrEmail")}
                   />
                 </div>
+                {errors.phoneOrEmail && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.phoneOrEmail.message}
+                  </p>
+                )}
               </div>
 
               <div>
@@ -113,13 +124,23 @@ export default function LenderSignInPage() {
                   type="password"
                   placeholder="••••••••••"
                   className="mt-1.5"
+                  aria-invalid={!!errors.password}
+                  {...register("password")}
                 />
+                {errors.password && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.password.message}
+                  </p>
+                )}
               </div>
 
               <div className="flex items-center gap-2">
                 <Checkbox
                   id="rememberMe"
-                  defaultChecked
+                  checked={watch("rememberMe")}
+                  onCheckedChange={(checked) =>
+                    setValue("rememberMe", checked === true)
+                  }
                   className="data-[state=checked]:bg-[#2BB5A0] data-[state=checked]:border-[#2BB5A0]"
                 />
                 <Label
@@ -133,7 +154,7 @@ export default function LenderSignInPage() {
               <button
                 type="submit"
                 disabled={isPending}
-                className="w-full bg-[#C4A55A] text-white py-3 rounded-lg font-medium text-sm inline-flex items-center justify-center gap-2 hover:bg-[#b3944a] transition-colors disabled:opacity-50"
+                className="w-full bg-[#C4A55A] text-white py-3 rounded-lg font-medium text-sm inline-flex items-center justify-center gap-2 hover:bg-[#b3944a] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isPending ? "Signing in…" : "Sign in"}{" "}
                 <ArrowRight className="w-4 h-4" />

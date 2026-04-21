@@ -29,12 +29,15 @@ import {
   useApplications,
 } from "@/hooks/use-dashboard";
 import { formatCurrency, getStatusColor, getStatusLabel } from "@/lib/format";
+import { DashboardSkeleton } from "@/components/skeletons";
 
 export default function DashboardPage() {
-  const { data: user } = useUser();
-  const { data: stats } = useDashboardStats();
+  const { data: user, isLoading: userLoading } = useUser();
+  const { data: stats, isLoading: statsLoading } = useDashboardStats();
   const { data: activeLoan } = useActiveLoan();
   const { data: applications } = useApplications();
+
+  if (userLoading || statsLoading) return <DashboardSkeleton />;
 
   const loanProgress = activeLoan
     ? Math.round(

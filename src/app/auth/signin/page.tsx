@@ -89,14 +89,15 @@ export default function SignInPage() {
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
               <div>
                 <Label htmlFor="phoneOrEmail">Phone number or email</Label>
-                <div className="mt-1.5 relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm">
-                    🇺🇬
+                <div className="mt-1.5 relative flex">
+                  <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-input bg-muted text-sm text-muted-foreground">
+                    🇺🇬 +256
                   </span>
                   <Input
                     id="phoneOrEmail"
-                    placeholder="+256772 843 901"
-                    className="pl-10"
+                    placeholder="772 843 901 or email"
+                    className="rounded-l-none"
+                    aria-invalid={!!errors.phoneOrEmail}
                     {...register("phoneOrEmail")}
                   />
                 </div>
@@ -121,6 +122,7 @@ export default function SignInPage() {
                   id="password"
                   type="password"
                   className="mt-1.5"
+                  aria-invalid={!!errors.password}
                   {...register("password")}
                 />
                 {errors.password && (
@@ -150,7 +152,7 @@ export default function SignInPage() {
               <button
                 type="submit"
                 disabled={isPending}
-                className="w-full bg-[#2BB5A0] text-white py-3 rounded-lg font-medium text-sm inline-flex items-center justify-center gap-2 hover:bg-[#239E8C] transition-colors disabled:opacity-50"
+                className="w-full bg-[#2BB5A0] text-white py-3 rounded-lg font-medium text-sm inline-flex items-center justify-center gap-2 hover:bg-[#239E8C] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isPending ? "Signing in..." : "Sign in"}{" "}
                 <ArrowRight className="w-4 h-4" />

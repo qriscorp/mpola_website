@@ -125,11 +125,14 @@ export default function LenderRegisterPage() {
 
                   <div className="space-y-2">
                     <Label>Phone Number</Label>
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm">
-                        🇺🇬
+                    <div className="flex">
+                      <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-input bg-muted text-sm text-muted-foreground">
+                        🇺🇬 +256
                       </span>
-                      <Input placeholder="+25672 000 000" className="pl-10" />
+                      <Input
+                        placeholder="772 000 000"
+                        className="rounded-l-none"
+                      />
                     </div>
                   </div>
 
@@ -224,7 +227,15 @@ export default function LenderRegisterPage() {
                   </div>
                   <div className="space-y-2">
                     <Label>Phone / Account Number</Label>
-                    <Input placeholder="+25672 000 000" />
+                    <div className="flex">
+                      <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-input bg-muted text-sm text-muted-foreground">
+                        🇺🇬 +256
+                      </span>
+                      <Input
+                        placeholder="772 000 000"
+                        className="rounded-l-none"
+                      />
+                    </div>
                   </div>
                 </>
               )}

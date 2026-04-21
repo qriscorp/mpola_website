@@ -27,12 +27,16 @@ const adminNav = [
   { icon: Settings, label: "Settings", href: "/admin/settings" },
 ];
 
-export function AdminSidebar() {
+export function AdminSidebarContent({
+  onNavigate,
+}: {
+  onNavigate?: () => void;
+}) {
   const pathname = usePathname();
   const [signOutOpen, setSignOutOpen] = useState(false);
 
   return (
-    <aside className="hidden lg:flex flex-col w-64 bg-[#1B2B3A] text-white min-h-screen">
+    <div className="flex flex-col h-full bg-[#1B2B3A] text-white">
       {/* Logo */}
       <div className="p-6 border-b border-white/10">
         <div className="flex items-center gap-3">
@@ -44,7 +48,7 @@ export function AdminSidebar() {
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 py-4 px-3 space-y-1">
+      <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
         {adminNav.map((item) => {
           const isActive =
             pathname === item.href ||
@@ -53,6 +57,7 @@ export function AdminSidebar() {
             <Link
               key={item.href}
               href={item.href}
+              onClick={onNavigate}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                 isActive
                   ? "bg-[#2BB5A0] text-white"
@@ -79,6 +84,7 @@ export function AdminSidebar() {
         </div>
         <Link
           href="/"
+          onClick={onNavigate}
           className="flex items-center gap-2 px-3 py-2 text-sm text-gray-400 hover:text-white transition-colors"
         >
           <ChevronLeft className="h-4 w-4" />
@@ -94,6 +100,14 @@ export function AdminSidebar() {
 
         <SignOutModal open={signOutOpen} onOpenChange={setSignOutOpen} />
       </div>
+    </div>
+  );
+}
+
+export function AdminSidebar() {
+  return (
+    <aside className="hidden lg:flex w-64 flex-col min-h-0 shrink-0">
+      <AdminSidebarContent />
     </aside>
   );
 }

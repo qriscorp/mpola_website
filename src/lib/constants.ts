@@ -1,6 +1,9 @@
 export const APP_NAME = "LendFlow";
 export const PORTAL_NAME = "BORROWER PORTAL";
 
+export const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL;
+
 export const COLORS = {
   navy: "#1B2B3A",
   navyLight: "#243647",
@@ -85,6 +88,3 @@ export const PAYMENT_METHODS = [
   "MTN MoMo",
   "Airtel Money",
 ] as const;
-
-export const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";

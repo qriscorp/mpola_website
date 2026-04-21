@@ -126,6 +126,7 @@ export default function RegisterPage() {
               <Input
                 className="mt-1.5"
                 placeholder="Sarah Nakato"
+                aria-invalid={!!errors.fullName}
                 {...register("fullName")}
               />
               {errors.fullName && (
@@ -161,6 +162,7 @@ export default function RegisterPage() {
               <Input
                 className="mt-1.5"
                 placeholder="CM98041234AB7X"
+                aria-invalid={!!errors.nin}
                 {...register("nin")}
               />
               {errors.nin && (
@@ -172,13 +174,14 @@ export default function RegisterPage() {
 
             <div>
               <Label>Phone Number</Label>
-              <div className="mt-1.5 relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm">
-                  🇺🇬
+              <div className="mt-1.5 flex">
+                <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-input bg-muted text-sm text-muted-foreground">
+                  🇺🇬 +256
                 </span>
                 <Input
-                  placeholder="+256772 000 000"
-                  className="pl-10"
+                  placeholder="772 000 000"
+                  className="rounded-l-none"
+                  aria-invalid={!!errors.phone}
                   {...register("phone")}
                 />
               </div>
@@ -192,7 +195,11 @@ export default function RegisterPage() {
             <div>
               <Label>Email Address</Label>
               <div className="mt-1.5 relative">
-                <Input placeholder="you@example.com" {...register("email")} />
+                <Input
+                  placeholder="you@example.com"
+                  aria-invalid={!!errors.email}
+                  {...register("email")}
+                />
                 <Mail className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#2BB5A0]" />
               </div>
               {errors.email && (
@@ -209,6 +216,7 @@ export default function RegisterPage() {
                   type="password"
                   className="mt-1.5"
                   placeholder="8+ characters"
+                  aria-invalid={!!errors.password}
                   {...register("password")}
                 />
                 {errors.password && (
@@ -223,6 +231,7 @@ export default function RegisterPage() {
                   type="password"
                   className="mt-1.5"
                   placeholder="Re-enter"
+                  aria-invalid={!!errors.confirmPassword}
                   {...register("confirmPassword")}
                 />
                 {errors.confirmPassword && (

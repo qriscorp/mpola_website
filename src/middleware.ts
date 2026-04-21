@@ -6,6 +6,10 @@ const PUBLIC_PATHS = [
   "/auth/register",
   "/auth/forgot-password",
   "/auth/verify",
+  "/auth/lender-signin",
+  "/auth/lender-register",
+  "/how-it-works",
+  "/learn-more",
 ];
 
 export function middleware(request: NextRequest) {
@@ -27,16 +31,17 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Check for auth token (cookie-based in production)
+  // Check for auth token (cookie-based)
   const token = request.cookies.get("lf_token")?.value;
 
-  // In development / demo mode, allow all access
-  // In production, uncomment the redirect below:
-  // if (!token) {
-  //   const signInUrl = new URL("/auth/signin", request.url);
-  //   signInUrl.searchParams.set("redirect", pathname);
-  //   return NextResponse.redirect(signInUrl);
-  // }
+  if (!token) {
+    // Determine redirect: lender paths → lender sign-in, else borrower sign-in
+    const isLenderPath = pathname.startsWith("/lender");
+    const signInPath = isLenderPath ? "/auth/lender-signin" : "/auth/signin";
+    const signInUrl = new URL(signInPath, request.url);
+    signInUrl.searchParams.set("redirect", pathname);
+    return NextResponse.redirect(signInUrl);
+  }
 
   return NextResponse.next();
 }

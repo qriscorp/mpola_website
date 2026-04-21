@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import {
   Dialog,
   DialogContent,
@@ -11,17 +10,19 @@ import {
 import { Button } from "@/components/ui/button";
 import { LogOut, AlertTriangle } from "lucide-react";
 
+import { useSignOut } from "@/hooks/use-auth";
+
 interface SignOutModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
 export function SignOutModal({ open, onOpenChange }: SignOutModalProps) {
-  const router = useRouter();
+  const signOut = useSignOut();
 
   const handleSignOut = () => {
     onOpenChange(false);
-    router.push("/");
+    signOut();
   };
 
   return (

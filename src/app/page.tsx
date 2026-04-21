@@ -36,7 +36,7 @@ export default function LandingPage() {
                 Enter Lender Portal <ArrowRight className="w-4 h-4" />
               </Link>
               <Link
-                href="#"
+                href="/learn-more"
                 className="text-white px-6 py-3 rounded-lg font-medium text-sm border border-white/20 hover:bg-white/10 transition-colors"
               >
                 Learn More
@@ -105,7 +105,7 @@ export default function LandingPage() {
                 Enter Borrower Portal <ArrowRight className="w-4 h-4" />
               </Link>
               <Link
-                href="#"
+                href="/how-it-works"
                 className="text-gray-700 px-6 py-3 rounded-lg font-medium text-sm border border-gray-200 hover:bg-gray-50 transition-colors"
               >
                 How it works

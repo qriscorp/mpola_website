@@ -21,7 +21,10 @@ export const registerIndividualSchema = z
       .string()
       .min(10, "Valid NIN required")
       .regex(/^[A-Z]{2}\d{7}[A-Z0-9]+$/i, "Invalid NIN format"),
-    phone: z.string().min(10, "Valid phone number required"),
+    phone: z
+      .string()
+      .min(9, "Enter 9 digits (e.g. 772843901)")
+      .regex(/^\d{9,10}$/, "Enter 9 digits without country code"),
     email: z.string().email("Valid email required"),
     password: z.string().min(8, "Password must be at least 8 characters"),
     confirmPassword: z.string(),
@@ -45,7 +48,10 @@ export const registerBusinessSchema = z
       .string()
       .min(10, "Valid NIN required")
       .regex(/^[A-Z]{2}\d{7}[A-Z0-9]+$/i, "Invalid NIN format"),
-    phone: z.string().min(10, "Valid phone number required"),
+    phone: z
+      .string()
+      .min(9, "Enter 9 digits (e.g. 772843901)")
+      .regex(/^\d{9,10}$/, "Enter 9 digits without country code"),
     email: z.string().email("Valid email required"),
     password: z.string().min(8, "8+ characters required"),
     confirmPassword: z.string(),
@@ -73,7 +79,10 @@ export type LoanDetailsFormData = z.infer<typeof loanDetailsSchema>;
 export const guarantorSchema = z.object({
   fullName: z.string().min(2, "Full name required"),
   relationship: z.string().min(1, "Relationship required"),
-  phone: z.string().min(10, "Valid phone number required"),
+  phone: z
+    .string()
+    .min(9, "Enter 9 digits")
+    .regex(/^\d{9,10}$/, "Enter 9 digits without country code"),
   email: z.string().email("Valid email required"),
 });
 export type GuarantorFormData = z.infer<typeof guarantorSchema>;
@@ -90,6 +99,9 @@ export type PaymentFormData = z.infer<typeof paymentSchema>;
 export const topUpSchema = z.object({
   amount: z.number().min(1000, "Minimum UGX 1,000"),
   method: z.enum(["MTN MoMo", "Airtel", "Bank"]),
-  phone: z.string().min(10, "Valid phone number required"),
+  phone: z
+    .string()
+    .min(9, "Enter 9 digits")
+    .regex(/^\d{9,10}$/, "Enter 9 digits without country code"),
 });
 export type TopUpFormData = z.infer<typeof topUpSchema>;

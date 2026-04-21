@@ -21,6 +21,7 @@ import {
   lenderWalletTransactions,
   lenderEarnings,
 } from "./dummy-data";
+import { API_BASE_URL } from "./constants";
 import type {
   User,
   DashboardStats,
@@ -48,18 +49,165 @@ import type {
 // Simulated API delay
 const delay = (ms: number = 500) => new Promise((r) => setTimeout(r, ms));
 
+// ─── Real API helpers ────────────────────────────────────
+
+export interface AuthResponse {
+  user: {
+    id: string;
+    username: string;
+    email: string;
+    full_name: string;
+    phone_number: string;
+    role: string;
+    is_active: boolean;
+    is_verified: boolean;
+    is_kyc_verified: boolean;
+    kyc_status: string;
+    credit_score: number | null;
+  };
+  access_token: string;
+  refresh_token: string;
+}
+
+async function apiPost<T>(path: string, body: unknown): Promise<T> {
+  const res = await fetch(`${API_BASE_URL}${path}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: "Request failed" }));
+    throw new Error(err.detail || `HTTP ${res.status}`);
+  }
+  return res.json();
+}
+
+function mapAuthUser(data: AuthResponse): User {
+  return {
+    id: data.user.id,
+    fullName: data.user.full_name || data.user.username,
+    email: data.user.email,
+    phone: data.user.phone_number || "",
+    nin: "",
+    accountType: "individual",
+    kycStatus: (data.user.kyc_status as User["kycStatus"]) || "pending",
+    location: "Uganda",
+    createdAt: new Date().toISOString(),
+  };
+}
+
+/** Store tokens — called after successful sign-in / register. */
+function storeTokens(data: AuthResponse) {
+  // Set HTTP-only-style cookie via document.cookie (15 min for access token)
+  const maxAge = 15 * 60; // match JWT expiry
+  document.cookie = `lf_token=${data.access_token}; path=/; max-age=${maxAge}; SameSite=Lax`;
+  document.cookie = `lf_refresh=${data.refresh_token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
+  // Also keep role for middleware routing
+  document.cookie = `lf_role=${data.user.role}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
+}
+
+// Normalize phone: if user typed 9 digits, prepend 256
+function normalizePhone(input: string): string {
+  const digits = input.replace(/\D/g, "");
+  if (digits.length === 9) return `256${digits}`;
+  if (digits.startsWith("0") && digits.length === 10)
+    return `256${digits.slice(1)}`;
+  if (digits.startsWith("256") && digits.length === 12) return digits;
+  return digits;
+}
+
 export const api = {
-  // Auth
-  signIn: async (_data: {
+  // ─── Auth (REAL API) ─────────────────────────────────────
+
+  signIn: async (data: {
     phoneOrEmail: string;
     password: string;
   }): Promise<User> => {
-    await delay();
-    return currentUser;
+    // If input looks like a phone number, normalize it
+    const identifier = /^\d{9,12}$/.test(data.phoneOrEmail.replace(/\D/g, ""))
+      ? normalizePhone(data.phoneOrEmail)
+      : data.phoneOrEmail;
+    const res = await apiPost<AuthResponse>("/auth/login", {
+      username: identifier,
+      password: data.password,
+    });
+    storeTokens(res);
+    return mapAuthUser(res);
   },
-  register: async (_data: Record<string, unknown>): Promise<User> => {
-    await delay();
-    return currentUser;
+
+  register: async (data: Record<string, unknown>): Promise<User> => {
+    const res = await apiPost<AuthResponse>("/auth/register", {
+      email: data.email,
+      password: data.password,
+      full_name: data.fullName,
+      phone_number: normalizePhone(String(data.phone || "")),
+      nin: data.nin,
+      account_type: data.accountType || "individual",
+      role: data.role || "borrower",
+    });
+    storeTokens(res);
+    return mapAuthUser(res);
+  },
+
+  lenderSignIn: async (data: {
+    phoneOrEmail: string;
+    password: string;
+  }): Promise<User> => {
+    const identifier = /^\d{9,12}$/.test(data.phoneOrEmail.replace(/\D/g, ""))
+      ? normalizePhone(data.phoneOrEmail)
+      : data.phoneOrEmail;
+    const res = await apiPost<AuthResponse>("/auth/login", {
+      username: identifier,
+      password: data.password,
+    });
+    if (
+      res.user.role !== "lender" &&
+      res.user.role !== "admin" &&
+      res.user.role !== "super_admin"
+    ) {
+      throw new Error(
+        "This portal is for lenders only. Please use the borrower sign-in.",
+      );
+    }
+    storeTokens(res);
+    return mapAuthUser(res);
+  },
+
+  lenderRegister: async (data: Record<string, unknown>): Promise<User> => {
+    const res = await apiPost<AuthResponse>("/auth/register", {
+      email: data.email,
+      password: data.password,
+      full_name: data.fullName,
+      phone_number: normalizePhone(String(data.phone || "")),
+      nin: data.nin,
+      account_type: data.accountType || "individual",
+      role: "lender",
+    });
+    storeTokens(res);
+    return mapAuthUser(res);
+  },
+
+  signOut: () => {
+    document.cookie = "lf_token=; path=/; max-age=0";
+    document.cookie = "lf_refresh=; path=/; max-age=0";
+    document.cookie = "lf_role=; path=/; max-age=0";
+  },
+
+  refreshToken: async (): Promise<string | null> => {
+    const cookies = document.cookie.split("; ");
+    const refreshCookie = cookies.find((c) => c.startsWith("lf_refresh="));
+    if (!refreshCookie) return null;
+    const refreshToken = refreshCookie.split("=")[1];
+    try {
+      const res = await apiPost<AuthResponse>("/auth/refresh", {
+        refresh_token: refreshToken,
+      });
+      storeTokens(res);
+      return res.access_token;
+    } catch {
+      api.signOut();
+      return null;
+    }
   },
 
   // Dashboard
