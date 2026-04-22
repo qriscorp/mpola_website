@@ -58,11 +58,11 @@ export default function MyRequestsPage() {
         {requests.map((req) => (
           <div
             key={req.id}
-            className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-5 flex flex-col sm:flex-row sm:items-center gap-4"
+            className="bg-white rounded-2xl border border-gray-200 p-6 flex flex-col sm:flex-row sm:items-center gap-4"
           >
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-1">
-                <span className="text-2xl font-extrabold text-[#1B2B3A] dark:text-white">
+                <span className="text-3xl sm:text-[44px] leading-none font-black text-[#1B2B3A]">
                   {req.amount}
                 </span>
                 <span className="px-2 py-0.5 rounded-full bg-teal-50 text-[#2BB5A0] text-xs font-semibold">
@@ -75,7 +75,7 @@ export default function MyRequestsPage() {
             </div>
             <div className="flex items-center gap-4 shrink-0">
               <div className="text-right">
-                <p className="text-2xl font-extrabold text-[#2BB5A0]">
+                <p className="text-3xl sm:text-[40px] leading-none font-black text-[#2BB5A0]">
                   {req.offers}
                 </p>
                 <p className="text-xs text-gray-400">

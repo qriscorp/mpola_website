@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -13,29 +13,38 @@ const LOAN_TYPES = ["Business", "Personal", "Agricultural", "Emergency"];
 
 function StepperHeader({ currentStep }: { currentStep: number }) {
   return (
-    <div className="flex items-center gap-0 mb-8">
+    <div className="mb-8 flex items-center gap-0">
       {STEPS.map((step, idx) => {
         const stepNum = idx + 1;
         const isCompleted = stepNum < currentStep;
         const isActive = stepNum === currentStep;
+
         return (
           <div key={step} className="flex items-center">
             <div className="flex flex-col items-center">
               <div
-                className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold transition-colors
-                  ${isCompleted ? "bg-[#2BB5A0] text-white" : isActive ? "bg-[#2BB5A0] text-white" : "bg-white border-2 border-gray-300 text-gray-400"}`}
+                className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold transition-colors ${
+                  isCompleted || isActive
+                    ? "bg-[#2BB5A0] text-white"
+                    : "border-2 border-gray-300 bg-white text-gray-400"
+                }`}
               >
-                {isCompleted ? <Check className="w-4 h-4" /> : stepNum}
+                {isCompleted ? <Check className="h-4 w-4" /> : stepNum}
               </div>
               <span
-                className={`text-xs mt-1 font-medium whitespace-nowrap ${isActive ? "text-[#2BB5A0]" : isCompleted ? "text-[#2BB5A0]" : "text-gray-400"}`}
+                className={`mt-1 whitespace-nowrap text-xs font-medium ${
+                  isCompleted || isActive ? "text-[#2BB5A0]" : "text-gray-400"
+                }`}
               >
                 {step}
               </span>
             </div>
+
             {idx < STEPS.length - 1 && (
               <div
-                className={`h-px w-16 sm:w-24 mx-2 mb-5 transition-colors ${stepNum < currentStep ? "bg-[#2BB5A0]" : "bg-gray-200"}`}
+                className={`mx-2 mb-5 h-px w-16 transition-colors sm:w-24 ${
+                  isCompleted ? "bg-[#2BB5A0]" : "bg-gray-200"
+                }`}
               />
             )}
           </div>
@@ -58,9 +67,9 @@ function LoanCalculator({
   const monthly = duration > 0 ? totalRepayable / duration : 0;
 
   return (
-    <Card className="bg-white border border-gray-200">
-      <CardContent className="p-6 space-y-4">
-        <h3 className="text-lg font-bold text-[#2BB5A0]">Loan Calculator</h3>
+    <Card className="border border-[#9DDAD1] bg-[#E6F4F2]">
+      <CardContent className="space-y-4 p-6">
+        <h3 className="text-lg font-bold text-[#149D8E]">Loan Calculator</h3>
         <div className="space-y-3 text-sm">
           <div className="flex justify-between">
             <span className="text-gray-500">Principal</span>
@@ -75,30 +84,32 @@ function LoanCalculator({
           <div className="flex justify-between">
             <span className="text-gray-500">Duration</span>
             <span className="font-semibold text-[#1B2B3A]">
-              {duration} month{duration !== 1 ? "s" : ""}
+              {duration} months
             </span>
           </div>
           <div className="flex justify-between">
             <span className="text-gray-500">Total Interest</span>
-            <span className="font-semibold text-[#2BB5A0]">
+            <span className="font-semibold text-[#149D8E]">
               UGX {totalInterest.toLocaleString()}
             </span>
           </div>
           <div className="flex justify-between">
-            <span className="text-gray-500">Monthly Payment</span>
-            <span className="font-semibold text-[#1B2B3A]">
+            <span className="font-bold text-[#1B2B3A]">Monthly Payment</span>
+            <span className="font-bold text-[#1B2B3A]">
               UGX {Math.round(monthly).toLocaleString()}
             </span>
           </div>
-          <div className="h-px bg-gray-200" />
+          <div className="h-px bg-[#9DDAD1]" />
           <div className="flex justify-between">
-            <span className="font-bold text-[#1B2B3A]">Total Repayable</span>
-            <span className="font-bold text-[#2BB5A0]">
+            <span className="text-2xl font-black text-[#1B2B3A]">
+              Total Repayable
+            </span>
+            <span className="text-3xl font-black text-[#149D8E]">
               UGX {totalRepayable.toLocaleString()}
             </span>
           </div>
         </div>
-        <p className="text-xs text-gray-400 mt-2">
+        <p className="text-xs text-gray-500">
           Applying to: James Mugisha&apos;s offer
         </p>
       </CardContent>
@@ -126,42 +137,45 @@ function Step1({
   setPurpose: (v: string) => void;
 }) {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6">
-      <Card className="bg-white border border-gray-200">
-        <CardContent className="p-6 space-y-6">
-          <h2 className="text-xl font-bold text-[#1B2B3A]">Loan Details</h2>
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_420px]">
+      <Card className="border border-gray-200 bg-white">
+        <CardContent className="space-y-6 p-6">
+          <h2 className="text-2xl font-black text-[#1B2B3A]">Loan Details</h2>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+            <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-gray-500">
               How much do you need?
             </label>
-            <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-[#2BB5A0]">
-              <span className="px-4 py-3 bg-gray-50 text-gray-500 text-sm font-medium border-r border-gray-300">
+            <div className="flex items-center overflow-hidden rounded-lg border border-gray-300 focus-within:ring-2 focus-within:ring-[#2BB5A0]">
+              <span className="border-r border-gray-300 bg-gray-50 px-4 py-3 text-sm font-medium text-gray-500">
                 UGX
               </span>
               <input
                 type="number"
                 value={amount}
                 onChange={(e) => setAmount(Number(e.target.value))}
-                className="flex-1 px-4 py-3 text-[#1B2B3A] font-medium outline-none text-sm"
+                className="flex-1 px-4 py-3 text-sm font-medium text-[#1B2B3A] outline-none"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+            <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-gray-500">
               Duration
             </label>
             <div className="flex flex-wrap gap-2">
               {DURATIONS.map((d) => {
-                const months = parseInt(d);
+                const months = parseInt(d, 10);
                 const active = months === duration;
                 return (
                   <button
                     key={d}
                     onClick={() => setDuration(months)}
-                    className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors
-                      ${active ? "bg-[#2BB5A0] text-white border-[#2BB5A0]" : "bg-white text-[#1B2B3A] border-gray-300 hover:border-[#2BB5A0]"}`}
+                    className={`rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
+                      active
+                        ? "border-[#2BB5A0] bg-[#E6F4F2] text-[#149D8E]"
+                        : "border-gray-300 bg-white text-[#1B2B3A] hover:border-[#2BB5A0]"
+                    }`}
                   >
                     {d}
                   </button>
@@ -171,7 +185,7 @@ function Step1({
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+            <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-gray-500">
               Loan Type
             </label>
             <div className="flex flex-wrap gap-2">
@@ -181,8 +195,11 @@ function Step1({
                   <button
                     key={t}
                     onClick={() => setLoanType(t)}
-                    className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors
-                      ${active ? "bg-[#2BB5A0] text-white border-[#2BB5A0]" : "bg-white text-[#1B2B3A] border-gray-300 hover:border-[#2BB5A0]"}`}
+                    className={`rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
+                      active
+                        ? "border-[#2BB5A0] bg-[#E6F4F2] text-[#149D8E]"
+                        : "border-gray-300 bg-white text-[#1B2B3A] hover:border-[#2BB5A0]"
+                    }`}
                   >
                     {t}
                   </button>
@@ -192,7 +209,7 @@ function Step1({
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+            <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-gray-500">
               Purpose
             </label>
             <textarea
@@ -200,7 +217,7 @@ function Step1({
               onChange={(e) => setPurpose(e.target.value)}
               placeholder="Briefly describe what you need the loan for..."
               rows={4}
-              className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm text-[#1B2B3A] outline-none focus:ring-2 focus:ring-[#2BB5A0] resize-none"
+              className="w-full resize-none rounded-lg border border-gray-300 px-4 py-3 text-sm text-[#1B2B3A] outline-none focus:ring-2 focus:ring-[#2BB5A0]"
             />
           </div>
         </CardContent>
@@ -222,23 +239,27 @@ function UploadZone({
 }) {
   return (
     <div
-      className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${uploaded ? "border-[#2BB5A0] bg-[#2BB5A0]/5" : "border-gray-300 hover:border-[#2BB5A0] bg-gray-50"}`}
+      className={`rounded-lg border-2 border-dashed p-6 text-center transition-colors ${
+        uploaded
+          ? "border-[#2BB5A0] bg-[#E6F4F2]"
+          : "border-gray-300 bg-gray-50 hover:border-[#2BB5A0]"
+      }`}
     >
       {uploaded ? (
-        <div className="flex items-center justify-center gap-2">
-          <Check className="w-5 h-5 text-[#2BB5A0]" />
-          <span className="text-sm font-medium text-[#1B2B3A]">{filename}</span>
-          <span className="text-xs bg-[#2BB5A0] text-white px-2 py-0.5 rounded-full">
+        <div className="flex items-center justify-between gap-3 text-left">
+          <div>
+            <p className="text-lg font-bold text-[#1B2B3A]">{filename}</p>
+            <p className="text-sm text-gray-500">Uploaded · 245 KB</p>
+          </div>
+          <span className="rounded-full bg-emerald-50 px-3 py-1 text-sm font-semibold text-emerald-600">
             Uploaded
           </span>
         </div>
       ) : (
         <div className="space-y-2">
-          <Upload className="w-8 h-8 text-gray-400 mx-auto" />
-          <p className="text-sm text-gray-500">{label}</p>
-          <p className="text-xs text-gray-400">
-            Click to upload or drag and drop
-          </p>
+          <Upload className="mx-auto h-8 w-8 text-gray-400" />
+          <p className="text-sm font-medium text-[#1B2B3A]">{label}</p>
+          <p className="text-xs text-gray-400">PDF, JPG, PNG · Max 10MB</p>
         </div>
       )}
     </div>
@@ -247,33 +268,35 @@ function UploadZone({
 
 function Step2() {
   return (
-    <Card className="bg-white border border-gray-200">
-      <CardContent className="p-6 space-y-6">
-        <h2 className="text-xl font-bold text-[#1B2B3A]">Upload Documents</h2>
+    <Card className="border border-gray-200 bg-white">
+      <CardContent className="space-y-6 p-6">
+        <h2 className="text-2xl font-black text-[#1B2B3A]">Upload Documents</h2>
 
         <div>
-          <label className="block text-sm font-semibold text-[#1B2B3A] mb-2">
-            National ID
+          <label className="mb-2 block text-lg font-bold text-[#1B2B3A]">
+            National ID <span className="text-red-500">*Required</span>
           </label>
           <UploadZone
-            label="Upload National ID"
+            label="Drop file or click to upload"
             uploaded
             filename="NIN-CF12345678.pdf"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-[#1B2B3A] mb-2">
-            Bank Statement (3 months)
+          <label className="mb-2 block text-lg font-bold text-[#1B2B3A]">
+            Bank Statement (3 months){" "}
+            <span className="text-red-500">*Required</span>
           </label>
-          <UploadZone label="Upload Bank Statement" />
+          <UploadZone label="Drop file or click to upload" />
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-[#1B2B3A] mb-2">
-            Business Registration / Payslip
+          <label className="mb-2 block text-lg font-bold text-[#1B2B3A]">
+            Business Registration / Payslip{" "}
+            <span className="text-red-500">*Required</span>
           </label>
-          <UploadZone label="Upload Business Reg or Payslip" />
+          <UploadZone label="Drop file or click to upload" />
         </div>
       </CardContent>
     </Card>
@@ -282,46 +305,49 @@ function Step2() {
 
 function Step3() {
   return (
-    <Card className="bg-white border border-gray-200">
-      <CardContent className="p-6 space-y-6">
-        <h2 className="text-xl font-bold text-[#1B2B3A]">Guarantors</h2>
+    <Card className="border border-gray-200 bg-white">
+      <CardContent className="space-y-6 p-6">
+        <h2 className="text-2xl font-black text-[#1B2B3A]">Add Guarantors</h2>
+        <p className="text-sm text-gray-500">
+          Add at least 2 guarantors. They&apos;ll receive an SMS to confirm.
+        </p>
 
-        <div className="border-2 border-[#2BB5A0] rounded-lg p-4 flex items-center justify-between bg-[#2BB5A0]/5">
+        <div className="flex items-center justify-between rounded-xl border-2 border-[#2BB5A0] bg-[#E6F4F2] p-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-[#1B2B3A] text-white flex items-center justify-center text-sm font-bold">
-              JK
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#149D8E] text-sm font-bold text-white">
+              SM
             </div>
             <div>
-              <p className="font-semibold text-[#1B2B3A] text-sm">
-                Joseph Kato
+              <p className="text-lg font-bold text-[#1B2B3A]">Sarah Mirembe</p>
+              <p className="text-sm text-gray-500">
+                +256 701 234 567 · Colleague
               </p>
-              <p className="text-xs text-gray-500">+256 700 123 456 · Friend</p>
             </div>
           </div>
-          <span className="text-xs bg-[#2BB5A0] text-white px-3 py-1 rounded-full font-medium">
+          <span className="rounded-full bg-emerald-50 px-3 py-1 text-sm font-semibold text-emerald-600">
             Confirmed
           </span>
         </div>
 
-        <div>
-          <h3 className="font-semibold text-[#1B2B3A] mb-4">Add a Guarantor</h3>
-          <div className="space-y-4">
+        <div className="rounded-xl border border-gray-200 p-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
-              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+              <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500">
                 Full Name
               </label>
               <input
                 type="text"
-                placeholder="Enter full name"
-                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-[#1B2B3A] outline-none focus:ring-2 focus:ring-[#2BB5A0]"
+                placeholder="Guarantor 2 full name"
+                className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-[#1B2B3A] outline-none focus:ring-2 focus:ring-[#2BB5A0]"
               />
             </div>
+
             <div>
-              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
-                Phone
+              <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500">
+                Phone (MTN/Airtel)
               </label>
-              <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-[#2BB5A0]">
-                <span className="px-4 py-2.5 bg-[#2BB5A0] text-white text-sm font-medium">
+              <div className="flex items-center overflow-hidden rounded-lg border border-gray-300 focus-within:ring-2 focus-within:ring-[#2BB5A0]">
+                <span className="bg-[#E6F4F2] px-4 py-2.5 text-sm font-bold text-[#149D8E]">
                   +256
                 </span>
                 <input
@@ -331,32 +357,34 @@ function Step3() {
                 />
               </div>
             </div>
+
             <div>
-              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+              <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500">
                 Relationship
               </label>
-              <select className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-[#1B2B3A] outline-none focus:ring-2 focus:ring-[#2BB5A0] bg-white">
-                <option value="">Select relationship</option>
+              <select className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-[#1B2B3A] outline-none focus:ring-2 focus:ring-[#2BB5A0]">
+                <option>Colleague</option>
                 <option>Friend</option>
                 <option>Family</option>
-                <option>Colleague</option>
                 <option>Business Partner</option>
               </select>
             </div>
+
             <div>
-              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+              <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500">
                 NIN
               </label>
               <input
                 type="text"
-                placeholder="National Identification Number"
-                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-[#1B2B3A] outline-none focus:ring-2 focus:ring-[#2BB5A0]"
+                placeholder="NIN or Passport No."
+                className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-[#1B2B3A] outline-none focus:ring-2 focus:ring-[#2BB5A0]"
               />
             </div>
-            <Button className="bg-[#2BB5A0] hover:bg-[#239E8C] text-white w-full">
-              Send Invite SMS
-            </Button>
           </div>
+
+          <Button className="mt-4 bg-[#2BB5A0] text-white hover:bg-[#239E8C]">
+            Send Invite SMS
+          </Button>
         </div>
       </CardContent>
     </Card>
@@ -364,54 +392,54 @@ function Step3() {
 }
 
 function Step4({ amount, duration }: { amount: number; duration: number }) {
-  const rate = 0.05;
-  const totalRepayable = amount + amount * rate * duration;
+  const totalRepayable = amount + amount * 0.05 * duration;
 
   return (
-    <Card className="bg-white border border-gray-200">
-      <CardContent className="p-6 space-y-6">
-        <h2 className="text-xl font-bold text-[#1B2B3A]">
+    <Card className="border border-gray-200 bg-white">
+      <CardContent className="space-y-6 p-6">
+        <h2 className="text-2xl font-black text-[#1B2B3A]">
           Review &amp; Submit
         </h2>
 
-        <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
-          <div className="w-10 h-10 rounded-full bg-[#1B2B3A] text-white flex items-center justify-center text-sm font-bold">
-            JM
+        <div className="overflow-hidden rounded-xl border border-[#9DDAD1]">
+          <div className="border-b border-[#9DDAD1] bg-[#E6F4F2] px-4 py-3">
+            <p className="font-bold text-[#149D8E]">Lender</p>
           </div>
-          <div>
-            <p className="font-semibold text-[#1B2B3A]">James Mugisha</p>
-            <p className="text-xs text-gray-500">Offer #LF-2024-001</p>
+          <div className="border-b border-gray-200 px-4 py-3 text-sm flex items-center justify-between">
+            <span className="text-gray-500">Lender</span>
+            <span className="font-bold text-[#1B2B3A]">
+              James Mugisha (#LF-2024-001)
+            </span>
           </div>
+
+          <div className="border-b border-[#9DDAD1] bg-[#E6F4F2] px-4 py-3">
+            <p className="font-bold text-[#149D8E]">Loan Terms</p>
+          </div>
+
+          {[
+            ["Amount", `UGX ${amount.toLocaleString()}`],
+            ["Duration", `${duration} months`],
+            ["Rate", "5% / month"],
+            ["Total Repayable", `UGX ${totalRepayable.toLocaleString()}`],
+            ["Guarantors", "Sarah Mirembe · (Pending 1)"],
+          ].map(([k, v]) => (
+            <div
+              key={String(k)}
+              className="border-b last:border-b-0 border-gray-200 px-4 py-3 text-sm flex items-center justify-between"
+            >
+              <span className="text-gray-500">{k}</span>
+              <span
+                className={`font-bold ${k === "Rate" || k === "Total Repayable" ? "text-[#149D8E]" : "text-[#1B2B3A]"}`}
+              >
+                {v}
+              </span>
+            </div>
+          ))}
         </div>
 
-        <table className="w-full text-sm">
-          <tbody className="divide-y divide-gray-100">
-            {[
-              ["Loan Amount", `UGX ${amount.toLocaleString()}`, false],
-              ["Duration", `${duration} months`, false],
-              ["Interest Rate", "5% / month", true],
-              [
-                "Total Repayable",
-                `UGX ${totalRepayable.toLocaleString()}`,
-                true,
-              ],
-              ["Guarantors", "1 confirmed", false],
-            ].map(([label, value, highlight], i) => (
-              <tr key={i}>
-                <td className="py-3 text-gray-500">{label}</td>
-                <td
-                  className={`py-3 font-semibold text-right ${highlight ? "text-[#2BB5A0]" : "text-[#1B2B3A]"}`}
-                >
-                  {value}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm text-amber-800">
-          By submitting this application, you agree to WeLend&apos;s terms and
-          confirm that all information provided is accurate and complete.
+        <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+          By submitting, you agree to WeLend&apos;s terms and confirm the
+          information above is accurate.
         </div>
       </CardContent>
     </Card>
@@ -420,64 +448,37 @@ function Step4({ amount, duration }: { amount: number; duration: number }) {
 
 function SuccessView() {
   return (
-    <div className="flex flex-col items-center justify-center py-16 text-center space-y-6">
-      <div className="w-20 h-20 rounded-full bg-[#2BB5A0]/10 flex items-center justify-center">
-        <Check className="w-10 h-10 text-[#2BB5A0]" />
+    <div className="flex flex-col items-center justify-center space-y-6 py-16 text-center">
+      <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[#E6F4F2]">
+        <Check className="h-10 w-10 text-[#2BB5A0]" />
       </div>
       <div>
-        <h2 className="text-2xl font-bold text-[#1B2B3A]">
+        <h2 className="text-3xl font-black text-[#1B2B3A]">
           Application Submitted!
         </h2>
-        <p className="text-gray-500 mt-1">
+        <p className="mt-1 text-gray-500">
           Reference:{" "}
           <span className="font-semibold text-[#1B2B3A]">#APP-20240091</span>
         </p>
       </div>
 
-      <div className="bg-amber-50 border border-amber-200 rounded-lg px-6 py-3 inline-flex items-center gap-2">
-        <span className="w-2 h-2 rounded-full bg-amber-500" />
-        <span className="text-sm font-medium text-amber-700">Under Review</span>
+      <div className="inline-flex items-center gap-2 rounded-lg border border-[#9DDAD1] bg-[#E6F4F2] px-6 py-3">
+        <span className="h-2 w-2 rounded-full bg-[#2BB5A0]" />
+        <span className="text-sm font-semibold text-[#149D8E]">
+          Under Review
+        </span>
       </div>
 
-      <div className="w-full max-w-lg">
-        <div className="flex items-center justify-between">
-          {[
-            "Submitted",
-            "Lender Review",
-            "Approval",
-            "Disbursement",
-            "Repayment Begins",
-          ].map((label, idx) => (
-            <div
-              key={label}
-              className="flex flex-col items-center gap-1 flex-1"
-            >
-              <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold
-                ${idx === 0 ? "bg-[#2BB5A0] text-white" : "bg-gray-100 text-gray-400 border border-gray-200"}`}
-              >
-                {idx === 0 ? <Check className="w-4 h-4" /> : idx + 1}
-              </div>
-              <span
-                className={`text-xs text-center leading-tight ${idx === 0 ? "text-[#2BB5A0] font-medium" : "text-gray-400"}`}
-              >
-                {label}
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="flex gap-3 mt-4">
+      <div className="mt-4 flex gap-3">
         <a
           href="/dashboard"
-          className="inline-flex items-center justify-center px-4 py-2 rounded-md border border-[#1B2B3A] text-[#1B2B3A] text-sm font-medium hover:bg-gray-50 transition-colors"
+          className="inline-flex items-center justify-center rounded-md border border-[#1B2B3A] px-4 py-2 text-sm font-medium text-[#1B2B3A] transition-colors hover:bg-gray-50"
         >
           Back to Dashboard
         </a>
         <a
           href="/dashboard/my-requests"
-          className="inline-flex items-center justify-center px-4 py-2 rounded-md bg-[#2BB5A0] text-white text-sm font-medium hover:bg-[#239E8C] transition-colors"
+          className="inline-flex items-center justify-center rounded-md bg-[#2BB5A0] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#239E8C]"
         >
           View My Applications
         </a>
@@ -497,32 +498,39 @@ export default function ApplyPage() {
   const [purpose, setPurpose] = useState("");
 
   const stepTitles = [
-    "Apply — Loan Details",
-    "Apply — Documents",
-    "Apply — Guarantors",
-    "Apply — Review",
+    "Apply - Loan Details",
+    "Apply - Documents",
+    "Apply - Guarantors",
+    "Apply - Review",
   ];
+
   const nextLabels = [
-    "Next: Documents \u2192",
-    "Next: Guarantors \u2192",
-    "Next: Review \u2192",
+    "Next: Documents ->",
+    "Next: Guarantors ->",
+    "Next: Review ->",
     "Submit Application",
   ];
 
   const handleNext = () => {
-    if (currentStep < 4) setCurrentStep((s) => s + 1);
-    else setSubmitted(true);
+    if (currentStep < 4) {
+      setCurrentStep((s) => s + 1);
+      return;
+    }
+    setSubmitted(true);
   };
 
   const handleBack = () => {
-    if (currentStep > 1) setCurrentStep((s) => s - 1);
-    else router.push("/dashboard");
+    if (currentStep > 1) {
+      setCurrentStep((s) => s - 1);
+      return;
+    }
+    router.push("/dashboard");
   };
 
   return (
-    <div className="space-y-6 max-w-4xl">
+    <div className="max-w-5xl space-y-6">
       <BorrowerPageHeader
-        title={submitted ? "Apply — Submitted" : stepTitles[currentStep - 1]}
+        title={submitted ? "Apply - Submitted" : stepTitles[currentStep - 1]}
       />
 
       {submitted ? (
@@ -557,7 +565,7 @@ export default function ApplyPage() {
             </Button>
             <Button
               onClick={handleNext}
-              className="bg-[#2BB5A0] hover:bg-[#239E8C] text-white"
+              className="bg-[#2BB5A0] text-white hover:bg-[#239E8C]"
             >
               {nextLabels[currentStep - 1]}
             </Button>

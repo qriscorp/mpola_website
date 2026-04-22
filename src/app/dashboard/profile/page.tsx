@@ -9,8 +9,8 @@ export default function ProfilePage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Personal Information */}
-        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-6">
-          <h2 className="text-lg font-bold text-[#1B2B3A] dark:text-white mb-5">
+        <div className="bg-white rounded-2xl border border-gray-200 p-6">
+          <h2 className="text-2xl sm:text-3xl leading-tight font-black text-[#1B2B3A] mb-5">
             Personal Information
           </h2>
 
@@ -20,7 +20,7 @@ export default function ProfilePage() {
               AK
             </div>
             <div>
-              <p className="text-xl font-extrabold text-[#1B2B3A] dark:text-white">
+              <p className="text-2xl sm:text-4xl leading-tight font-black text-[#1B2B3A]">
                 Agnes Kyomuhendo
               </p>
               <p className="text-sm text-gray-400">Borrower since Feb 2024</p>
@@ -44,7 +44,7 @@ export default function ProfilePage() {
                 <input
                   defaultValue={field.value}
                   readOnly
-                  className="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm bg-gray-50 dark:bg-gray-800 text-[#1B2B3A] dark:text-white outline-none"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white text-[#1B2B3A] outline-none"
                 />
               </div>
             ))}
@@ -56,8 +56,8 @@ export default function ProfilePage() {
         </div>
 
         {/* KYC Status */}
-        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-6 self-start">
-          <h2 className="text-lg font-bold text-[#1B2B3A] dark:text-white mb-5">
+        <div className="bg-white rounded-2xl border border-gray-200 p-6 self-start">
+          <h2 className="text-2xl sm:text-3xl leading-tight font-black text-[#1B2B3A] mb-5">
             KYC Status
           </h2>
           <div className="space-y-4">
@@ -70,9 +70,7 @@ export default function ProfilePage() {
                 key={item.label}
                 className="flex items-center justify-between"
               >
-                <span className="text-sm text-[#1B2B3A] dark:text-white">
-                  {item.label}
-                </span>
+                <span className="text-sm text-[#1B2B3A]">{item.label}</span>
                 <span
                   className={`px-3 py-1 rounded-full text-xs font-semibold ${
                     item.status === "Verified"

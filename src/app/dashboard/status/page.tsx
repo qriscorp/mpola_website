@@ -11,6 +11,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { BorrowerPageHeader } from "@/components/top-nav";
 import { getStatusColor, getStatusLabel, formatCurrency } from "@/lib/format";
 import { useApplications } from "@/hooks/use-dashboard";
 
@@ -19,6 +20,8 @@ export default function StatusPage() {
 
   return (
     <div className="max-w-3xl space-y-6">
+      <BorrowerPageHeader title="Application Status" />
+
       <Link
         href="/dashboard"
         className="text-sm text-gray-500 hover:text-gray-700 inline-flex items-center gap-1"
@@ -26,18 +29,16 @@ export default function StatusPage() {
         <ArrowLeft className="w-4 h-4" /> Back to Dashboard
       </Link>
 
-      <div>
-        <h1 className="text-4xl font-bold text-[#1B2B3A]">
-          Application Status
-        </h1>
-        <p className="text-gray-500 mt-1">
-          Track the progress of all your loan applications
-        </p>
-      </div>
+      <p className="text-sm text-gray-500">
+        Track the progress of all your loan applications.
+      </p>
 
       <div className="space-y-4">
         {applications?.map((app) => (
-          <Card key={app.id} className="bg-white">
+          <Card
+            key={app.id}
+            className="bg-white rounded-2xl border border-gray-200"
+          >
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>

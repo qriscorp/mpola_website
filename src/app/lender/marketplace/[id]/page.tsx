@@ -5,7 +5,6 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, MapPin, ShieldCheck, Bookmark } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -41,7 +40,7 @@ export default function BorrowerProfilePage({
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex items-center gap-4">
               <Avatar className="h-14 w-14">
-                <AvatarFallback className="bg-[#2BB5A0] text-white text-xl font-bold">
+                <AvatarFallback className="bg-[#C4A55A] text-white text-xl font-bold">
                   {profile.initials}
                 </AvatarFallback>
               </Avatar>
@@ -50,19 +49,19 @@ export default function BorrowerProfilePage({
                   {profile.name}
                 </h1>
                 <p className="text-sm text-muted-foreground flex items-center gap-1">
-                  <MapPin className="h-3 w-3" /> {profile.location} · Member
+                  <MapPin className="h-3 w-3" /> {profile.location} - Member
                   since {profile.memberSince}
                 </p>
                 {profile.kycVerified && (
-                  <Badge className="bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400 mt-1 text-xs gap-1">
-                    ● KYC Verified
+                  <Badge className="bg-[#F5F0E0] text-[#C4A55A] dark:bg-[#C4A55A]/10 dark:text-[#C4A55A] mt-1 text-xs gap-1">
+                    KYC Verified
                   </Badge>
                 )}
               </div>
             </div>
 
             <div className="text-center lg:text-right">
-              <p className="text-[10px] font-semibold text-[#2BB5A0] uppercase tracking-wider">
+              <p className="text-[10px] font-semibold text-[#C4A55A] uppercase tracking-wider">
                 Requesting
               </p>
               <p className="text-3xl font-bold text-[#1B2B3A] dark:text-white">
@@ -72,7 +71,7 @@ export default function BorrowerProfilePage({
                 {profile.requestingAmount.toLocaleString()}
               </p>
               <p className="text-xs text-muted-foreground">
-                {profile.duration} months · {profile.loanType} Loan
+                {profile.duration} months - {profile.loanType} Loan
               </p>
             </div>
 
@@ -80,7 +79,7 @@ export default function BorrowerProfilePage({
               <Button
                 onClick={() => makeOffer({ borrowerId: id, data: {} })}
                 disabled={isPending}
-                className="bg-[#2BB5A0] hover:bg-[#239E8C] text-white"
+                className="bg-[#C4A55A] hover:bg-[#b3944a] text-white"
               >
                 {isPending ? "Sending..." : "Make an Offer"}
               </Button>
@@ -148,7 +147,7 @@ export default function BorrowerProfilePage({
                       <p className="text-xs text-muted-foreground">
                         Disposable Income
                       </p>
-                      <p className="text-xl font-bold text-[#2BB5A0]">
+                      <p className="text-xl font-bold text-[#C4A55A]">
                         {formatCurrency(profile.disposableIncome)}
                       </p>
                     </div>
@@ -156,7 +155,7 @@ export default function BorrowerProfilePage({
                       <p className="text-xs text-muted-foreground">DTI Ratio</p>
                       <p className="text-xl font-bold text-[#1B2B3A] dark:text-white">
                         {profile.dtiRatio}%{" "}
-                        <Badge className="bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400 text-[10px] ml-1">
+                        <Badge className="bg-[#F5F0E0] text-[#C4A55A] dark:bg-[#C4A55A]/10 dark:text-[#C4A55A] text-[10px] ml-1">
                           {profile.dtiRating}
                         </Badge>
                       </p>
@@ -193,7 +192,7 @@ export default function BorrowerProfilePage({
                           cy="60"
                           r="52"
                           fill="none"
-                          stroke="#2BB5A0"
+                          stroke="#C4A55A"
                           strokeWidth="12"
                           strokeDasharray={`${creditScorePercent * 3.27} 327`}
                           strokeLinecap="round"
@@ -203,7 +202,7 @@ export default function BorrowerProfilePage({
                         <span className="text-3xl font-bold text-[#1B2B3A] dark:text-white">
                           {profile.creditScore}
                         </span>
-                        <span className="text-[10px] font-semibold text-[#2BB5A0] uppercase">
+                        <span className="text-[10px] font-semibold text-[#C4A55A] uppercase">
                           {profile.creditRating}
                         </span>
                       </div>
@@ -213,7 +212,7 @@ export default function BorrowerProfilePage({
                         <span className="text-muted-foreground">
                           Payment history
                         </span>
-                        <span className="font-medium text-emerald-600">
+                        <span className="font-medium text-[#C4A55A]">
                           {profile.paymentHistory}
                         </span>
                       </div>
@@ -282,14 +281,14 @@ export default function BorrowerProfilePage({
                 </CardContent>
               </Card>
 
-              <Card className="bg-emerald-50/50 dark:bg-emerald-900/10 border-emerald-200 dark:border-emerald-800">
+              <Card className="bg-[#F5F0E0]/50 dark:bg-[#C4A55A]/10 border-[#E8D9B0] dark:border-[#C4A55A]/30">
                 <CardContent className="p-5">
                   <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
                     Welend Risk Assessment
                   </p>
                   <div className="flex items-center gap-2 mb-2">
-                    <ShieldCheck className="h-5 w-5 text-[#2BB5A0]" />
-                    <span className="font-bold text-[#2BB5A0]">
+                    <ShieldCheck className="h-5 w-5 text-[#C4A55A]" />
+                    <span className="font-bold text-[#C4A55A]">
                       {profile.riskLevel}
                     </span>
                   </div>
@@ -313,13 +312,13 @@ export default function BorrowerProfilePage({
                   "Tax Returns",
                   "Proof of Address",
                   "Photos of Business",
-                ].map((doc, i) => (
+                ].map((doc) => (
                   <div
                     key={doc}
                     className="flex items-center justify-between py-2 border-b last:border-0 dark:border-gray-800"
                   >
                     <span className="text-sm">{doc}</span>
-                    <Badge className="bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400 text-xs">
+                    <Badge className="bg-[#F5F0E0] text-[#C4A55A] dark:bg-[#C4A55A]/10 dark:text-[#C4A55A] text-xs">
                       Uploaded
                     </Badge>
                   </div>
@@ -350,7 +349,7 @@ export default function BorrowerProfilePage({
                     </p>
                     <p className="text-xs text-muted-foreground">{g.rel}</p>
                   </div>
-                  <Badge className="bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400 text-xs">
+                  <Badge className="bg-[#F5F0E0] text-[#C4A55A] dark:bg-[#C4A55A]/10 dark:text-[#C4A55A] text-xs">
                     {g.status}
                   </Badge>
                 </div>
@@ -366,13 +365,13 @@ export default function BorrowerProfilePage({
                 <div className="flex items-center justify-between py-2 border-b dark:border-gray-800">
                   <div>
                     <p className="text-sm font-medium text-[#1B2B3A] dark:text-white">
-                      Personal Loan – UGX 2,500,000
+                      Personal Loan - UGX 2,500,000
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      6 months · Completed on time
+                      6 months - Completed on time
                     </p>
                   </div>
-                  <Badge className="bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400 text-xs">
+                  <Badge className="bg-[#F5F0E0] text-[#C4A55A] dark:bg-[#C4A55A]/10 dark:text-[#C4A55A] text-xs">
                     Completed
                   </Badge>
                 </div>

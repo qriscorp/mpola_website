@@ -1,153 +1,82 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import {
-  CheckCircle2,
-  Download,
-  ArrowRight,
-  Share2,
-  Clock,
-} from "lucide-react";
-import { formatCurrency } from "@/lib/format";
+import Link from "next/link";
+import { BorrowerPageHeader } from "@/components/top-nav";
 
 export default function PaymentConfirmationPage() {
-  const router = useRouter();
-
-  const receipt = {
-    reference: "PAY-2026-04-001847",
-    date: new Date().toLocaleDateString("en-UG", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    }),
-    time: new Date().toLocaleTimeString("en-UG", {
-      hour: "2-digit",
-      minute: "2-digit",
-    }),
-    amount: 350000,
-    method: "MTN Mobile Money",
-    phoneUsed: "+256 700 ***456",
-    loanRef: "LF-2026-00412",
-    lender: "Kampala Capital Partners",
-    instalmentNo: "4 of 18",
-    remaining: 4550000,
-    nextDue: "01 Jun 2026",
-  };
-
   return (
-    <div className="flex flex-col items-center justify-center py-8">
-      <div className="w-full max-w-lg space-y-6">
-        {/* Success Header */}
-        <div className="text-center">
-          <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-[#E8F8F5] dark:bg-[#2BB5A0]/10">
-            <CheckCircle2 className="h-10 w-10 text-[#2BB5A0]" />
-          </div>
-          <h1 className="text-2xl font-bold text-[#1B2B3A] dark:text-white">
-            Payment Successful!
-          </h1>
-          <p className="mt-1 text-muted-foreground">
-            Your instalment has been processed
-          </p>
-          <p className="mt-2 text-3xl font-bold text-[#2BB5A0]">
-            {formatCurrency(receipt.amount)}
-          </p>
-        </div>
+    <div className="space-y-6">
+      <BorrowerPageHeader title="Payment Receipt" />
 
-        {/* Receipt Card */}
-        <Card>
-          <CardContent className="p-6">
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="font-semibold text-[#1B2B3A] dark:text-white">
-                Payment Receipt
-              </h2>
-              <span className="text-xs text-muted-foreground">
-                {receipt.reference}
+      <div className="mx-auto max-w-3xl space-y-4">
+        <div className="rounded-2xl border-2 border-[#19A44B] bg-[#E6F4F2] p-8">
+          <div className="mb-5 flex flex-col items-center">
+            <div className="mb-3 flex h-20 w-20 items-center justify-center rounded-full bg-[#DCEDEA]">
+              <svg
+                className="h-10 w-10 text-[#149D8E]"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth="2.5"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+            </div>
+            <h2 className="text-3xl sm:text-5xl leading-tight font-black text-[#1B2B3A]">
+              Payment Successful
+            </h2>
+            <p className="text-base sm:text-2xl text-gray-500">
+              Transaction confirmed
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            {[
+              ["Transaction ID", "#TXN-20240507-0091"],
+              ["Date", "07 May 2024, 14:32"],
+              ["Method", "MTN MoMo (+256 700 123 456)"],
+              ["Loan Ref", "#LN-2024-031"],
+            ].map(([label, value]) => (
+              <div
+                key={String(label)}
+                className="flex items-center justify-between border-b border-[#B9DDD7] py-3"
+              >
+                <span className="text-sm sm:text-2xl text-gray-500">
+                  {label}
+                </span>
+                <span className="text-sm sm:text-2xl font-bold text-[#1B2B3A]">
+                  {value}
+                </span>
+              </div>
+            ))}
+
+            <div className="flex items-center justify-between pt-2">
+              <span className="text-2xl sm:text-4xl font-black text-[#1B2B3A]">
+                Amount Paid
+              </span>
+              <span className="text-2xl sm:text-5xl leading-none font-black text-[#19A44B]">
+                UGX 2,400,000
               </span>
             </div>
-
-            <div className="space-y-3">
-              <ReceiptRow label="Date" value={receipt.date} />
-              <ReceiptRow label="Time" value={receipt.time} />
-              <Separator />
-              <ReceiptRow
-                label="Amount"
-                value={formatCurrency(receipt.amount)}
-                bold
-              />
-              <ReceiptRow label="Payment Method" value={receipt.method} />
-              <ReceiptRow label="Phone Number" value={receipt.phoneUsed} />
-              <Separator />
-              <ReceiptRow label="Loan Reference" value={receipt.loanRef} />
-              <ReceiptRow label="Lender" value={receipt.lender} />
-              <ReceiptRow label="Instalment" value={receipt.instalmentNo} />
-              <Separator />
-              <ReceiptRow
-                label="Remaining Balance"
-                value={formatCurrency(receipt.remaining)}
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Next Payment */}
-        <Card className="border-[#C4A55A]/30 bg-[#F5F0E0] dark:bg-[#C4A55A]/10">
-          <CardContent className="flex items-center gap-3 py-4">
-            <Clock className="h-5 w-5 text-[#C4A55A]" />
-            <div>
-              <p className="text-sm font-medium text-[#1B2B3A] dark:text-white">
-                Next Payment Due
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {receipt.nextDue} &middot; {formatCurrency(receipt.amount)}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Actions */}
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <Button variant="outline" className="flex-1 gap-2">
-            <Download className="h-4 w-4" />
-            Download Receipt
-          </Button>
-          <Button variant="outline" className="flex-1 gap-2">
-            <Share2 className="h-4 w-4" />
-            Share Receipt
-          </Button>
+          </div>
         </div>
 
-        <Button
-          className="w-full bg-[#1B2B3A] hover:bg-[#1B2B3A]/90 text-white gap-2"
-          onClick={() => router.push("/dashboard")}
-        >
-          Back to Dashboard
-          <ArrowRight className="h-4 w-4" />
-        </Button>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <button className="rounded-xl border border-gray-300 bg-white px-4 py-3 text-base sm:text-xl font-bold text-[#1B2B3A] transition-colors hover:bg-gray-50">
+            Download Receipt
+          </button>
+          <Link
+            href="/dashboard/repayments"
+            className="inline-flex items-center justify-center rounded-xl bg-[#149D8E] px-4 py-3 text-base sm:text-xl font-bold text-white transition-colors hover:bg-[#108a7d]"
+          >
+            View Schedule
+          </Link>
+        </div>
       </div>
-    </div>
-  );
-}
-
-function ReceiptRow({
-  label,
-  value,
-  bold,
-}: {
-  label: string;
-  value: string;
-  bold?: boolean;
-}) {
-  return (
-    <div className="flex items-center justify-between">
-      <span className="text-sm text-muted-foreground">{label}</span>
-      <span
-        className={`text-sm ${bold ? "font-bold text-[#1B2B3A] dark:text-white" : "text-foreground"}`}
-      >
-        {value}
-      </span>
     </div>
   );
 }

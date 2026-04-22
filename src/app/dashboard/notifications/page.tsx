@@ -1,58 +1,57 @@
 "use client";
 
-import { useState } from "react";
-import {
-  useNotifications,
-  useMarkRead,
-  useMarkAllRead,
-} from "@/hooks/use-notifications";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useMemo, useState } from "react";
 import {
   Bell,
-  Gift,
+  CheckCheck,
   CreditCard,
+  Gift,
   Info,
   Settings,
-  CheckCheck,
 } from "lucide-react";
+import {
+  useMarkAllRead,
+  useMarkRead,
+  useNotifications,
+} from "@/hooks/use-notifications";
+import { BorrowerPageHeader } from "@/components/top-nav";
 import type { Notification } from "@/lib/types";
+
+type FilterKey = "all" | "unread" | Notification["type"];
 
 const typeConfig: Record<
   Notification["type"],
-  { icon: typeof Bell; color: string; bg: string }
+  { icon: typeof Bell; iconBg: string; iconColor: string }
 > = {
   offer: {
     icon: Gift,
-    color: "text-[#2BB5A0]",
-    bg: "bg-[#E8F8F5] dark:bg-[#2BB5A0]/10",
+    iconBg: "bg-[#E6F4F2]",
+    iconColor: "text-[#149D8E]",
   },
   payment: {
     icon: CreditCard,
-    color: "text-[#C4A55A]",
-    bg: "bg-[#F5F0E0] dark:bg-[#C4A55A]/10",
+    iconBg: "bg-[#E6F4F2]",
+    iconColor: "text-[#149D8E]",
   },
   status: {
     icon: Info,
-    color: "text-blue-600 dark:text-blue-400",
-    bg: "bg-blue-50 dark:bg-blue-900/20",
+    iconBg: "bg-blue-50",
+    iconColor: "text-blue-600",
   },
   system: {
     icon: Settings,
-    color: "text-gray-600 dark:text-gray-400",
-    bg: "bg-gray-100 dark:bg-gray-800",
+    iconBg: "bg-gray-100",
+    iconColor: "text-gray-600",
   },
 };
 
 function timeSince(dateStr: string) {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const mins = Math.floor(diff / 60000);
+  const diffMs = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diffMs / 60000);
   if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  const days = Math.floor(hrs / 24);
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
   return `${days}d ago`;
 }
 
@@ -60,123 +59,130 @@ export default function NotificationsPage() {
   const { data: items = [], isLoading } = useNotifications();
   const markRead = useMarkRead();
   const markAll = useMarkAllRead();
-  const [tab, setTab] = useState("all");
+  const [filter, setFilter] = useState<FilterKey>("all");
 
-  const unreadCount = items.filter((n) => !n.read).length;
-  const filtered =
-    tab === "all"
-      ? items
-      : tab === "unread"
-        ? items.filter((n) => !n.read)
-        : items.filter((n) => n.type === tab);
+  const unreadCount = items.filter((item) => !item.read).length;
+
+  const filteredItems = useMemo(() => {
+    if (filter === "all") return items;
+    if (filter === "unread") return items.filter((item) => !item.read);
+    return items.filter((item) => item.type === filter);
+  }, [items, filter]);
+
+  const filterPills: Array<{ key: FilterKey; label: string; count?: number }> =
+    [
+      { key: "all", label: "All", count: items.length },
+      { key: "unread", label: "Unread", count: unreadCount },
+      { key: "offer", label: "Offers" },
+      { key: "payment", label: "Payments" },
+      { key: "status", label: "Status" },
+    ];
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-[#1B2B3A] dark:text-white">
-            Notifications
-          </h1>
-          <p className="text-sm text-muted-foreground">
+      <BorrowerPageHeader title="Notifications" />
+
+      <div className="rounded-xl border border-[#9DDAD1] bg-[#E6F4F2] px-4 py-3 sm:px-5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm font-medium text-[#1B2B3A]">
             {unreadCount > 0
-              ? `You have ${unreadCount} unread notification${unreadCount > 1 ? "s" : ""}`
-              : "All caught up!"}
+              ? `You have ${unreadCount} unread notification${unreadCount > 1 ? "s" : ""}.`
+              : "All caught up. No unread notifications."}
           </p>
+          {unreadCount > 0 && (
+            <button
+              onClick={() => markAll.mutate()}
+              disabled={markAll.isPending}
+              className="inline-flex items-center justify-center gap-2 rounded-lg border border-[#2BB5A0] bg-white px-3 py-2 text-sm font-semibold text-[#149D8E] transition-colors hover:bg-[#F2FBF9] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <CheckCheck className="h-4 w-4" />
+              Mark all read
+            </button>
+          )}
         </div>
-        {unreadCount > 0 && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => markAll.mutate()}
-            disabled={markAll.isPending}
-            className="gap-2"
-          >
-            <CheckCheck className="h-4 w-4" />
-            Mark all read
-          </Button>
-        )}
       </div>
 
-      {/* Filter Tabs */}
-      <Tabs value={tab} onValueChange={setTab}>
-        <TabsList className="flex-wrap">
-          <TabsTrigger value="all">All</TabsTrigger>
-          <TabsTrigger value="unread">
-            Unread{" "}
-            {unreadCount > 0 && (
-              <Badge className="ml-1 bg-[#2BB5A0] text-white text-xs px-1.5">
-                {unreadCount}
-              </Badge>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="offer">Offers</TabsTrigger>
-          <TabsTrigger value="payment">Payments</TabsTrigger>
-          <TabsTrigger value="status">Status</TabsTrigger>
-        </TabsList>
+      <div className="flex flex-wrap gap-2">
+        {filterPills.map((pill) => {
+          const isActive = filter === pill.key;
+          return (
+            <button
+              key={pill.key}
+              onClick={() => setFilter(pill.key)}
+              className={`rounded-full border px-4 py-1.5 text-sm font-semibold transition-colors ${
+                isActive
+                  ? "border-[#2BB5A0] bg-[#2BB5A0] text-white"
+                  : "border-gray-300 bg-white text-gray-700 hover:border-[#2BB5A0] hover:text-[#149D8E]"
+              }`}
+            >
+              {pill.label}
+              {typeof pill.count === "number" ? ` (${pill.count})` : ""}
+            </button>
+          );
+        })}
+      </div>
 
-        <TabsContent value={tab} className="mt-4 space-y-3">
-          {isLoading ? (
-            <div className="space-y-3">
-              {[1, 2, 3].map((i) => (
+      {isLoading ? (
+        <div className="space-y-3">
+          {[1, 2, 3].map((n) => (
+            <div
+              key={n}
+              className="h-20 animate-pulse rounded-xl bg-gray-100"
+            />
+          ))}
+        </div>
+      ) : filteredItems.length === 0 ? (
+        <div className="rounded-xl border border-gray-200 bg-white px-5 py-12 text-center">
+          <Bell className="mx-auto h-10 w-10 text-gray-300" />
+          <p className="mt-3 text-sm text-gray-500">
+            No notifications in this category.
+          </p>
+        </div>
+      ) : (
+        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+          {filteredItems.map((item, index) => {
+            const cfg = typeConfig[item.type];
+            const Icon = cfg.icon;
+            return (
+              <button
+                key={item.id}
+                onClick={() => !item.read && markRead.mutate(item.id)}
+                className={`flex w-full items-start gap-4 px-4 py-4 text-left transition-colors sm:px-5 ${
+                  index !== filteredItems.length - 1
+                    ? "border-b border-gray-100"
+                    : ""
+                } ${!item.read ? "bg-[#F2FBF9] hover:bg-[#EAF8F5]" : "hover:bg-gray-50"}`}
+              >
                 <div
-                  key={i}
-                  className="h-20 animate-pulse rounded-lg bg-gray-200 dark:bg-gray-800"
-                />
-              ))}
-            </div>
-          ) : filtered.length === 0 ? (
-            <Card>
-              <CardContent className="py-12 text-center">
-                <Bell className="mx-auto h-10 w-10 text-muted-foreground mb-3" />
-                <p className="text-muted-foreground">No notifications</p>
-              </CardContent>
-            </Card>
-          ) : (
-            filtered.map((n) => {
-              const cfg = typeConfig[n.type];
-              const Icon = cfg.icon;
-              return (
-                <Card
-                  key={n.id}
-                  className={`cursor-pointer transition-all hover:shadow-md ${
-                    !n.read
-                      ? "border-l-4 border-l-[#2BB5A0] bg-[#E8F8F5]/30 dark:bg-[#2BB5A0]/5"
-                      : ""
-                  }`}
-                  onClick={() => !n.read && markRead.mutate(n.id)}
+                  className={`mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${cfg.iconBg}`}
                 >
-                  <CardContent className="flex items-start gap-4 py-4">
-                    <div
-                      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${cfg.bg}`}
+                  <Icon className={`h-5 w-5 ${cfg.iconColor}`} />
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-start justify-between gap-2">
+                    <p
+                      className={`text-sm font-semibold ${!item.read ? "text-[#1B2B3A]" : "text-gray-600"}`}
                     >
-                      <Icon className={`h-5 w-5 ${cfg.color}`} />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-start justify-between gap-2">
-                        <h3
-                          className={`text-sm font-semibold ${!n.read ? "text-[#1B2B3A] dark:text-white" : "text-muted-foreground"}`}
-                        >
-                          {n.title}
-                        </h3>
-                        <span className="shrink-0 text-xs text-muted-foreground">
-                          {timeSince(n.createdAt)}
-                        </span>
-                      </div>
-                      <p className="mt-1 text-sm text-muted-foreground line-clamp-2">
-                        {n.message}
-                      </p>
-                    </div>
-                    {!n.read && (
-                      <div className="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full bg-[#2BB5A0]" />
-                    )}
-                  </CardContent>
-                </Card>
-              );
-            })
-          )}
-        </TabsContent>
-      </Tabs>
+                      {item.title}
+                    </p>
+                    <span className="shrink-0 text-xs text-gray-400">
+                      {timeSince(item.createdAt)}
+                    </span>
+                  </div>
+                  <p className="mt-1 line-clamp-2 text-sm text-gray-500">
+                    {item.message}
+                  </p>
+                </div>
+
+                {!item.read && (
+                  <span className="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full bg-[#2BB5A0]" />
+                )}
+              </button>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
