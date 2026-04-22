@@ -13,9 +13,10 @@ const offers = [
     name: "James Mugisha",
     badge: "Best Rate",
     rate: "5%/mo",
-    details: "3 months · Min UGX 1M",
-    amountRange: "UGX 1M – 15M",
-    applications: 23,
+    subtitle: "Up to UGX 50M · Max 6 months · Business · Personal · Emergency",
+    amountRange: "UGX 1M–50M",
+    applications: 12,
+    isBest: true,
   },
   {
     id: 2,
@@ -24,20 +25,22 @@ const offers = [
     name: "Robert Kiggundu",
     badge: null,
     rate: "6%/mo",
-    details: "6 months · Min UGX 500K",
-    amountRange: "UGX 500K – 10M",
-    applications: 11,
+    subtitle: "Up to UGX 30M · Max 12 months · Agricultural · Business",
+    amountRange: "UGX 2M–30M",
+    applications: 7,
+    isBest: false,
   },
   {
     id: 3,
-    initials: "AN",
-    avatarBg: "#1B2B3A",
-    name: "Alice Nakato",
+    initials: "SN",
+    avatarBg: "#8B4513",
+    name: "Sarah Nakimuli",
     badge: null,
     rate: "7%/mo",
-    details: "12 months · Min UGX 2M",
-    amountRange: "UGX 2M – 20M",
-    applications: 7,
+    subtitle: "Up to UGX 20M · Max 3 months · Personal · Emergency",
+    amountRange: "UGX 500K–20M",
+    applications: 9,
+    isBest: false,
   },
 ];
 
@@ -78,51 +81,54 @@ export default function BrowseOffersPage() {
         </select>
       </div>
 
-      {/* Offer cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      {/* Offer cards — list layout */}
+      <div className="space-y-4">
         {filtered.map((offer) => (
           <div
             key={offer.id}
-            className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-5 flex flex-col gap-3"
+            className={`bg-white dark:bg-gray-900 rounded-2xl border p-5 flex flex-col sm:flex-row sm:items-center gap-4 ${offer.isBest ? "border-[#2BB5A0]" : "border-gray-200 dark:border-gray-800"}`}
           >
-            <div className="flex items-center gap-3">
-              <div
-                className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-sm shrink-0"
-                style={{ backgroundColor: offer.avatarBg }}
-              >
-                {offer.initials}
-              </div>
-              <div className="flex-1">
-                <p className="font-bold text-[#1B2B3A] dark:text-white">
+            {/* Avatar */}
+            <div
+              className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-white text-sm shrink-0"
+              style={{ backgroundColor: offer.avatarBg }}
+            >
+              {offer.initials}
+            </div>
+
+            {/* Info */}
+            <div className="flex-1 min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="font-bold text-[#1B2B3A] dark:text-white text-lg">
                   {offer.name}
-                </p>
+                </span>
                 {offer.badge && (
-                  <span className="px-2 py-0.5 rounded-full bg-teal-50 text-[#2BB5A0] text-[10px] font-bold">
+                  <span className="px-2 py-0.5 rounded-full bg-teal-50 text-[#2BB5A0] text-[10px] font-bold border border-[#2BB5A0]/30">
                     {offer.badge}
                   </span>
                 )}
               </div>
-            </div>
-            <div>
-              <p className="text-3xl font-extrabold text-[#2BB5A0]">
+              <p className="text-2xl font-extrabold text-[#2BB5A0] mt-0.5">
                 {offer.rate}
               </p>
-              <p className="text-xs text-gray-400">{offer.details}</p>
+              <p className="text-xs text-gray-400 mt-0.5">{offer.subtitle}</p>
             </div>
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-semibold text-[#1B2B3A] dark:text-white">
+
+            {/* Amount + count */}
+            <div className="text-right shrink-0">
+              <p className="text-xl font-extrabold text-[#1B2B3A] dark:text-white">
                 {offer.amountRange}
               </p>
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-gray-400 mt-0.5">
                 {offer.applications} applications so far
               </p>
+              <Link
+                href="/dashboard/apply"
+                className="mt-3 inline-flex items-center justify-center px-5 py-2 rounded-xl bg-[#2BB5A0] text-white text-sm font-semibold hover:bg-[#239E8C] transition-colors"
+              >
+                Apply Now
+              </Link>
             </div>
-            <Link
-              href="/dashboard/apply"
-              className="block text-center py-2 rounded-xl bg-[#2BB5A0] text-white text-sm font-semibold hover:bg-[#239E8C] transition-colors"
-            >
-              Apply Now
-            </Link>
           </div>
         ))}
       </div>

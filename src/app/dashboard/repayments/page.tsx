@@ -22,7 +22,7 @@ export default function RepaymentsPage() {
         <div className="mt-4 h-2 rounded-full bg-white/30 overflow-hidden">
           <div className="h-full rounded-full bg-white" style={{ width: "50%" }} />
         </div>
-        <p className="text-sm text-white/80 mt-2">50% repaid · 2 payments remaining</p>
+        <p className="text-sm text-white/80 mt-2">50% repaid &middot; 2 payments remaining</p>
       </div>
 
       {/* Schedule table */}
@@ -36,8 +36,8 @@ export default function RepaymentsPage() {
               <tr className="bg-gray-50 dark:bg-gray-800">
                 <th className="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-gray-500">#</th>
                 <th className="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-gray-500">Due Date</th>
-                <th className="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-gray-500">Principal</th>
-                <th className="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-gray-500">Interest</th>
+                <th className="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-gray-500 hidden sm:table-cell">Principal</th>
+                <th className="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-gray-500 hidden sm:table-cell">Interest</th>
                 <th className="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-gray-500">Total</th>
                 <th className="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-gray-500">Status</th>
                 <th className="px-4 py-3" />
@@ -48,8 +48,8 @@ export default function RepaymentsPage() {
                 <tr key={inst.num} className={inst.status === "due" ? "bg-amber-50/50 dark:bg-amber-900/10" : ""}>
                   <td className="px-4 py-4 font-semibold text-[#1B2B3A] dark:text-white">{inst.num}</td>
                   <td className="px-4 py-4 text-gray-600 dark:text-gray-300">{inst.dueDate}</td>
-                  <td className="px-4 py-4 text-gray-600 dark:text-gray-300">{inst.principal}</td>
-                  <td className="px-4 py-4 text-gray-600 dark:text-gray-300">{inst.interest}</td>
+                  <td className="px-4 py-4 text-gray-600 dark:text-gray-300 hidden sm:table-cell">{inst.principal}</td>
+                  <td className="px-4 py-4 text-gray-600 dark:text-gray-300 hidden sm:table-cell">{inst.interest}</td>
                   <td className="px-4 py-4 font-semibold text-[#1B2B3A] dark:text-white">{inst.total}</td>
                   <td className="px-4 py-4">
                     {inst.status === "paid" && (
