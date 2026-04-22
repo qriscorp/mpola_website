@@ -49,70 +49,45 @@ export default function LoanDetailPage() {
 
       {/* Hero card */}
       <div className="rounded-2xl bg-[#1B2B3A] p-6 sm:p-8 text-white">
-        <div className="flex flex-col sm:flex-row sm:items-start gap-4 sm:gap-6">
-          <div className="flex-1 min-w-0">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          <div>
             <p className="text-xs font-semibold text-white/50 uppercase tracking-wider">
               Borrower
             </p>
-            <h2 className="text-xl font-bold mt-0.5">Agnes Kyomuhendo</h2>
-            <div className="flex flex-wrap gap-4 mt-4">
-              <div>
-                <p className="text-xs text-white/50 uppercase tracking-wider">
-                  Principal
-                </p>
-                <p className="text-3xl font-extrabold mt-0.5">UGX 8,000,000</p>
-              </div>
-              <div>
-                <p className="text-xs text-white/50 uppercase tracking-wider">
-                  Rate
-                </p>
-                <p className="text-3xl font-extrabold mt-0.5">5%/mo</p>
-              </div>
-              <div>
-                <p className="text-xs text-white/50 uppercase tracking-wider">
-                  Total Interest
-                </p>
-                <p className="text-3xl font-extrabold mt-0.5 text-[#C4A55A]">
-                  UGX 1,600,000
-                </p>
-              </div>
+            <h2 className="text-2xl font-bold mt-1">Agnes Kyomuhendo</h2>
+            <p className="text-sm text-white/50 mt-0.5">#LN-2024-031</p>
+          </div>
+          <div>
+            <p className="text-xs font-semibold text-white/50 uppercase tracking-wider">
+              Principal
+            </p>
+            <p className="text-3xl font-extrabold mt-1">UGX 8,000,000</p>
+          </div>
+          <div>
+            <p className="text-xs font-semibold text-white/50 uppercase tracking-wider">
+              Rate
+            </p>
+            <p className="text-3xl font-extrabold mt-1">5%/mo</p>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-6 pt-6 border-t border-white/10">
+          <div>
+            <p className="text-xs font-semibold text-white/50 uppercase tracking-wider">
+              Total Interest
+            </p>
+            <p className="text-3xl font-extrabold mt-1 text-[#C4A55A]">
+              UGX 1,600,000
+            </p>
+          </div>
+          <div>
+            <p className="text-xs font-semibold text-white/50 uppercase tracking-wider">
+              Status
+            </p>
+            <div className="mt-1">
+              <span className="inline-block px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-sm font-semibold border border-emerald-500/30">
+                On Track
+              </span>
             </div>
-          </div>
-          <div>
-            <span className="inline-block px-4 py-1.5 rounded-full bg-white text-[#1B2B3A] text-xs font-bold">
-              ● On Track
-            </span>
-          </div>
-        </div>
-        <div className="flex flex-wrap gap-6 mt-5 text-sm">
-          <div>
-            <span className="text-white/50">Duration:</span>{" "}
-            <span className="font-medium">4 months</span>
-          </div>
-          <div>
-            <span className="text-white/50">Disbursed:</span>{" "}
-            <span className="font-medium">Apr 1, 2024</span>
-          </div>
-          <div>
-            <span className="text-white/50">Matures:</span>{" "}
-            <span className="font-medium">Aug 1, 2024</span>
-          </div>
-          <div>
-            <span className="text-white/50">Reference:</span>{" "}
-            <span className="font-medium">#LF-2024-001</span>
-          </div>
-        </div>
-        {/* Progress bar */}
-        <div className="mt-6">
-          <div className="flex justify-between text-xs mb-1">
-            <span className="text-white/50">Repayment Progress</span>
-            <span className="font-medium text-[#C4A55A]">1 of 4 paid</span>
-          </div>
-          <div className="h-2 rounded-full bg-white/20 overflow-hidden">
-            <div
-              className="h-full rounded-full bg-[#C4A55A]"
-              style={{ width: "25%" }}
-            />
           </div>
         </div>
       </div>

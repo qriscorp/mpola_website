@@ -1,101 +1,117 @@
 "use client";
 
-import Link from "next/link";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { LenderPageHeader } from "@/components/lender-top-nav";
 
 export default function ApplicantProfilePage() {
   return (
-    <div className="space-y-6 max-w-6xl">
+    <div className="space-y-6 max-w-5xl">
       <LenderPageHeader title="Applicant Profile" />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* LEFT: Profile summary */}
-        <div className="space-y-4">
-          <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
-            <div className="flex flex-col items-center gap-2 text-center">
-              <Avatar className="h-16 w-16">
-                <AvatarFallback className="bg-[#1B2B3A] text-white text-xl font-bold">
-                  AK
-                </AvatarFallback>
-              </Avatar>
-              <h2 className="font-bold text-[#1B2B3A] dark:text-white text-lg">
-                Agnes Kyomuhendo
-              </h2>
-              <p className="text-xs text-gray-400">Business Loan · #APP-001</p>
-              <div className="flex gap-2 flex-wrap justify-center">
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-600 border border-amber-200">
-                  Pending Review
-                </span>
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#1B2B3A] text-white">
-                  Score: 78/100
-                </span>
+        {/* LEFT: 2/3 wide */}
+        <div className="lg:col-span-2 space-y-4">
+          {/* Profile card */}
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <div className="flex items-start gap-5">
+              <div className="h-16 w-16 rounded-full bg-[#1B2B3A] flex items-center justify-center shrink-0">
+                <span className="text-white text-xl font-bold">AK</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                  <div>
+                    <h2 className="text-2xl font-bold text-[#1B2B3A]">
+                      Agnes Kyomuhendo
+                    </h2>
+                    <p className="text-sm text-gray-400 mt-0.5">
+                      Business Loan · #APP-20240078
+                    </p>
+                  </div>
+                  <div className="flex gap-2 shrink-0">
+                    <button className="px-4 py-1.5 rounded-lg bg-emerald-500 text-white text-sm font-semibold hover:bg-emerald-600 transition-colors">
+                      Approve
+                    </button>
+                    <button className="px-4 py-1.5 rounded-lg border border-gray-300 text-sm font-medium text-gray-600 hover:border-red-300 hover:text-red-500 transition-colors">
+                      Decline
+                    </button>
+                  </div>
+                </div>
+                <div className="flex gap-2 mt-3 flex-wrap">
+                  <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-600 border border-amber-200">
+                    Pending Review
+                  </span>
+                  <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-[#1B2B3A] text-[#C4A55A]">
+                    Score 78/100
+                  </span>
+                </div>
               </div>
             </div>
 
-            <div className="flex gap-2 mt-4">
-              <button className="flex-1 py-2 rounded-lg bg-emerald-500 text-white text-sm font-semibold hover:bg-emerald-600 transition-colors">
-                Approve
-              </button>
-              <button className="flex-1 py-2 rounded-lg border border-gray-300 text-sm font-medium text-gray-600 hover:border-red-300 hover:text-red-500 transition-colors">
-                Decline
-              </button>
-            </div>
-
-            <div className="mt-5 space-y-3 text-sm">
+            <div className="grid grid-cols-2 gap-x-8 gap-y-5 mt-6 pt-6 border-t border-gray-100">
               {[
-                ["Loan Amount", "UGX 8,000,000"],
-                ["Duration", "4 months"],
-                ["Purpose", "Stock expansion for retail shop"],
-                ["Phone", "+256 701 234 567"],
-              ].map(([label, value]) => (
-                <div key={label} className="flex justify-between gap-2">
-                  <span className="text-gray-400">{label}</span>
-                  <span className="font-medium text-[#1B2B3A] dark:text-white text-right">
+                { label: "AMOUNT", value: "UGX 8,000,000", big: true },
+                { label: "DURATION", value: "4 months", big: true },
+                { label: "PURPOSE", value: "Stock Financing", big: false },
+                { label: "PHONE", value: "+256 700 123 456", big: false },
+              ].map(({ label, value, big }) => (
+                <div key={label}>
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                    {label}
+                  </p>
+                  <p
+                    className={`font-bold text-[#1B2B3A] mt-0.5 ${big ? "text-2xl" : "text-base"}`}
+                  >
                     {value}
-                  </span>
+                  </p>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Documents */}
-          <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
-            <h3 className="font-semibold text-[#1B2B3A] dark:text-white text-sm mb-3">
-              Documents
-            </h3>
-            <div className="space-y-2">
+          {/* Documents card */}
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <h3 className="font-bold text-[#1B2B3A] text-lg mb-4">Documents</h3>
+            <div className="space-y-3">
               {[
                 {
                   name: "National ID",
+                  sub: "CF12345678",
                   status: "Verified",
-                  color: "bg-emerald-50 text-emerald-600 border-emerald-200",
+                  verified: true,
                 },
                 {
-                  name: "Bank Statement (3mo)",
-                  status: "Verified",
-                  color: "bg-emerald-50 text-emerald-600 border-emerald-200",
-                },
-                {
-                  name: "Business Proof",
+                  name: "Bank Statement (3 months)",
+                  sub: "Stanbic · Jan–Mar 2024",
                   status: "Uploaded",
-                  color: "bg-amber-50 text-amber-600 border-amber-200",
+                  verified: false,
+                },
+                {
+                  name: "Business Registration",
+                  sub: "KCCA Certificate",
+                  status: "Uploaded",
+                  verified: false,
                 },
               ].map((doc) => (
                 <div
                   key={doc.name}
-                  className="flex items-center justify-between"
+                  className="flex items-center justify-between p-3 rounded-lg border border-gray-100 bg-gray-50"
                 >
-                  <span className="text-sm text-[#1B2B3A] dark:text-white">
-                    {doc.name}
-                  </span>
+                  <div>
+                    <p className="text-sm font-semibold text-[#1B2B3A]">
+                      {doc.name}
+                    </p>
+                    <p className="text-xs text-gray-400 mt-0.5">{doc.sub}</p>
+                  </div>
                   <div className="flex items-center gap-2">
                     <span
-                      className={`px-2 py-0.5 rounded-full text-xs font-semibold border ${doc.color}`}
+                      className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border ${
+                        doc.verified
+                          ? "bg-emerald-50 text-emerald-600 border-emerald-200"
+                          : "bg-gray-100 text-gray-500 border-gray-200"
+                      }`}
                     >
                       {doc.status}
                     </span>
-                    <button className="text-xs text-[#C4A55A] hover:underline">
+                    <button className="px-3 py-1 rounded-lg border border-gray-300 text-xs font-medium text-gray-600 hover:border-[#C4A55A] hover:text-[#C4A55A] transition-colors">
                       View
                     </button>
                   </div>
@@ -105,122 +121,61 @@ export default function ApplicantProfilePage() {
           </div>
         </div>
 
-        {/* RIGHT */}
-        <div className="lg:col-span-2 space-y-4">
+        {/* RIGHT: 1/3 */}
+        <div className="space-y-4">
           {/* Guarantors */}
-          <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
-            <h3 className="font-semibold text-[#1B2B3A] dark:text-white text-sm mb-4">
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <h3 className="font-bold text-[#1B2B3A] text-lg mb-4">
               Guarantors
             </h3>
-            <div className="space-y-3">
+            <div className="space-y-4">
               {[
                 {
-                  initials: "MN",
-                  name: "Moses Nkurunziza",
-                  relation: "Business Partner",
-                  confirmed: true,
+                  initials: "SM",
+                  name: "Sarah Mirembe",
+                  relation: "Colleague",
+                  bg: "bg-emerald-600",
                 },
                 {
-                  initials: "SR",
-                  name: "Susan Rujumba",
+                  initials: "JO",
+                  name: "John Opolot",
                   relation: "Spouse",
-                  confirmed: true,
+                  bg: "bg-amber-700",
                 },
               ].map((g) => (
                 <div key={g.name} className="flex items-center gap-3">
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback className="bg-[#C4A55A] text-white text-xs font-bold">
+                  <div
+                    className={`h-10 w-10 rounded-full ${g.bg} flex items-center justify-center shrink-0`}
+                  >
+                    <span className="text-white text-xs font-bold">
                       {g.initials}
-                    </AvatarFallback>
-                  </Avatar>
+                    </span>
+                  </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-[#1B2B3A] dark:text-white">
+                    <p className="text-sm font-semibold text-[#1B2B3A]">
                       {g.name}
                     </p>
                     <p className="text-xs text-gray-400">{g.relation}</p>
                   </div>
-                  {g.confirmed && (
-                    <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-200">
-                      Confirmed
-                    </span>
-                  )}
+                  <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-200">
+                    Confirmed
+                  </span>
                 </div>
               ))}
             </div>
           </div>
 
           {/* Loan History */}
-          <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
-            <h3 className="font-semibold text-[#1B2B3A] dark:text-white text-sm mb-4">
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <h3 className="font-bold text-[#1B2B3A] text-lg mb-3">
               Loan History
             </h3>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-gray-100">
-                    <th className="text-left pb-2 text-xs text-gray-400 font-semibold uppercase tracking-wider">
-                      Ref
-                    </th>
-                    <th className="text-left pb-2 text-xs text-gray-400 font-semibold uppercase tracking-wider">
-                      Amount
-                    </th>
-                    <th className="text-left pb-2 text-xs text-gray-400 font-semibold uppercase tracking-wider">
-                      Year
-                    </th>
-                    <th className="text-left pb-2 text-xs text-gray-400 font-semibold uppercase tracking-wider">
-                      Status
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
-                  {[
-                    {
-                      ref: "#LF-2022-011",
-                      amount: "UGX 3M",
-                      year: "2022",
-                      status: "Repaid",
-                      color:
-                        "text-emerald-600 bg-emerald-50 border-emerald-200",
-                    },
-                    {
-                      ref: "#LF-2023-034",
-                      amount: "UGX 5M",
-                      year: "2023",
-                      status: "Repaid",
-                      color:
-                        "text-emerald-600 bg-emerald-50 border-emerald-200",
-                    },
-                  ].map((row) => (
-                    <tr key={row.ref}>
-                      <td className="py-2.5 text-gray-500 font-mono text-xs">
-                        {row.ref}
-                      </td>
-                      <td className="py-2.5 font-medium text-[#1B2B3A] dark:text-white">
-                        {row.amount}
-                      </td>
-                      <td className="py-2.5 text-gray-400">{row.year}</td>
-                      <td className="py-2.5">
-                        <span
-                          className={`px-2 py-0.5 rounded-full text-xs font-semibold border ${row.color}`}
-                        >
-                          {row.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <p className="text-sm text-gray-400">
+              No previous loans on WeLend.
+            </p>
           </div>
         </div>
       </div>
-
-      <Link
-        href="/lender/applications"
-        className="inline-flex text-sm text-gray-500 hover:text-[#C4A55A] transition-colors"
-      >
-        ← Back to Applications
-      </Link>
     </div>
   );
 }

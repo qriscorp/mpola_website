@@ -51,32 +51,59 @@ export default function LenderAccountPage() {
 
         {/* Licence card */}
         <div className="rounded-xl border-2 border-[#C4A55A] bg-[#1B2B3A] text-white p-6 space-y-5">
-          <div>
-            <p className="text-xs font-semibold text-white/50 uppercase tracking-wider">
-              WeLend Lender Licence
-            </p>
-            <h2 className="text-xl font-bold mt-1">Bank of Uganda Framework</h2>
-            <span className="mt-2 inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500 text-white">
-              Active
-            </span>
+          <div className="flex items-start gap-4">
+            <div className="h-10 w-10 rounded-full bg-[#C4A55A] flex items-center justify-center shrink-0">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                className="h-5 w-5 text-white"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M12 1.5a5.25 5.25 0 00-5.25 5.25v3a3 3 0 00-3 3v6.75a3 3 0 003 3h10.5a3 3 0 003-3v-6.75a3 3 0 00-3-3v-3c0-2.9-2.35-5.25-5.25-5.25zm3.75 8.25v-3a3.75 3.75 0 10-7.5 0v3h7.5z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </div>
+            <div>
+              <h2 className="font-bold text-white text-lg leading-tight">
+                WeLend Lender Licence
+              </h2>
+              <p className="text-sm text-white/50 mt-0.5">
+                Bank of Uganda Framework
+              </p>
+            </div>
           </div>
-          <div className="space-y-3 text-sm">
-            {[
-              ["Licence No", "#TCI-2024-0418"],
-              [
-                "Valid Until",
-                <span key="vu" className="text-[#C4A55A] font-bold">
-                  31 Dec 2025
-                </span>,
-              ],
-              ["Max Loan Pool", "UGX 500M"],
-              ["Tier", "Tier IV Credit Institution"],
-            ].map(([k, v]) => (
-              <div key={String(k)} className="flex justify-between">
-                <span className="text-white/50">{k}</span>
-                <span className="font-medium">{v}</span>
+          <div className="grid grid-cols-2 gap-y-4 text-sm">
+            <div>
+              <p className="text-xs text-white/50 uppercase tracking-wider">
+                Licence No.
+              </p>
+              <p className="font-bold text-white mt-0.5">LF-LND-2023-0041</p>
+            </div>
+            <div>
+              <p className="text-xs text-white/50 uppercase tracking-wider">
+                Valid Until
+              </p>
+              <p className="font-bold text-[#C4A55A] mt-0.5">31 Dec 2024</p>
+            </div>
+            <div>
+              <p className="text-xs text-white/50 uppercase tracking-wider">
+                Max Pool
+              </p>
+              <p className="font-bold text-white mt-0.5">UGX 500M</p>
+            </div>
+            <div>
+              <p className="text-xs text-white/50 uppercase tracking-wider">
+                Status
+              </p>
+              <div className="mt-0.5">
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                  Active
+                </span>
               </div>
-            ))}
+            </div>
           </div>
         </div>
       </div>
