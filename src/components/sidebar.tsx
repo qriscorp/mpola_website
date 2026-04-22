@@ -5,36 +5,82 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
-  Sparkles,
+  Search,
+  FileText,
+  MessageSquare,
+  ListOrdered,
+  Activity,
   Calendar,
+  CreditCard,
+  Receipt,
   Wallet,
-  PlusCircle,
-  Clock,
-  UserCircle,
+  User,
   Settings,
   LogOut,
-  Bell,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
 import { SignOutModal } from "@/components/sign-out-modal";
 
-const mainNav = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/dashboard/offers", label: "My Offers", icon: Sparkles, badge: 3 },
-  { href: "/dashboard/repayments", label: "Repayments", icon: Calendar },
-  { href: "/dashboard/wallet", label: "Wallet", icon: Wallet },
-  { href: "/dashboard/notifications", label: "Notifications", icon: Bell },
-];
-
-const applicationNav = [
-  { href: "/dashboard/apply", label: "New Application", icon: PlusCircle },
-  { href: "/dashboard/status", label: "Status", icon: Clock },
-];
-
-const accountNav = [
-  { href: "/dashboard/profile", label: "Profile & KYC", icon: UserCircle },
-  { href: "/dashboard/settings", label: "Settings", icon: Settings },
+const navGroups = [
+  {
+    label: "OVERVIEW",
+    items: [{ href: "/dashboard", label: "Dashboard", icon: LayoutDashboard }],
+  },
+  {
+    label: "BORROW",
+    items: [
+      {
+        href: "/dashboard/offers",
+        label: "Browse Lender Offers",
+        icon: Search,
+      },
+      { href: "/dashboard/apply", label: "Apply for a Loan", icon: FileText },
+      {
+        href: "/dashboard/post-request",
+        label: "Post a Request",
+        icon: MessageSquare,
+      },
+      {
+        href: "/dashboard/my-requests",
+        label: "My Requests",
+        icon: ListOrdered,
+        badge: 2,
+      },
+      {
+        href: "/dashboard/offers-received",
+        label: "Offers Received",
+        icon: Activity,
+        badge: 3,
+      },
+    ],
+  },
+  {
+    label: "MY LOANS",
+    items: [
+      {
+        href: "/dashboard/repayments",
+        label: "Repayment Schedule",
+        icon: Calendar,
+      },
+      {
+        href: "/dashboard/repayments/pay",
+        label: "Make a Payment",
+        icon: CreditCard,
+      },
+      { href: "/dashboard/receipts", label: "Payment Receipt", icon: Receipt },
+    ],
+  },
+  {
+    label: "FINANCE",
+    items: [{ href: "/dashboard/wallet", label: "Wallet", icon: Wallet }],
+  },
+  {
+    label: "ACCOUNT",
+    items: [
+      { href: "/dashboard/profile", label: "Profile & KYC", icon: User },
+      { href: "/dashboard/settings", label: "Settings", icon: Settings },
+    ],
+  },
 ];
 
 export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
@@ -55,51 +101,72 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         href={item.href}
         onClick={onNavigate}
         className={cn(
-          "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+          "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors relative",
           isActive
-            ? "bg-[#E8F8F5] text-[#2BB5A0] dark:bg-[#2BB5A0]/10"
-            : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100",
+            ? "text-[#2BB5A0] bg-white/5 border-l-2 border-[#2BB5A0] pl-2.5"
+            : "text-white/60 hover:text-white hover:bg-white/5",
         )}
       >
-        <item.icon className="w-4 h-4" />
+        <item.icon className="w-4 h-4 shrink-0" />
         <span className="flex-1">{item.label}</span>
         {item.badge && (
-          <Badge className="bg-[#2BB5A0] text-white text-[10px] h-5 min-w-5 flex items-center justify-center rounded-full px-1.5">
+          <span className="inline-flex items-center justify-center h-5 min-w-5 px-1.5 rounded-full bg-[#2BB5A0] text-white text-[10px] font-bold">
             {item.badge}
-          </Badge>
+          </span>
         )}
       </Link>
     );
   };
 
   return (
-    <div className="flex flex-col h-full">
-      <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-6">
-        <div className="space-y-1">{mainNav.map(navLink)}</div>
-
-        <div>
-          <p className="px-3 mb-2 text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
-            Application
-          </p>
-          <div className="space-y-1">{applicationNav.map(navLink)}</div>
+    <div className="flex flex-col h-full bg-[#1B2B3A]">
+      {/* Logo */}
+      <div className="flex items-center gap-3 px-4 py-5 shrink-0">
+        <div className="h-9 w-9 rounded-xl bg-[#2BB5A0] flex items-center justify-center font-extrabold text-white text-xl leading-none">
+          L
         </div>
-
         <div>
-          <p className="px-3 mb-2 text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
-            Account
+          <p className="text-white font-extrabold text-lg leading-none">
+            WeLend
           </p>
-          <div className="space-y-1">{accountNav.map(navLink)}</div>
+          <p className="text-[#2BB5A0] text-[10px] font-bold uppercase tracking-widest">
+            Borrower Portal
+          </p>
         </div>
+      </div>
+
+      {/* Nav */}
+      <nav className="flex-1 overflow-y-auto px-3 space-y-5 py-2">
+        {navGroups.map((group) => (
+          <div key={group.label}>
+            <p className="px-3 mb-1.5 text-[10px] font-bold text-white/30 uppercase tracking-widest">
+              {group.label}
+            </p>
+            <div className="space-y-0.5">{group.items.map(navLink)}</div>
+          </div>
+        ))}
       </nav>
 
-      <div className="p-3 border-t border-gray-100 dark:border-gray-800">
-        <button
-          onClick={() => setSignOutOpen(true)}
-          className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-gray-50 dark:hover:bg-gray-800 w-full transition-colors"
-        >
-          <LogOut className="w-4 h-4" />
-          Sign out
-        </button>
+      {/* Footer */}
+      <div className="p-3 border-t border-white/10 shrink-0">
+        <div className="flex items-center gap-3 px-2 py-2">
+          <div className="h-9 w-9 rounded-full bg-[#2BB5A0] flex items-center justify-center font-bold text-white text-sm shrink-0">
+            AK
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-white font-semibold text-sm truncate">
+              Agnes Kyomuhendo
+            </p>
+            <p className="text-[#2BB5A0] text-[11px] font-medium">Borrower</p>
+          </div>
+          <button
+            onClick={() => setSignOutOpen(true)}
+            className="text-white/40 hover:text-red-400 transition-colors"
+            aria-label="Sign out"
+          >
+            <LogOut className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
       <SignOutModal open={signOutOpen} onOpenChange={setSignOutOpen} />
@@ -109,7 +176,7 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
 export function Sidebar() {
   return (
-    <aside className="hidden lg:flex w-56 border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 flex-col min-h-0 shrink-0">
+    <aside className="hidden lg:flex w-64 flex-col min-h-0 shrink-0">
       <SidebarContent />
     </aside>
   );

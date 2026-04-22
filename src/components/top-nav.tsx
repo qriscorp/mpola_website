@@ -1,56 +1,67 @@
 "use client";
 
 import Link from "next/link";
-import { Search, Bell } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Logo } from "@/components/logo";
-import { Badge } from "@/components/ui/badge";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { Bell } from "lucide-react";
 import { MobileNav } from "@/components/mobile-nav";
 
 export function TopNav() {
   return (
-    <header className="h-14 border-b border-gray-200 dark:border-gray-800 bg-[#1B2B3A] flex items-center px-4 shrink-0">
-      <div className="flex items-center gap-3">
-        <MobileNav />
-        <Logo variant="light" />
-        <Badge className="hidden sm:inline-flex bg-[#2BB5A0]/20 text-[#2BB5A0] text-[10px] font-semibold border-0 rounded-md uppercase tracking-wider">
-          Borrower Portal
-        </Badge>
-      </div>
-
-      <div className="flex-1" />
-
-      <div className="flex items-center gap-2 sm:gap-4">
-        <ThemeToggle />
-        <button
-          className="text-gray-300 hover:text-white transition-colors"
-          aria-label="Search"
-        >
-          <Search className="w-4 h-4" />
-        </button>
-        <Link
-          href="/dashboard/notifications"
-          className="relative text-gray-300 hover:text-white transition-colors"
-          aria-label="Notifications"
-        >
-          <Bell className="w-4 h-4" />
-          <span className="absolute -top-1 -right-1 w-2 h-2 bg-[#2BB5A0] rounded-full" />
-        </Link>
-        <div className="flex items-center gap-2 ml-1 sm:ml-2">
-          <Avatar className="h-8 w-8 bg-[#2BB5A0]">
-            <AvatarFallback className="bg-[#2BB5A0] text-white text-xs font-semibold">
-              SN
-            </AvatarFallback>
-          </Avatar>
-          <div className="text-right hidden md:block">
-            <p className="text-sm font-medium text-white leading-tight">
-              Sarah Nakato
-            </p>
-            <p className="text-[10px] text-gray-400">Borrower · Kampala</p>
-          </div>
+    <header className="lg:hidden sticky top-0 z-30 h-14 bg-[#1B2B3A] flex items-center px-4 shrink-0">
+      <MobileNav />
+      <div className="flex items-center gap-2 ml-2">
+        <div className="h-7 w-7 rounded-lg bg-[#2BB5A0] flex items-center justify-center font-extrabold text-white text-sm leading-none">
+          L
+        </div>
+        <div>
+          <p className="text-white font-extrabold text-sm leading-none">
+            WeLend
+          </p>
+          <p className="text-[#2BB5A0] text-[9px] font-bold uppercase tracking-widest">
+            Borrower
+          </p>
         </div>
       </div>
+      <div className="flex-1" />
+      <Link
+        href="/dashboard/notifications"
+        className="relative text-white/60 hover:text-white"
+        aria-label="Notifications"
+      >
+        <Bell className="w-5 h-5" />
+        <span className="absolute -top-1 -right-1 w-2 h-2 bg-[#2BB5A0] rounded-full" />
+      </Link>
     </header>
+  );
+}
+
+export function BorrowerPageHeader({ title }: { title: string }) {
+  return (
+    <div className="flex items-center justify-between mb-2">
+      <h1 className="text-2xl font-bold text-[#1B2B3A] dark:text-white">
+        {title}
+      </h1>
+      <div className="flex items-center gap-2">
+        <Link
+          href="/dashboard/notifications"
+          className="relative p-2 rounded-lg text-gray-500 hover:text-[#2BB5A0] hover:bg-teal-50 transition-colors"
+          aria-label="Notifications"
+        >
+          <Bell className="w-5 h-5" />
+          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#2BB5A0] rounded-full" />
+        </Link>
+        <Link
+          href="/dashboard/offers"
+          className="px-4 py-2 rounded-lg bg-[#2BB5A0] text-white text-sm font-semibold hover:bg-[#239E8C] transition-colors"
+        >
+          Browse Offers
+        </Link>
+        <Link
+          href="/dashboard/post-request"
+          className="px-4 py-2 rounded-lg border border-gray-300 text-sm font-semibold text-gray-700 hover:border-[#2BB5A0] hover:text-[#2BB5A0] transition-colors"
+        >
+          + Post Request
+        </Link>
+      </div>
+    </div>
   );
 }

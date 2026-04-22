@@ -1,19 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import {
-  Plus,
-  FileText,
-  CreditCard,
-  Sparkles,
-  Upload,
-  ArrowRight,
-  TriangleAlert,
-} from "lucide-react";
+import { Plus, CreditCard, Sparkles, Upload, ArrowRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -30,140 +20,78 @@ import {
 } from "@/hooks/use-dashboard";
 import { formatCurrency, getStatusColor, getStatusLabel } from "@/lib/format";
 import { DashboardSkeleton } from "@/components/skeletons";
+import { BorrowerPageHeader } from "@/components/top-nav";
 
 export default function DashboardPage() {
-  const { data: user, isLoading: userLoading } = useUser();
+  const { isLoading: userLoading } = useUser();
   const { data: stats, isLoading: statsLoading } = useDashboardStats();
   const { data: activeLoan } = useActiveLoan();
   const { data: applications } = useApplications();
 
   if (userLoading || statsLoading) return <DashboardSkeleton />;
 
-  const loanProgress = activeLoan
-    ? Math.round(
-        (activeLoan.paidInstalments / activeLoan.totalInstalments) * 100,
-      )
-    : 0;
-
   return (
-    <div className="space-y-6 max-w-[1200px]">
-      {/* Header */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-[#1B2B3A] dark:text-white">
-            Hi {user?.fullName?.split(" ")[0]} 👋
-          </h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Thursday, 17 April 2026 · You have {stats?.newOffers || 0} new
-            offers waiting for review
-          </p>
-        </div>
-        <Link href="/dashboard/apply">
-          <Button className="bg-white dark:bg-gray-800 text-[#1B2B3A] dark:text-white border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 font-medium w-full sm:w-auto">
-            <Plus className="w-4 h-4 mr-2" /> New Loan Application
-          </Button>
-        </Link>
-      </div>
+    <div className="space-y-6 max-w-300">
+      <BorrowerPageHeader title="Dashboard" />
 
-      {/* Active Loan Card */}
+      {/* Active Loan Hero Banner */}
       {activeLoan && (
-        <Card className="border-l-4 border-l-[#2BB5A0] bg-white dark:bg-gray-900">
-          <CardContent className="p-4 sm:p-6">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-              <div>
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-[#2BB5A0] mb-1">
-                  Active Loan
-                </p>
-                <p className="text-2xl sm:text-3xl font-bold text-[#1B2B3A] dark:text-white">
-                  <span className="text-sm font-normal text-gray-400 mr-1">
-                    UGX
-                  </span>
-                  {activeLoan.amount.toLocaleString()}
-                </p>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                  Lent by{" "}
-                  <span className="font-semibold text-[#1B2B3A] dark:text-white">
-                    {activeLoan.lenderName}
-                  </span>{" "}
-                  · {activeLoan.interestRate}% p.a.
-                </p>
-              </div>
-              <div className="lg:text-right">
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {activeLoan.paidInstalments} of {activeLoan.totalInstalments}{" "}
-                  payments made
-                </p>
-                <div className="flex items-center gap-3 mt-2">
-                  <Progress
-                    value={loanProgress}
-                    className="w-full sm:w-40 h-2 [&>div]:bg-[#2BB5A0]"
-                  />
-                  <span className="text-sm font-semibold text-[#2BB5A0]">
-                    {loanProgress}%
-                  </span>
-                </div>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                  Next payment:{" "}
-                  <span className="font-medium text-[#1B2B3A] dark:text-white">
-                    {formatCurrency(activeLoan.nextPaymentAmount)}
-                  </span>{" "}
-                  due{" "}
-                  <span className="font-medium text-[#1B2B3A] dark:text-white">
-                    May 1, 2026
-                  </span>
-                </p>
-              </div>
-              <Link href="/dashboard/repayments/pay" className="lg:ml-2">
-                <Button className="bg-[#2BB5A0] text-white hover:bg-[#239E8C] w-full lg:w-auto">
-                  Make Payment
-                </Button>
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="rounded-2xl bg-[#2BB5A0] p-6 sm:p-8 text-white flex flex-col sm:flex-row sm:items-center gap-4">
+          <div className="flex-1">
+            <p className="text-xs font-semibold uppercase tracking-wider text-white/70">
+              Active Loan
+            </p>
+            <p className="text-4xl font-extrabold mt-1">
+              UGX {activeLoan.amount.toLocaleString()}
+            </p>
+            <p className="text-sm text-white/80 mt-1">
+              Next payment: {formatCurrency(activeLoan.nextPaymentAmount)} due
+              15 Jun 2024
+            </p>
+          </div>
+          <Link
+            href="/dashboard/repayments/pay"
+            className="inline-flex items-center justify-center px-6 py-2.5 rounded-xl bg-white text-[#2BB5A0] font-bold text-sm hover:bg-white/90 transition-colors shrink-0"
+          >
+            Pay Now
+          </Link>
+        </div>
       )}
 
       {/* Stats Row */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card className="bg-white dark:bg-gray-900">
-          <CardContent className="p-5">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-2">
-              Active Loans
-            </p>
-            <p className="text-3xl font-bold text-[#1B2B3A] dark:text-white">
-              {stats?.activeLoans ?? 0}
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="bg-white dark:bg-gray-900">
-          <CardContent className="p-5">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-2">
-              Applications Pending
-            </p>
-            <p className="text-3xl font-bold text-[#1B2B3A] dark:text-white">
-              {stats?.applicationsPending ?? 0}
-            </p>
-            {stats && stats.newOffers > 0 && (
-              <p className="text-xs text-[#2BB5A0] font-medium mt-2 flex items-center gap-1">
-                <TriangleAlert className="w-3 h-3" /> {stats.newOffers} new
-                offers
-              </p>
-            )}
-          </CardContent>
-        </Card>
-        <Card className="bg-white dark:bg-gray-900">
-          <CardContent className="p-5">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-2">
-              Wallet Balance
-            </p>
-            <p className="text-3xl font-bold text-[#1B2B3A] dark:text-white">
-              <span className="text-sm font-normal text-gray-400 mr-1">
-                UGX
-              </span>
-              {(stats?.walletBalance ?? 0).toLocaleString()}
-            </p>
-          </CardContent>
-        </Card>
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 border-t-4 border-t-[#2BB5A0] p-5">
+          <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+            Loan Balance
+          </p>
+          <p className="text-3xl font-bold text-[#1B2B3A] dark:text-white mt-1">
+            UGX 4.8M
+          </p>
+          <p className="text-xs text-[#2BB5A0] mt-1">2 payments remaining</p>
+        </div>
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 border-t-4 border-t-[#2BB5A0] p-5">
+          <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+            Total Repaid
+          </p>
+          <p className="text-3xl font-bold text-[#1B2B3A] dark:text-white mt-1">
+            UGX 4.8M
+          </p>
+          <p className="text-xs text-gray-400 mt-1">50% complete</p>
+        </div>
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 border-t-4 border-t-[#2BB5A0] p-5">
+          <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+            Lender Offers Available
+          </p>
+          <p className="text-3xl font-bold text-[#1B2B3A] dark:text-white mt-1">
+            {stats?.newOffers ?? 47}
+          </p>
+          <Link
+            href="/dashboard/offers"
+            className="text-xs text-[#2BB5A0] hover:underline mt-1 block"
+          >
+            Browse now →
+          </Link>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

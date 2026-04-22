@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -12,13 +11,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ArrowRight, Sparkles } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   useLenderDashboardStats,
   useBorrowerActivities,
 } from "@/hooks/use-lender";
 import { formatCurrency } from "@/lib/format";
+import { LenderPageHeader } from "@/components/lender-top-nav";
 
 export default function LenderDashboardPage() {
   const { data: stats } = useLenderDashboardStats();
@@ -26,74 +25,51 @@ export default function LenderDashboardPage() {
 
   const statCards = [
     {
-      label: "TOTAL DEPLOYED",
+      label: "Total Deployed",
       value: stats
-        ? `UGX ${(stats.totalDeployed / 1000000).toFixed(1)}M`
-        : "UGX 0",
-      sub: "▲ +8 loans this month",
-      subColor: "text-[#2BB5A0]",
-    },
-    { label: "ACTIVE LOANS", value: stats?.activeLoans?.toString() ?? "0" },
-    {
-      label: "MONTHLY RETURNS",
-      value: stats
-        ? `UGX ${(stats.monthlyReturns / 1000000).toFixed(2)}M`
-        : "UGX 0",
-      sub: "▲ +12.4% vs. last month",
-      subColor: "text-[#2BB5A0]",
+        ? `UGX ${(stats.totalDeployed / 1_000_000).toFixed(1)}M`
+        : "—",
+      sub: "↑ +8 loans this month",
+      subColor: "text-emerald-500",
+      borderColor: "border-t-[#C4A55A]",
     },
     {
-      label: "REPAYMENT RATE",
-      value: stats ? `${stats.repaymentRate}%` : "0%",
+      label: "Active Loans",
+      value: stats?.activeLoans?.toString() ?? "—",
+      borderColor: "border-t-[#C4A55A]",
+    },
+    {
+      label: "Monthly Returns",
+      value: stats
+        ? `UGX ${(stats.monthlyReturns / 1_000_000).toFixed(2)}M`
+        : "—",
+      sub: "↑ +12.4% vs last month",
+      subColor: "text-emerald-500",
+      borderColor: "border-t-[#C4A55A]",
+    },
+    {
+      label: "Repayment Rate",
+      value: stats ? `${stats.repaymentRate}%` : "—",
+      borderColor: "border-t-[#C4A55A]",
     },
   ];
 
-  const statusColor = (s: string) => {
-    switch (s) {
-      case "New Application":
-        return "bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400";
-      case "Reviewing":
-        return "bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400";
-      case "Offer Sent":
-        return "bg-purple-50 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400";
-      case "Repaying":
-        return "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400";
-      case "Accepted":
-        return "bg-[#E8F8F5] text-[#2BB5A0] dark:bg-[#2BB5A0]/10";
-      default:
-        return "";
-    }
-  };
-
-  // simple bar data for Portfolio Health
   const barData = [68, 72, 80, 85, 90, 88];
-  const barLabels = ["Nov", "Dec", "Jan", "Feb", "Mar", "Apr"];
+  const barLabels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-[#1B2B3A] dark:text-white">
-            Welcome back, David 👋
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Thursday, 17 April 2026 · 3 new applications match your criteria
-          </p>
-        </div>
-        <Link href="/lender/marketplace">
-          <Button className="bg-[#2BB5A0] hover:bg-[#239E8C] text-white gap-2">
-            Browse Borrowers <ArrowRight className="h-4 w-4" />
-          </Button>
-        </Link>
-      </div>
+      <LenderPageHeader title="Dashboard" />
 
-      {/* Stats */}
+      {/* Stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {statCards.map((s) => (
-          <Card key={s.label} className="bg-white dark:bg-gray-900">
+          <Card
+            key={s.label}
+            className={`bg-white dark:bg-gray-900 border-t-4 ${s.borderColor}`}
+          >
             <CardContent className="p-5">
-              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+              <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold">
                 {s.label}
               </p>
               <p className="text-2xl lg:text-3xl font-bold text-[#1B2B3A] dark:text-white mt-1">
@@ -105,9 +81,9 @@ export default function LenderDashboardPage() {
         ))}
       </div>
 
-      {/* Main Grid: Activity Table + Portfolio Health */}
+      {/* Main grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Recent Borrower Activity Table */}
+        {/* Recent Borrower Activity */}
         <Card className="bg-white dark:bg-gray-900 lg:col-span-2">
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -115,8 +91,8 @@ export default function LenderDashboardPage() {
                 Recent Borrower Activity
               </h2>
               <Link
-                href="/lender/marketplace"
-                className="text-sm text-[#2BB5A0] hover:underline"
+                href="/lender/applications"
+                className="text-sm text-[#C4A55A] hover:underline"
               >
                 View all
               </Link>
@@ -138,7 +114,7 @@ export default function LenderDashboardPage() {
                   <TableHead className="text-[10px] uppercase text-muted-foreground">
                     Status
                   </TableHead>
-                  <TableHead className="w-12" />
+                  <TableHead className="w-20" />
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -147,16 +123,16 @@ export default function LenderDashboardPage() {
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <Avatar className="h-8 w-8">
-                          <AvatarFallback className="bg-[#2BB5A0] text-white text-xs font-bold">
+                          <AvatarFallback className="bg-[#1B2B3A] text-white text-xs font-bold">
                             {a.borrowerInitials}
                           </AvatarFallback>
                         </Avatar>
                         <div>
-                          <p className="text-sm font-medium text-[#1B2B3A] dark:text-white">
+                          <p className="text-sm font-semibold text-[#1B2B3A] dark:text-white">
                             {a.borrowerName}
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            {a.location} · Verified
+                            {a.location}
                           </p>
                         </div>
                       </div>
@@ -172,16 +148,23 @@ export default function LenderDashboardPage() {
                     <TableCell>
                       <Badge
                         variant="outline"
-                        className={`text-xs ${statusColor(a.status)}`}
+                        className={`text-xs ${
+                          a.status === "Repaying"
+                            ? "bg-emerald-50 text-emerald-600"
+                            : a.status === "New Application"
+                              ? "bg-blue-50 text-blue-600"
+                              : "bg-amber-50 text-amber-600"
+                        }`}
                       >
-                        ● {a.status}
+                        {a.status}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Link href={`/lender/marketplace/${a.id}`}>
-                        <Button variant="outline" size="sm" className="text-xs">
-                          View
-                        </Button>
+                      <Link
+                        href="/lender/applicant"
+                        className="text-xs px-3 py-1 rounded-lg border border-gray-200 text-gray-600 hover:border-[#C4A55A] hover:text-[#C4A55A] transition-colors"
+                      >
+                        View
                       </Link>
                     </TableCell>
                   </TableRow>
@@ -191,15 +174,16 @@ export default function LenderDashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Right Column: Portfolio Health + Matches */}
+        {/* Right column */}
         <div className="space-y-6">
+          {/* Portfolio Health chart */}
           <Card className="bg-white dark:bg-gray-900">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <h2 className="font-semibold text-[#1B2B3A] dark:text-white">
                   Portfolio Health
                 </h2>
-                <Badge className="bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400 text-xs">
+                <Badge className="bg-emerald-50 text-emerald-600 text-xs border-0">
                   ● Healthy
                 </Badge>
               </div>
@@ -215,7 +199,7 @@ export default function LenderDashboardPage() {
                     className="flex-1 flex flex-col items-center gap-1"
                   >
                     <div
-                      className="w-full rounded-t bg-[#2BB5A0]/80 dark:bg-[#2BB5A0]/60 hover:bg-[#2BB5A0] transition-colors"
+                      className="w-full rounded-t bg-[#C4A55A] hover:bg-[#b3944a] transition-colors"
                       style={{ height: `${h}%` }}
                     />
                     <span className="text-[9px] text-muted-foreground">
@@ -227,30 +211,22 @@ export default function LenderDashboardPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white dark:bg-gray-900">
+          {/* New matches */}
+          <Card className="bg-white dark:bg-gray-900 border-l-4 border-l-[#C4A55A]">
             <CardContent className="p-5">
-              <div className="flex items-start gap-3">
-                <div className="h-10 w-10 rounded-lg bg-[#E8F8F5] dark:bg-[#2BB5A0]/10 flex items-center justify-center shrink-0">
-                  <Sparkles className="h-5 w-5 text-[#2BB5A0]" />
-                </div>
-                <div>
-                  <p className="font-semibold text-sm text-[#1B2B3A] dark:text-white">
-                    3 new matches
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    New borrower applications match your lending criteria
-                    (Business loans, 5–15M, 12–24 months).
-                  </p>
-                  <Link href="/lender/marketplace">
-                    <Button
-                      size="sm"
-                      className="mt-3 bg-[#1B2B3A] hover:bg-[#152230] text-white text-xs"
-                    >
-                      Review Matches
-                    </Button>
-                  </Link>
-                </div>
-              </div>
+              <p className="font-semibold text-sm text-[#1B2B3A] dark:text-white">
+                7 new applications
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Borrowers have applied to your active offers. Review and
+                approve.
+              </p>
+              <Link
+                href="/lender/applications"
+                className="inline-flex mt-3 px-3 py-1.5 rounded-lg bg-[#C4A55A] text-white text-xs font-semibold hover:bg-[#b3944a] transition-colors"
+              >
+                Review Applications
+              </Link>
             </CardContent>
           </Card>
         </div>

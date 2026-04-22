@@ -1,203 +1,83 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { useActiveLoan } from "@/hooks/use-dashboard";
-import { useInstalments } from "@/hooks/use-repayments";
-import { formatCurrency, getStatusColor } from "@/lib/format";
+import { BorrowerPageHeader } from "@/components/top-nav";
+
+const instalments = [
+  { num: 1, dueDate: "15 Mar 2024", principal: "UGX 2,000,000", interest: "UGX 400,000", total: "UGX 2,400,000", status: "paid" },
+  { num: 2, dueDate: "15 Apr 2024", principal: "UGX 2,000,000", interest: "UGX 400,000", total: "UGX 2,400,000", status: "paid" },
+  { num: 3, dueDate: "15 May 2024", principal: "UGX 2,000,000", interest: "UGX 400,000", total: "UGX 2,400,000", status: "due" },
+  { num: 4, dueDate: "15 Jun 2024", principal: "UGX 2,000,000", interest: "UGX 400,000", total: "UGX 2,400,000", status: "upcoming" },
+];
 
 export default function RepaymentsPage() {
-  const { data: loan } = useActiveLoan();
-  const { data: instalments, isLoading } = useInstalments();
-
-  const paidAmount = (loan?.paidInstalments ?? 0) * (loan?.monthlyPayment ?? 0);
-  const totalAmount =
-    (loan?.totalInstalments ?? 1) * (loan?.monthlyPayment ?? 0);
-  const remainingAmount = totalAmount - paidAmount;
-  const progressPct = loan
-    ? (loan.paidInstalments / loan.totalInstalments) * 100
-    : 0;
-
   return (
     <div className="space-y-6">
-      {/* Back */}
-      <Link
-        href="/dashboard"
-        className="text-sm text-gray-500 hover:text-gray-700 inline-flex items-center gap-1"
-      >
-        <ArrowLeft className="w-4 h-4" /> Back to Dashboard
-      </Link>
+      <BorrowerPageHeader title="Repayment Schedule" />
 
-      {/* Header */}
-      <div>
-        <h1 className="text-4xl font-bold text-[#1B2B3A]">
-          Repayment Schedule
-        </h1>
-        <p className="text-gray-500 mt-1">
-          Personal Loan · LF-2026-00621 · Kampala Capital Partners
-        </p>
+      {/* Hero banner */}
+      <div className="rounded-2xl bg-[#2BB5A0] p-6 sm:p-8 text-white">
+        <p className="text-xs font-semibold uppercase tracking-wider text-white/70">Outstanding Balance</p>
+        <p className="text-5xl font-extrabold mt-1">UGX 4,800,000</p>
+        <div className="mt-4 h-2 rounded-full bg-white/30 overflow-hidden">
+          <div className="h-full rounded-full bg-white" style={{ width: "50%" }} />
+        </div>
+        <p className="text-sm text-white/80 mt-2">50% repaid � 2 payments remaining</p>
       </div>
 
-      {/* Loan Summary Header - dark card */}
-      <Card className="bg-[#1B2B3A] text-white overflow-hidden">
-        <CardContent className="p-6">
-          <div className="grid grid-cols-4 gap-6">
-            <div>
-              <p className="text-[10px] uppercase tracking-wider font-semibold text-gray-400">
-                Loan Amount
-              </p>
-              <p className="mt-1">
-                <span className="text-xs text-gray-400">UGX </span>
-                <span className="text-2xl font-bold">
-                  {loan?.amount.toLocaleString() ?? "—"}
-                </span>
-              </p>
-            </div>
-            <div>
-              <p className="text-[10px] uppercase tracking-wider font-semibold text-gray-400">
-                Rate
-              </p>
-              <p className="text-2xl font-bold mt-1">
-                {loan?.interestRate ?? "—"}%
-              </p>
-            </div>
-            <div>
-              <p className="text-[10px] uppercase tracking-wider font-semibold text-gray-400">
-                Monthly
-              </p>
-              <p className="mt-1">
-                <span className="text-xs text-gray-400">UGX </span>
-                <span className="text-2xl font-bold">
-                  {loan?.monthlyPayment.toLocaleString() ?? "—"}
-                </span>
-              </p>
-            </div>
-            <div>
-              <p className="text-[10px] uppercase tracking-wider font-semibold text-gray-400">
-                Lender
-              </p>
-              <p className="text-2xl font-bold mt-1">Kampala Capital</p>
-            </div>
-          </div>
-
-          {/* Progress bar */}
-          <div className="mt-4 flex items-center justify-between text-xs text-gray-400">
-            <span>{formatCurrency(paidAmount)} paid</span>
-            <span>
-              {loan?.paidInstalments} of {loan?.totalInstalments} instalments (
-              {Math.round(progressPct)}%)
-            </span>
-            <span>{formatCurrency(remainingAmount)} remaining</span>
-          </div>
-          <Progress
-            value={progressPct}
-            className="mt-2 h-2 bg-gray-600 [&>div]:bg-[#2BB5A0]"
-          />
-        </CardContent>
-      </Card>
-
-      {/* Instalments Table */}
-      <Card className="bg-white">
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow className="bg-gray-50">
-                <TableHead className="text-[10px] uppercase tracking-wider font-semibold text-gray-400">
-                  #
-                </TableHead>
-                <TableHead className="text-[10px] uppercase tracking-wider font-semibold text-gray-400">
-                  Due Date
-                </TableHead>
-                <TableHead className="text-[10px] uppercase tracking-wider font-semibold text-gray-400">
-                  Amount
-                </TableHead>
-                <TableHead className="text-[10px] uppercase tracking-wider font-semibold text-gray-400">
-                  Status
-                </TableHead>
-                <TableHead className="text-[10px] uppercase tracking-wider font-semibold text-gray-400">
-                  Paid On
-                </TableHead>
-                <TableHead className="text-[10px] uppercase tracking-wider font-semibold text-gray-400 text-right">
-                  Action
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading ? (
-                <TableRow>
-                  <TableCell
-                    colSpan={6}
-                    className="text-center py-8 text-gray-400"
-                  >
-                    Loading...
-                  </TableCell>
-                </TableRow>
-              ) : (
-                instalments?.map((inst) => (
-                  <TableRow
-                    key={inst.number}
-                    className={inst.status === "due" ? "bg-amber-50/50" : ""}
-                  >
-                    <TableCell className="font-bold text-[#1B2B3A]">
-                      {String(inst.number).padStart(2, "0")}
-                    </TableCell>
-                    <TableCell>{inst.dueDate}</TableCell>
-                    <TableCell>
-                      <span className="text-xs text-gray-400">UGX </span>
-                      <span className="font-medium">
-                        {inst.amount.toLocaleString()}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        className={`${getStatusColor(inst.status)} border-0 text-xs font-medium`}
+      {/* Schedule table */}
+      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+        <div className="p-5 border-b border-gray-100 dark:border-gray-800">
+          <h2 className="text-lg font-bold text-[#1B2B3A] dark:text-white">Repayment Schedule</h2>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-gray-50 dark:bg-gray-800">
+                <th className="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-gray-500">#</th>
+                <th className="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-gray-500">Due Date</th>
+                <th className="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-gray-500">Principal</th>
+                <th className="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-gray-500">Interest</th>
+                <th className="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-gray-500">Total</th>
+                <th className="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-gray-500">Status</th>
+                <th className="px-4 py-3" />
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+              {instalments.map((inst) => (
+                <tr key={inst.num} className={inst.status === "due" ? "bg-amber-50/50 dark:bg-amber-900/10" : ""}>
+                  <td className="px-4 py-4 font-semibold text-[#1B2B3A] dark:text-white">{inst.num}</td>
+                  <td className="px-4 py-4 text-gray-600 dark:text-gray-300">{inst.dueDate}</td>
+                  <td className="px-4 py-4 text-gray-600 dark:text-gray-300">{inst.principal}</td>
+                  <td className="px-4 py-4 text-gray-600 dark:text-gray-300">{inst.interest}</td>
+                  <td className="px-4 py-4 font-semibold text-[#1B2B3A] dark:text-white">{inst.total}</td>
+                  <td className="px-4 py-4">
+                    {inst.status === "paid" && (
+                      <span className="px-2 py-1 rounded-full bg-teal-50 text-[#2BB5A0] text-xs font-semibold">Paid</span>
+                    )}
+                    {inst.status === "due" && (
+                      <span className="px-2 py-1 rounded-full bg-amber-50 text-amber-600 text-xs font-semibold">Due in 8 days</span>
+                    )}
+                    {inst.status === "upcoming" && (
+                      <span className="px-2 py-1 rounded-full bg-gray-100 text-gray-500 text-xs font-semibold">Upcoming</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-4 text-right">
+                    {inst.status === "due" && (
+                      <Link
+                        href="/dashboard/repayments/pay"
+                        className="px-4 py-2 rounded-lg bg-[#2BB5A0] text-white text-xs font-semibold hover:bg-[#239E8C] transition-colors"
                       >
-                        <span className="w-1.5 h-1.5 rounded-full bg-current mr-1.5 inline-block" />
-                        {inst.status === "paid"
-                          ? "Paid"
-                          : inst.status === "due"
-                            ? `Due May 1`
-                            : "Upcoming"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-gray-500">
-                      {inst.paidOn ?? "—"}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {inst.status === "paid" ? (
-                        <button className="text-sm text-[#2BB5A0] font-medium hover:underline">
-                          Receipt
-                        </button>
-                      ) : inst.status === "due" ? (
-                        <Link href="/dashboard/repayments/pay">
-                          <Button
-                            size="sm"
-                            className="bg-[#2BB5A0] text-white hover:bg-[#239E8C] text-xs"
-                          >
-                            Pay Now
-                          </Button>
-                        </Link>
-                      ) : null}
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+                        Pay Now
+                      </Link>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }

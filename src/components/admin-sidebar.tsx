@@ -10,7 +10,6 @@ import {
   CreditCard,
   Wallet,
   Settings,
-  ShieldCheck,
   LogOut,
   ChevronLeft,
 } from "lucide-react";

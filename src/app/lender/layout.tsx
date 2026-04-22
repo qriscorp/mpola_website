@@ -3,9 +3,9 @@ import { LenderSidebar } from "@/components/lender-sidebar";
 import { LenderTopNav } from "@/components/lender-top-nav";
 
 export const metadata: Metadata = {
-  title: "Lender Portal – Welend",
+  title: "Lender Portal – WeLend",
   description:
-    "Manage your lending portfolio, browse borrowers, and track returns on Welend.",
+    "Manage your lending portfolio, review applications, and track returns on WeLend.",
 };
 
 export default function LenderLayout({
@@ -14,11 +14,16 @@ export default function LenderLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col h-screen bg-gray-50 dark:bg-gray-950">
-      <LenderTopNav />
-      <div className="flex flex-1 min-h-0">
-        <LenderSidebar />
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6">{children}</main>
+    <div className="flex h-screen overflow-hidden bg-[#F8FAFC] dark:bg-gray-950">
+      {/* Desktop sidebar — full height, dark navy */}
+      <LenderSidebar />
+      {/* Right column */}
+      <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+        {/* Mobile-only top bar */}
+        <LenderTopNav />
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+          {children}
+        </main>
       </div>
     </div>
   );

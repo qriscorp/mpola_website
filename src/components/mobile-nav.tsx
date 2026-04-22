@@ -28,7 +28,7 @@ export function MobileNav() {
       >
         <Menu className="h-5 w-5" />
       </SheetTrigger>
-      <SheetContent side="left" className="w-64 p-0 bg-white dark:bg-gray-900">
+      <SheetContent side="left" className="w-64 p-0 bg-[#1B2B3A] border-r-0">
         <SheetTitle className="sr-only">Navigation menu</SheetTitle>
         <SidebarContent onNavigate={() => setOpen(false)} />
       </SheetContent>

@@ -1,106 +1,84 @@
 "use client";
 
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ShieldCheck, FileText, CheckCircle } from "lucide-react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { LenderPageHeader } from "@/components/lender-top-nav";
 
 export default function LenderAccountPage() {
   return (
-    <div className="space-y-6 max-w-3xl">
-      <div>
-        <h1 className="text-3xl font-bold text-[#1B2B3A] dark:text-white">
-          Account & Licence
-        </h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Manage your lender profile and compliance
-        </p>
-      </div>
+    <div className="space-y-6 max-w-5xl">
+      <LenderPageHeader title="Account & Licence" />
 
-      <Card className="bg-white dark:bg-gray-900">
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="h-4 w-4 text-[#2BB5A0]" />
-            <h2 className="font-semibold text-[#1B2B3A] dark:text-white">
-              Licence Status
-            </h2>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between p-4 rounded-lg bg-emerald-50/50 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-800">
-            <div className="flex items-center gap-3">
-              <CheckCircle className="h-5 w-5 text-emerald-600" />
-              <div>
-                <p className="text-sm font-medium text-[#1B2B3A] dark:text-white">
-                  BoU Licensed Lender
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Tier IV Credit Institution · #TCI-2024-0418
-                </p>
-              </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Profile card */}
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 space-y-5">
+          <div className="flex items-center gap-4">
+            <Avatar className="h-16 w-16">
+              <AvatarFallback className="bg-[#C4A55A] text-white text-xl font-bold">
+                JM
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <h2 className="font-bold text-[#1B2B3A] dark:text-white text-lg">
+                James Mugisha
+              </h2>
+              <p className="text-xs text-gray-400">Licensed since Jan 2023</p>
             </div>
-            <Badge className="bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400">
-              Active
-            </Badge>
+            <button className="ml-auto px-4 py-1.5 rounded-lg border border-gray-300 text-sm font-medium text-gray-600 hover:border-[#C4A55A] hover:text-[#C4A55A] transition-colors">
+              Edit Profile
+            </button>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label>Full Legal Name</Label>
-              <Input defaultValue="David Mugisha" />
-            </div>
-            <div className="space-y-2">
-              <Label>Email</Label>
-              <Input defaultValue="david@mugisha-capital.ug" />
-            </div>
-            <div className="space-y-2">
-              <Label>Phone</Label>
-              <Input defaultValue="+256772 100 842" />
-            </div>
-            <div className="space-y-2">
-              <Label>NIN</Label>
-              <Input defaultValue="CM98041234AB7X" disabled />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card className="bg-white dark:bg-gray-900">
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <FileText className="h-4 w-4 text-[#C4A55A]" />
-            <h2 className="font-semibold text-[#1B2B3A] dark:text-white">
-              KYC Documents
-            </h2>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
             {[
-              "National ID (Front & Back)",
-              "Selfie with ID",
-              "Proof of Address",
-              "Bank Statement",
-            ].map((doc) => (
-              <div
-                key={doc}
-                className="flex items-center justify-between py-2 border-b last:border-0 dark:border-gray-800"
-              >
-                <span className="text-sm">{doc}</span>
-                <Badge className="bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400 text-xs">
-                  Verified
-                </Badge>
+              { label: "Full Name", value: "James Mugisha" },
+              { label: "Phone", value: "+256 772 100 842" },
+              { label: "Email", value: "james@mugisha-capital.ug" },
+              { label: "NIN", value: "CM98041234AB7X", disabled: true },
+            ].map((f) => (
+              <div key={f.label} className="space-y-1.5">
+                <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  {f.label}
+                </Label>
+                <Input defaultValue={f.value} disabled={f.disabled} />
               </div>
             ))}
           </div>
-        </CardContent>
-      </Card>
+          <button className="w-full py-2 rounded-lg bg-[#C4A55A] text-white text-sm font-semibold hover:bg-[#b3944a] transition-colors">
+            Save Changes
+          </button>
+        </div>
 
-      <div className="flex justify-end">
-        <Button className="bg-[#2BB5A0] hover:bg-[#239E8C] text-white">
-          Save Changes
-        </Button>
+        {/* Licence card */}
+        <div className="rounded-xl border-2 border-[#C4A55A] bg-[#1B2B3A] text-white p-6 space-y-5">
+          <div>
+            <p className="text-xs font-semibold text-white/50 uppercase tracking-wider">
+              WeLend Lender Licence
+            </p>
+            <h2 className="text-xl font-bold mt-1">Bank of Uganda Framework</h2>
+            <span className="mt-2 inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500 text-white">
+              Active
+            </span>
+          </div>
+          <div className="space-y-3 text-sm">
+            {[
+              ["Licence No", "#TCI-2024-0418"],
+              [
+                "Valid Until",
+                <span key="vu" className="text-[#C4A55A] font-bold">
+                  31 Dec 2025
+                </span>,
+              ],
+              ["Max Loan Pool", "UGX 500M"],
+              ["Tier", "Tier IV Credit Institution"],
+            ].map(([k, v]) => (
+              <div key={String(k)} className="flex justify-between">
+                <span className="text-white/50">{k}</span>
+                <span className="font-medium">{v}</span>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
