@@ -85,7 +85,7 @@ export default function LearnMorePage() {
       <section className="py-20 lg:py-28">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <p className="text-[#2BB5A0] text-xs font-semibold uppercase tracking-widest mb-3">
+            <p className="text-[#C4A55A] text-xs font-semibold uppercase tracking-widest mb-3">
               Why Welend
             </p>
             <h2 className="text-3xl lg:text-4xl font-bold text-[#1B2B3A]">
@@ -240,7 +240,7 @@ export default function LearnMorePage() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
-              <p className="text-[#2BB5A0] text-xs font-semibold uppercase tracking-widest mb-3">
+              <p className="text-[#C4A55A] text-xs font-semibold uppercase tracking-widest mb-3">
                 Safety & Compliance
               </p>
               <h2 className="text-3xl font-bold text-[#1B2B3A]">
@@ -263,7 +263,7 @@ export default function LearnMorePage() {
                 "Overdue notification + recovery support",
               ].map((item) => (
                 <div key={item} className="flex items-center gap-3">
-                  <CheckCircle2 className="h-5 w-5 text-[#2BB5A0] shrink-0" />
+                  <CheckCircle2 className="h-5 w-5 text-[#C4A55A] shrink-0" />
                   <p className="text-sm text-gray-700 font-medium">{item}</p>
                 </div>
               ))}
@@ -326,18 +326,27 @@ export default function LearnMorePage() {
       <footer className="bg-[#111E29] text-gray-400 py-10">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2 text-xs">
-            <ShieldCheck className="h-4 w-4 text-[#2BB5A0]" />
+            <ShieldCheck className="h-4 w-4 text-[#C4A55A]" />
             Licensed by Bank of Uganda · Tier IV Credit Institution Licence
             #TCI-2024-0418
           </div>
           <div className="flex items-center gap-4 text-xs">
-            <Link href="#" className="hover:text-white transition-colors">
+            <Link
+              href="/privacy-policy"
+              className="hover:text-white transition-colors"
+            >
               Privacy
             </Link>
-            <Link href="#" className="hover:text-white transition-colors">
+            <Link
+              href="/platform-terms"
+              className="hover:text-white transition-colors"
+            >
               Terms
             </Link>
-            <Link href="#" className="hover:text-white transition-colors">
+            <Link
+              href="/how-it-works"
+              className="hover:text-white transition-colors"
+            >
               Help Centre
             </Link>
             <span>© 2026 Welend Uganda Ltd.</span>

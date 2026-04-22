@@ -35,7 +35,11 @@ export function useSignIn() {
   const router = useRouter();
   return useMutation({
     mutationFn: (data: SignInFormData) =>
-      api.signIn({ phoneOrEmail: data.phoneOrEmail, password: data.password }),
+      api.signIn({
+        phoneOrEmail: data.phoneOrEmail,
+        password: data.password,
+        portal: "borrower",
+      }),
     onSuccess: () => {
       toast.success("Welcome back!");
       const role = getCookie("lf_role") || "borrower";
@@ -67,7 +71,10 @@ export function useLenderSignIn() {
   const router = useRouter();
   return useMutation({
     mutationFn: (data: { phoneOrEmail: string; password: string }) =>
-      api.lenderSignIn(data),
+      api.lenderSignIn({
+        phoneOrEmail: data.phoneOrEmail,
+        password: data.password,
+      }),
     onSuccess: () => {
       toast.success("Welcome back!");
       const role = getCookie("lf_role") || "lender";
@@ -238,7 +245,7 @@ export function useVerifyLoginPhoneOtp(portal?: "borrower" | "lender") {
     }: {
       phoneNumber: string;
       code: string;
-    }) => api.verifyLoginPhoneOtp(phoneNumber, code),
+    }) => api.verifyLoginPhoneOtp(phoneNumber, code, portal),
     onSuccess: (data) => {
       const role = data.user.role;
       const isAdmin = role === "admin" || role === "super_admin";

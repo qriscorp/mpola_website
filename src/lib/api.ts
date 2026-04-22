@@ -130,6 +130,7 @@ export const api = {
   signIn: async (data: {
     phoneOrEmail: string;
     password: string;
+    portal?: "borrower" | "lender";
   }): Promise<User> => {
     // If input looks like a phone number, normalize it
     const identifier = /^\d{9,12}$/.test(data.phoneOrEmail.replace(/\D/g, ""))
@@ -138,6 +139,7 @@ export const api = {
     const res = await apiPost<AuthResponse>("/auth/login", {
       username: identifier,
       password: data.password,
+      portal: data.portal,
     });
     storeTokens(res);
     return mapAuthUser(res);
@@ -167,6 +169,7 @@ export const api = {
     const res = await apiPost<AuthResponse>("/auth/login", {
       username: identifier,
       password: data.password,
+      portal: "lender",
     });
     if (
       res.user.role !== "lender" &&
@@ -296,10 +299,12 @@ export const api = {
   verifyLoginPhoneOtp: async (
     phoneNumber: string,
     code: string,
+    portal?: "borrower" | "lender",
   ): Promise<AuthResponse> => {
     const res = await apiPost<AuthResponse>("/auth/verify_login_phone_otp", {
       phone_number: normalizePhone(phoneNumber),
       code,
+      portal,
     });
     storeTokens(res);
     return res;

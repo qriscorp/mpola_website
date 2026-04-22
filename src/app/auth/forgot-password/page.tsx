@@ -19,7 +19,10 @@ type Step = "request" | "verify" | "reset";
 export default function ForgotPasswordPage() {
   const searchParams = useSearchParams();
   const from = searchParams.get("from");
-  const backHref = from === "lender" ? "/auth/lender-signin" : "/auth/signin";
+  const isLender = from === "lender";
+
+  const backHref = isLender ? "/auth/lender-signin" : "/auth/signin";
+  const portalLabel = isLender ? "Lender" : "Borrower";
 
   const [step, setStep] = useState<Step>("request");
   const [method, setMethod] = useState<"email" | "phone">("email");
@@ -51,6 +54,7 @@ export default function ForgotPasswordPage() {
   function handleSend(e: React.FormEvent) {
     e.preventDefault();
     if (!identifier.trim()) return;
+
     sendCode(getIdentifierValue(), {
       onSuccess: () => {
         toast.success(
@@ -92,6 +96,7 @@ export default function ForgotPasswordPage() {
     e.preventDefault();
     const fullCode = code.join("");
     if (fullCode.length < 6) return;
+
     verifyCode(
       { identifier: getIdentifierValue(), code: fullCode },
       {
@@ -113,11 +118,12 @@ export default function ForgotPasswordPage() {
       toast.error("Password must be at least 8 characters.");
       return;
     }
+
     resetPw(
       { newPassword, accessToken: resetToken },
       {
         onSuccess: () => {
-          toast.success("Password reset! Please sign in.");
+          toast.success("Password reset. Please sign in.");
           window.location.href = backHref;
         },
       },
@@ -127,27 +133,51 @@ export default function ForgotPasswordPage() {
   const stepIndex = (["request", "verify", "reset"] as Step[]).indexOf(step);
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#f4f8f7]">
-      <div className="h-1 bg-[#2BB5A0]" />
-      <div className="flex-1 flex items-center justify-center p-6">
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 w-full max-w-md p-10">
-          <Logo />
+    <div
+      className={`min-h-screen ${
+        isLender
+          ? "bg-[linear-gradient(180deg,#F9F6EE_0%,#F8FAFB_46%,#FFFFFF_100%)]"
+          : "bg-[linear-gradient(180deg,#EEF8F6_0%,#F8FBFB_46%,#FFFFFF_100%)]"
+      }`}
+    >
+      <div className={`h-1 ${isLender ? "bg-[#C4A55A]" : "bg-[#2BB5A0]"}`} />
 
-          <Link
-            href={backHref}
-            className="mt-6 inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700"
+      <div className="mx-auto flex w-full max-w-md items-center justify-between px-4 pb-2 pt-5">
+        <Link
+          href={backHref}
+          className="inline-flex items-center gap-1 text-sm font-medium text-gray-500 transition-colors hover:text-[#1B2B3A]"
+        >
+          <ArrowLeft className="h-4 w-4" /> Back to Sign In
+        </Link>
+      </div>
+
+      <div className="mx-auto w-full max-w-md px-4 pb-10">
+        <div className="rounded-2xl border border-gray-200 bg-white p-7 shadow-sm sm:p-9">
+          <Logo asLink={false} />
+
+          <p
+            className={`mt-5 text-[11px] font-semibold uppercase tracking-wider ${
+              isLender ? "text-[#9F7F34]" : "text-[#149D8E]"
+            }`}
           >
-            <ArrowLeft className="w-4 h-4" /> Back to Sign In
-          </Link>
+            {portalLabel} Password Recovery
+          </p>
+          <h1 className="mt-1 text-2xl font-black text-[#1B2B3A]">
+            Reset your password
+          </h1>
+          <p className="mt-1 text-sm text-gray-500">
+            Complete the steps below to securely update your credentials.
+          </p>
 
-          {/* Step indicators */}
-          <div className="flex items-center mt-6 mb-8">
+          <div className="my-6 flex items-center">
             {(["request", "verify", "reset"] as Step[]).map((s, i) => (
               <div key={s} className="flex items-center">
                 <div
-                  className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
+                  className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold transition-colors ${
                     i <= stepIndex
-                      ? "bg-[#2BB5A0] text-white"
+                      ? isLender
+                        ? "bg-[#C4A55A] text-white"
+                        : "bg-[#2BB5A0] text-white"
                       : "bg-gray-100 text-gray-400"
                   }`}
                 >
@@ -155,30 +185,34 @@ export default function ForgotPasswordPage() {
                 </div>
                 {i < 2 && (
                   <div
-                    className={`h-px w-10 transition-colors ${i < stepIndex ? "bg-[#2BB5A0]" : "bg-gray-200"}`}
+                    className={`h-px w-10 transition-colors ${
+                      i < stepIndex
+                        ? isLender
+                          ? "bg-[#C4A55A]"
+                          : "bg-[#2BB5A0]"
+                        : "bg-gray-200"
+                    }`}
                   />
                 )}
               </div>
             ))}
           </div>
 
-          {/* ── Step 1: enter identifier ── */}
           {step === "request" && (
             <>
-              <h1 className="text-2xl font-bold text-[#1B2B3A]">
-                Forgot Password?
-              </h1>
-              <p className="text-sm text-gray-500 mt-1 mb-6">
-                We&apos;ll send a one-time code to reset your password.
+              <p className="mb-5 text-sm text-gray-500">
+                Choose where you want to receive your one-time reset code.
               </p>
 
-              <div className="flex rounded-lg border p-1 mb-5">
+              <div className="mb-5 flex rounded-lg border border-gray-200 p-1">
                 <button
                   type="button"
                   onClick={() => setMethod("email")}
-                  className={`flex flex-1 items-center justify-center gap-2 rounded-md py-2 text-sm font-medium transition-colors ${
+                  className={`flex flex-1 items-center justify-center gap-2 rounded-md py-2 text-sm font-semibold transition-colors ${
                     method === "email"
-                      ? "bg-[#2BB5A0] text-white"
+                      ? isLender
+                        ? "bg-[#C4A55A] text-white"
+                        : "bg-[#2BB5A0] text-white"
                       : "text-gray-500 hover:text-gray-700"
                   }`}
                 >
@@ -187,9 +221,11 @@ export default function ForgotPasswordPage() {
                 <button
                   type="button"
                   onClick={() => setMethod("phone")}
-                  className={`flex flex-1 items-center justify-center gap-2 rounded-md py-2 text-sm font-medium transition-colors ${
+                  className={`flex flex-1 items-center justify-center gap-2 rounded-md py-2 text-sm font-semibold transition-colors ${
                     method === "phone"
-                      ? "bg-[#2BB5A0] text-white"
+                      ? isLender
+                        ? "bg-[#C4A55A] text-white"
+                        : "bg-[#2BB5A0] text-white"
                       : "text-gray-500 hover:text-gray-700"
                   }`}
                 >
@@ -204,7 +240,13 @@ export default function ForgotPasswordPage() {
                   </Label>
                   {method === "phone" ? (
                     <div className="mt-1.5 flex">
-                      <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-input bg-muted text-sm text-muted-foreground">
+                      <span
+                        className={`inline-flex items-center rounded-l-lg border border-r-0 px-3 text-sm font-semibold ${
+                          isLender
+                            ? "border-[#E7D9B7] bg-[#FCF8EE] text-[#9F7F34]"
+                            : "border-[#D5ECE8] bg-[#F2FBF9] text-[#149D8E]"
+                        }`}
+                      >
                         +256
                       </span>
                       <Input
@@ -233,29 +275,28 @@ export default function ForgotPasswordPage() {
                 <button
                   type="submit"
                   disabled={isSending}
-                  className="w-full bg-[#2BB5A0] text-white py-3 rounded-lg font-medium text-sm hover:bg-[#239E8C] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className={`w-full rounded-lg py-3 text-sm font-semibold text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+                    isLender
+                      ? "bg-[#C4A55A] hover:bg-[#b3944a]"
+                      : "bg-[#2BB5A0] hover:bg-[#239E8C]"
+                  }`}
                 >
-                  {isSending ? "Sending…" : "Send Reset Code"}
+                  {isSending ? "Sending..." : "Send Reset Code"}
                 </button>
               </form>
             </>
           )}
 
-          {/* ── Step 2: enter OTP ── */}
           {step === "verify" && (
             <>
-              <h1 className="text-2xl font-bold text-[#1B2B3A]">Enter Code</h1>
-              <p className="text-sm text-gray-500 mt-1 mb-6">
-                Enter the 6-digit code sent to your{" "}
-                <span className="font-medium text-[#1B2B3A]">
-                  {method === "email" ? "email" : "phone"}
-                </span>
-                .
+              <p className="mb-5 text-sm text-gray-500">
+                Enter the 6-digit verification code sent to your{" "}
+                {method === "email" ? "email" : "phone"}.
               </p>
 
               <form onSubmit={handleVerify} className="space-y-6">
                 <div
-                  className="flex gap-2 justify-center"
+                  className="flex justify-center gap-2"
                   onPaste={handlePaste}
                 >
                   {code.map((digit, i) => (
@@ -270,7 +311,11 @@ export default function ForgotPasswordPage() {
                       value={digit}
                       onChange={(e) => handleDigit(i, e.target.value)}
                       onKeyDown={(e) => handleKeyDown(i, e)}
-                      className="w-11 h-12 text-center text-xl font-bold border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2BB5A0] focus:border-transparent"
+                      className={`h-12 w-11 rounded-lg border text-center text-xl font-bold outline-none ${
+                        isLender
+                          ? "focus:border-[#C4A55A] focus:ring-2 focus:ring-[#C4A55A]/30"
+                          : "focus:border-[#2BB5A0] focus:ring-2 focus:ring-[#2BB5A0]/30"
+                      }`}
                     />
                   ))}
                 </div>
@@ -278,9 +323,13 @@ export default function ForgotPasswordPage() {
                 <button
                   type="submit"
                   disabled={isVerifying || code.join("").length < 6}
-                  className="w-full bg-[#2BB5A0] text-white py-3 rounded-lg font-medium text-sm hover:bg-[#239E8C] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className={`w-full rounded-lg py-3 text-sm font-semibold text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+                    isLender
+                      ? "bg-[#C4A55A] hover:bg-[#b3944a]"
+                      : "bg-[#2BB5A0] hover:bg-[#239E8C]"
+                  }`}
                 >
-                  {isVerifying ? "Verifying…" : "Verify Code"}
+                  {isVerifying ? "Verifying..." : "Verify Code"}
                 </button>
               </form>
 
@@ -290,21 +339,21 @@ export default function ForgotPasswordPage() {
                   setCode(["", "", "", "", "", ""]);
                   setStep("request");
                 }}
-                className="mt-4 w-full text-sm text-gray-500 hover:text-[#2BB5A0]"
+                className={`mt-4 w-full text-sm font-medium ${
+                  isLender
+                    ? "text-[#9F7F34] hover:text-[#876B2E]"
+                    : "text-[#149D8E] hover:text-[#108477]"
+                }`}
               >
-                Didn&apos;t receive it? Go back and resend
+                Did not receive it? Go back and resend
               </button>
             </>
           )}
 
-          {/* ── Step 3: new password ── */}
           {step === "reset" && (
             <>
-              <h1 className="text-2xl font-bold text-[#1B2B3A]">
-                Set New Password
-              </h1>
-              <p className="text-sm text-gray-500 mt-1 mb-6">
-                Choose a strong password (min. 8 characters).
+              <p className="mb-5 text-sm text-gray-500">
+                Set a new password with at least 8 characters.
               </p>
 
               <form onSubmit={handleReset} className="space-y-4">
@@ -314,7 +363,7 @@ export default function ForgotPasswordPage() {
                     <Input
                       id="newPassword"
                       type={showPw ? "text" : "password"}
-                      placeholder="••••••••"
+                      placeholder="........"
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       required
@@ -322,13 +371,13 @@ export default function ForgotPasswordPage() {
                     />
                     <button
                       type="button"
-                      onClick={() => setShowPw((v) => !v)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      onClick={() => setShowPw((value) => !value)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 transition-colors hover:text-gray-600"
                     >
                       {showPw ? (
-                        <EyeOff className="w-4 h-4" />
+                        <EyeOff className="h-4 w-4" />
                       ) : (
-                        <Eye className="w-4 h-4" />
+                        <Eye className="h-4 w-4" />
                       )}
                     </button>
                   </div>
@@ -339,7 +388,7 @@ export default function ForgotPasswordPage() {
                   <Input
                     id="confirmPassword"
                     type={showPw ? "text" : "password"}
-                    placeholder="••••••••"
+                    placeholder="........"
                     className="mt-1.5"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
@@ -351,9 +400,13 @@ export default function ForgotPasswordPage() {
                 <button
                   type="submit"
                   disabled={isResetting}
-                  className="w-full bg-[#2BB5A0] text-white py-3 rounded-lg font-medium text-sm hover:bg-[#239E8C] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className={`w-full rounded-lg py-3 text-sm font-semibold text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+                    isLender
+                      ? "bg-[#C4A55A] hover:bg-[#b3944a]"
+                      : "bg-[#2BB5A0] hover:bg-[#239E8C]"
+                  }`}
                 >
-                  {isResetting ? "Saving…" : "Reset Password"}
+                  {isResetting ? "Saving..." : "Reset Password"}
                 </button>
               </form>
             </>

@@ -1,43 +1,69 @@
 import Link from "next/link";
+import { ArrowLeft, CheckCircle2 } from "lucide-react";
+import { Logo } from "@/components/logo";
+
+const principles = [
+  "Submit truthful personal, financial, and guarantor information.",
+  "Provide authentic and unaltered supporting documents for verification.",
+  "Avoid duplicate, deceptive, or fraudulent applications.",
+  "Communicate respectfully with lenders, guarantors, and support teams.",
+  "Repay accepted loans according to agreed schedules and obligations.",
+  "Promptly update your profile if material financial information changes.",
+];
 
 export default function BorrowerCodeOfConductPage() {
   return (
-    <div className="min-h-screen bg-gray-50 py-10 px-4">
-      <div className="max-w-3xl mx-auto bg-white border border-gray-100 rounded-xl p-8">
-        <h1 className="text-2xl font-bold text-[#1B2B3A]">
-          Borrower Code of Conduct
-        </h1>
-        <p className="text-sm text-gray-500 mt-2">
-          Effective date: 21 April 2026
-        </p>
-
-        <div className="mt-6 space-y-4 text-sm text-gray-700 leading-relaxed">
-          <p>
-            Provide truthful application details and genuine supporting
-            documents.
-          </p>
-          <p>
-            Do not submit duplicate or fraudulent applications on the platform.
-          </p>
-          <p>
-            Maintain respectful communication with lenders and support teams.
-          </p>
-          <p>Repay accepted loans according to agreed schedules and terms.</p>
-          <p>
-            Repeated misconduct, fraud, or abusive behavior may lead to
-            suspension and reporting to relevant authorities.
-          </p>
-        </div>
-
-        <div className="mt-8">
+    <div className="min-h-screen bg-[linear-gradient(180deg,#EFFAF8_0%,#FFFFFF_25%)]">
+      <header className="border-b border-gray-200 bg-white/90 backdrop-blur">
+        <div className="mx-auto flex h-16 w-full max-w-5xl items-center justify-between px-4 sm:px-6">
+          <Logo asLink={false} />
           <Link
             href="/auth/register"
-            className="text-[#2BB5A0] hover:underline text-sm font-medium"
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 transition-colors hover:text-[#1B2B3A]"
           >
-            Back to borrower registration
+            <ArrowLeft className="h-4 w-4" /> Back to Register
           </Link>
         </div>
-      </div>
+      </header>
+
+      <main className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6 sm:py-14">
+        <div className="rounded-2xl border border-[#CAEAE4] bg-white p-6 sm:p-10">
+          <div className="mb-8 border-b border-gray-100 pb-6">
+            <span className="inline-flex rounded-full border border-[#AEE2D9] bg-[#E8F8F5] px-3 py-1 text-xs font-semibold uppercase tracking-wider text-[#149D8E]">
+              Borrower Standards
+            </span>
+            <h1 className="mt-3 text-3xl font-black text-[#1B2B3A] sm:text-4xl">
+              Borrower Code of Conduct
+            </h1>
+            <p className="mt-2 text-sm text-gray-500">
+              Effective date: 22 April 2026
+            </p>
+            <p className="mt-4 max-w-3xl text-sm leading-relaxed text-gray-600">
+              This code defines expected behavior for borrowers using Welend. It
+              protects trust between borrowers, lenders, and the wider platform
+              community.
+            </p>
+          </div>
+
+          <div className="rounded-xl border border-[#D7ECE8] bg-[#F3FBF9] p-5 sm:p-6">
+            <h2 className="text-lg font-bold text-[#1B2B3A]">Core Rules</h2>
+            <ul className="mt-4 space-y-3 text-sm leading-relaxed text-gray-700">
+              {principles.map((item) => (
+                <li key={item} className="flex gap-3">
+                  <CheckCircle2 className="mt-0.5 h-4.5 w-4.5 shrink-0 text-[#2BB5A0]" />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-relaxed text-amber-800">
+            Serious misconduct, fraud, harassment, or repeated policy violations
+            may result in account suspension, restricted access, or reporting to
+            relevant authorities.
+          </div>
+        </div>
+      </main>
     </div>
   );
 }

@@ -49,7 +49,7 @@ export default function HowItWorksPage() {
       </header>
 
       {/* Hero */}
-      <section className="py-20 lg:py-28 bg-gradient-to-b from-[#E8F8F5]/50 to-white">
+      <section className="py-20 lg:py-28 bg-linear-to-b from-[#E8F8F5]/50 to-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <p className="text-[#2BB5A0] text-xs font-semibold uppercase tracking-widest mb-4">
             For Borrowers
@@ -380,13 +380,22 @@ export default function HowItWorksPage() {
             #TCI-2024-0418
           </div>
           <div className="flex items-center gap-4 text-xs">
-            <Link href="#" className="hover:text-white transition-colors">
+            <Link
+              href="/privacy-policy"
+              className="hover:text-white transition-colors"
+            >
               Privacy
             </Link>
-            <Link href="#" className="hover:text-white transition-colors">
+            <Link
+              href="/platform-terms"
+              className="hover:text-white transition-colors"
+            >
               Terms
             </Link>
-            <Link href="#" className="hover:text-white transition-colors">
+            <Link
+              href="/learn-more"
+              className="hover:text-white transition-colors"
+            >
               Help Centre
             </Link>
             <span>© 2026 Welend Uganda Ltd.</span>

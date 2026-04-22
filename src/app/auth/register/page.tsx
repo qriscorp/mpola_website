@@ -58,50 +58,74 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[linear-gradient(180deg,#EEF8F6_0%,#F8FBFB_38%,#FFFFFF_100%)]">
       <div className="h-1 bg-[#2BB5A0]" />
 
-      {/* Top */}
-      <div className="border-b border-gray-200 bg-white px-6 py-4">
+      <div className="mx-auto w-full max-w-5xl px-4 py-5 sm:px-6">
         <Link
           href="/auth/signin"
-          className="text-sm text-gray-500 hover:text-gray-700 inline-flex items-center gap-1"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 transition-colors hover:text-[#1B2B3A]"
         >
-          <ArrowLeft className="w-4 h-4" /> Back
+          <ArrowLeft className="h-4 w-4" /> Back to sign in
         </Link>
       </div>
 
-      <div className="max-w-lg mx-auto py-8 px-4">
-        <div className="flex justify-center mb-8">
-          <Logo />
-        </div>
+      <div className="mx-auto grid w-full max-w-5xl gap-6 px-4 pb-10 sm:px-6 lg:grid-cols-[0.9fr_1.1fr]">
+        <aside className="rounded-2xl border border-[#CBEAE4] bg-[#E8F8F5] p-6 sm:p-8">
+          <Logo asLink={false} />
+          <p className="mt-6 text-xs font-semibold uppercase tracking-wider text-[#149D8E]">
+            Borrower Onboarding
+          </p>
+          <h1 className="mt-2 text-3xl font-black leading-tight text-[#1B2B3A]">
+            Create your borrower account
+          </h1>
+          <p className="mt-3 text-sm leading-relaxed text-gray-600">
+            Complete registration in a few minutes and proceed to ID
+            verification so lenders can start reviewing your profile.
+          </p>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
-          {/* Progress bar */}
-          <div className="flex gap-2 mb-6">
-            <div className="flex-1 h-1 rounded-full bg-[#2BB5A0]" />
-            <div className="flex-1 h-1 rounded-full bg-gray-200" />
-            <div className="flex-1 h-1 rounded-full bg-gray-200" />
+          <div className="mt-6 space-y-3">
+            {[
+              "Step 1: Account details",
+              "Step 2: Identity verification",
+              "Step 3: Start your first request",
+            ].map((item) => (
+              <div
+                key={item}
+                className="flex items-center gap-2 text-sm font-medium text-[#1B2B3A]"
+              >
+                <span className="h-2 w-2 rounded-full bg-[#2BB5A0]" />
+                {item}
+              </div>
+            ))}
+          </div>
+        </aside>
+
+        <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
+          <div className="mb-6">
+            <div className="mb-3 flex gap-2">
+              <span className="h-1.5 flex-1 rounded-full bg-[#2BB5A0]" />
+              <span className="h-1.5 flex-1 rounded-full bg-gray-200" />
+              <span className="h-1.5 flex-1 rounded-full bg-gray-200" />
+            </div>
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+              Step 1 of 3
+            </p>
+            <h2 className="mt-1 text-2xl font-black text-[#1B2B3A]">
+              Registration Details
+            </h2>
+            <p className="mt-1 text-sm text-gray-500">
+              Choose your account type and fill in your legal information.
+            </p>
           </div>
 
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-2">
-            Step 1 of 3
-          </p>
-          <h2 className="text-2xl font-bold text-[#1B2B3A] mb-1">
-            Create your borrower account
-          </h2>
-          <p className="text-gray-500 text-sm mb-6">
-            We&apos;ll verify your identity in the next step.
-          </p>
-
-          {/* Account type toggle */}
-          <div className="inline-flex border border-gray-200 rounded-lg overflow-hidden mb-6">
+          <div className="mb-5 inline-flex rounded-lg border border-gray-200 p-1">
             <button
               type="button"
-              className={`px-4 py-2 text-sm font-medium transition-colors ${
+              className={`rounded-md px-4 py-2 text-sm font-semibold transition-colors ${
                 accountType === "individual"
-                  ? "bg-[#1B2B3A] text-white"
-                  : "bg-white text-gray-600 hover:bg-gray-50"
+                  ? "bg-[#2BB5A0] text-white"
+                  : "text-gray-600 hover:text-[#1B2B3A]"
               }`}
               onClick={() => setAccountType("individual")}
             >
@@ -109,10 +133,10 @@ export default function RegisterPage() {
             </button>
             <button
               type="button"
-              className={`px-4 py-2 text-sm font-medium transition-colors ${
+              className={`rounded-md px-4 py-2 text-sm font-semibold transition-colors ${
                 accountType === "business"
-                  ? "bg-[#1B2B3A] text-white"
-                  : "bg-white text-gray-600 hover:bg-gray-50"
+                  ? "bg-[#2BB5A0] text-white"
+                  : "text-gray-600 hover:text-[#1B2B3A]"
               }`}
               onClick={() => setAccountType("business")}
             >
@@ -130,7 +154,7 @@ export default function RegisterPage() {
                 {...register("fullName")}
               />
               {errors.fullName && (
-                <p className="text-red-500 text-xs mt-1">
+                <p className="mt-1 text-xs text-red-500">
                   {errors.fullName.message}
                 </p>
               )}
@@ -142,7 +166,7 @@ export default function RegisterPage() {
                   <Label>Business Name</Label>
                   <Input
                     className="mt-1.5"
-                    placeholder="e.g. Nakato Hair Studio"
+                    placeholder="Nakato Enterprises Ltd"
                     {...register("businessName" as never)}
                   />
                 </div>
@@ -166,7 +190,7 @@ export default function RegisterPage() {
                 {...register("nin")}
               />
               {errors.nin && (
-                <p className="text-red-500 text-xs mt-1">
+                <p className="mt-1 text-xs text-red-500">
                   {errors.nin.message}
                 </p>
               )}
@@ -175,7 +199,7 @@ export default function RegisterPage() {
             <div>
               <Label>Phone Number</Label>
               <div className="mt-1.5 flex">
-                <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-input bg-muted text-sm text-muted-foreground">
+                <span className="inline-flex items-center rounded-l-lg border border-r-0 border-input bg-[#E8F8F5] px-3 text-sm font-semibold text-[#149D8E]">
                   +256
                 </span>
                 <Input
@@ -186,7 +210,7 @@ export default function RegisterPage() {
                 />
               </div>
               {errors.phone && (
-                <p className="text-red-500 text-xs mt-1">
+                <p className="mt-1 text-xs text-red-500">
                   {errors.phone.message}
                 </p>
               )}
@@ -194,22 +218,22 @@ export default function RegisterPage() {
 
             <div>
               <Label>Email Address</Label>
-              <div className="mt-1.5 relative">
+              <div className="relative mt-1.5">
                 <Input
                   placeholder="you@example.com"
                   aria-invalid={!!errors.email}
                   {...register("email")}
                 />
-                <Mail className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#2BB5A0]" />
+                <Mail className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#2BB5A0]" />
               </div>
               {errors.email && (
-                <p className="text-red-500 text-xs mt-1">
+                <p className="mt-1 text-xs text-red-500">
                   {errors.email.message}
                 </p>
               )}
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <Label>Password</Label>
                 <Input
@@ -220,7 +244,7 @@ export default function RegisterPage() {
                   {...register("password")}
                 />
                 {errors.password && (
-                  <p className="text-red-500 text-xs mt-1">
+                  <p className="mt-1 text-xs text-red-500">
                     {errors.password.message}
                   </p>
                 )}
@@ -235,41 +259,41 @@ export default function RegisterPage() {
                   {...register("confirmPassword")}
                 />
                 {errors.confirmPassword && (
-                  <p className="text-red-500 text-xs mt-1">
+                  <p className="mt-1 text-xs text-red-500">
                     {errors.confirmPassword.message}
                   </p>
                 )}
               </div>
             </div>
 
-            <div className="flex items-start gap-2">
+            <div className="flex items-start gap-2.5 rounded-lg border border-[#D5ECE8] bg-[#F2FBF9] p-3.5">
               <Checkbox
                 id="terms"
                 checked={watch("agreeToTerms") as boolean}
                 onCheckedChange={(checked) =>
                   setValue("agreeToTerms" as never, !!checked as never)
                 }
-                className="mt-1 data-[state=checked]:bg-[#2BB5A0] data-[state=checked]:border-[#2BB5A0]"
+                className="mt-0.5 data-[state=checked]:border-[#2BB5A0] data-[state=checked]:bg-[#2BB5A0]"
               />
-              <p className="text-xs text-muted-foreground">
-                I agree to the
+              <p className="text-xs leading-relaxed text-gray-600">
+                I agree to the{" "}
                 <Link
                   href="/platform-terms"
-                  className="text-[#2BB5A0] hover:underline"
+                  className="font-semibold text-[#149D8E] hover:underline"
                 >
                   Platform Terms
                 </Link>
                 ,{" "}
                 <Link
                   href="/privacy-policy"
-                  className="text-[#2BB5A0] hover:underline"
+                  className="font-semibold text-[#149D8E] hover:underline"
                 >
                   Privacy Policy
                 </Link>
                 , and{" "}
                 <Link
                   href="/borrower-code-of-conduct"
-                  className="text-[#2BB5A0] hover:underline"
+                  className="font-semibold text-[#149D8E] hover:underline"
                 >
                   Borrower Code of Conduct
                 </Link>
@@ -280,23 +304,23 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={isPending}
-              className="w-full bg-[#2BB5A0] text-white py-3 rounded-lg font-medium text-sm inline-flex items-center justify-center gap-2 hover:bg-[#239E8C] transition-colors disabled:opacity-50 mt-4"
+              className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#2BB5A0] px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#239E8C] disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {isPending ? "Creating account..." : "Continue to Verification"}{" "}
-              <ArrowRight className="w-4 h-4" />
+              {isPending ? "Creating account..." : "Continue to Verification"}
+              <ArrowRight className="h-4 w-4" />
             </button>
           </form>
 
-          <p className="text-center text-sm text-gray-500 mt-6">
+          <p className="mt-6 text-center text-sm text-gray-500">
             Already have an account?{" "}
             <Link
               href="/auth/signin"
-              className="text-[#2BB5A0] font-medium inline-flex items-center gap-1 hover:underline"
+              className="font-semibold text-[#149D8E] hover:underline"
             >
-              Sign in <ArrowRight className="w-3 h-3" />
+              Sign in
             </Link>
           </p>
-        </div>
+        </section>
       </div>
     </div>
   );
