@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -19,7 +19,40 @@ import {
 
 type AccountType = "individual" | "business";
 
+function getCookie(name: string): string | undefined {
+  return document.cookie
+    .split("; ")
+    .find((c) => c.startsWith(`${name}=`))
+    ?.split("=")[1];
+}
+
+function clearSignupDraftCookies() {
+  document.cookie = "lf_signup_flow=; path=/; max-age=0";
+  document.cookie = "lf_signup_draft=; path=/; max-age=0";
+  document.cookie = "lf_signup_role=; path=/; max-age=0";
+  document.cookie = "lf_signup_email=; path=/; max-age=0";
+  document.cookie = "lf_signup_phone=; path=/; max-age=0";
+  document.cookie = "lf_signup_email_verified=; path=/; max-age=0";
+  document.cookie = "lf_signup_phone_verified=; path=/; max-age=0";
+  document.cookie = "lf_signup_account_type=; path=/; max-age=0";
+  document.cookie = "lf_signup_full_name=; path=/; max-age=0";
+  document.cookie = "lf_signup_nin=; path=/; max-age=0";
+  document.cookie = "lf_signup_business_name=; path=/; max-age=0";
+  document.cookie = "lf_signup_registration_number=; path=/; max-age=0";
+}
+
 export default function RegisterPage() {
+  const [portal, setPortal] = useState<"borrower" | "lender">("borrower");
+  useEffect(() => {
+    const fromQuery = new URLSearchParams(window.location.search).get("portal");
+    if (fromQuery === "lender") {
+      setPortal("lender");
+    }
+  }, []);
+  const isLender = portal === "lender";
+  const signInHref = isLender ? "/auth/lender-signin" : "/auth/signin";
+  const [hasDraft, setHasDraft] = useState(false);
+  const [draftEmail, setDraftEmail] = useState("");
   const [accountType, setAccountType] = useState<AccountType>("individual");
   const { mutate: registerUser, isPending } = useRegister();
 
@@ -39,6 +72,61 @@ export default function RegisterPage() {
     },
   });
 
+  useEffect(() => {
+    const draftId = getCookie("lf_signup_draft") || "";
+    const draftRole = getCookie("lf_signup_role") || "borrower";
+    if (!draftId || draftRole !== portal) {
+      setHasDraft(false);
+      return;
+    }
+
+    setHasDraft(true);
+    setDraftEmail(decodeURIComponent(getCookie("lf_signup_email") || ""));
+
+    const accountTypeCookie = getCookie("lf_signup_account_type");
+    if (accountTypeCookie === "business") {
+      setAccountType("business");
+      businessForm.setValue("accountType", "business");
+    } else {
+      setAccountType("individual");
+      individualForm.setValue("accountType", "individual");
+    }
+
+    const fullName = decodeURIComponent(getCookie("lf_signup_full_name") || "");
+    const nin = decodeURIComponent(getCookie("lf_signup_nin") || "");
+    const phone = (getCookie("lf_signup_phone") || "").replace(/^256/, "");
+    const email = decodeURIComponent(getCookie("lf_signup_email") || "");
+    const businessName = decodeURIComponent(
+      getCookie("lf_signup_business_name") || "",
+    );
+    const registrationNumber = decodeURIComponent(
+      getCookie("lf_signup_registration_number") || "",
+    );
+
+    if (fullName) {
+      individualForm.setValue("fullName", fullName);
+      businessForm.setValue("fullName", fullName);
+    }
+    if (nin) {
+      individualForm.setValue("nin", nin);
+      businessForm.setValue("nin", nin);
+    }
+    if (phone) {
+      individualForm.setValue("phone", phone);
+      businessForm.setValue("phone", phone);
+    }
+    if (email) {
+      individualForm.setValue("email", email);
+      businessForm.setValue("email", email);
+    }
+    if (businessName) {
+      businessForm.setValue("businessName", businessName);
+    }
+    if (registrationNumber) {
+      businessForm.setValue("registrationNumber", registrationNumber);
+    }
+  }, [portal, individualForm, businessForm]);
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const form = (
     accountType === "individual" ? individualForm : businessForm
@@ -54,7 +142,7 @@ export default function RegisterPage() {
   const onSubmit = (
     data: RegisterIndividualFormData | RegisterBusinessFormData,
   ) => {
-    registerUser(data);
+    registerUser({ ...data, role: portal });
   };
 
   return (
@@ -63,7 +151,7 @@ export default function RegisterPage() {
 
       <div className="mx-auto w-full max-w-5xl px-4 py-5 sm:px-6">
         <Link
-          href="/auth/signin"
+          href={signInHref}
           className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 transition-colors hover:text-[#1B2B3A]"
         >
           <ArrowLeft className="h-4 w-4" /> Back to sign in
@@ -74,14 +162,16 @@ export default function RegisterPage() {
         <aside className="rounded-2xl border border-[#CBEAE4] bg-[#E8F8F5] p-6 sm:p-8">
           <Logo asLink={false} />
           <p className="mt-6 text-xs font-semibold uppercase tracking-wider text-[#149D8E]">
-            Borrower Onboarding
+            {isLender ? "Lender Onboarding" : "Borrower Onboarding"}
           </p>
           <h1 className="mt-2 text-3xl font-black leading-tight text-[#1B2B3A]">
-            Create your borrower account
+            {isLender
+              ? "Create your lender account"
+              : "Create your borrower account"}
           </h1>
           <p className="mt-3 text-sm leading-relaxed text-gray-600">
-            Complete registration in a few minutes and proceed to ID
-            verification so lenders can start reviewing your profile.
+            Complete registration in a few minutes and proceed to email and
+            phone verification.
           </p>
 
           <div className="mt-6 space-y-3">
@@ -145,6 +235,36 @@ export default function RegisterPage() {
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            {hasDraft && (
+              <div className="rounded-lg border border-[#D5ECE8] bg-[#F2FBF9] p-3.5">
+                <p className="text-xs text-gray-600">
+                  Resume signup draft for{" "}
+                  <span className="font-semibold text-[#1B2B3A]">
+                    {draftEmail || "this account"}
+                  </span>
+                  .
+                </p>
+                <div className="mt-2 flex items-center gap-3">
+                  <Link
+                    href="/auth/verify-email"
+                    className="text-xs font-semibold text-[#149D8E] hover:underline"
+                  >
+                    Continue verification
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      clearSignupDraftCookies();
+                      setHasDraft(false);
+                    }}
+                    className="text-xs font-semibold text-gray-500 hover:underline"
+                  >
+                    Start over
+                  </button>
+                </div>
+              </div>
+            )}
+
             <div>
               <Label>Full Legal Name</Label>
               <Input
@@ -292,10 +412,16 @@ export default function RegisterPage() {
                 </Link>
                 , and{" "}
                 <Link
-                  href="/borrower-code-of-conduct"
+                  href={
+                    isLender
+                      ? "/lender-code-of-conduct"
+                      : "/borrower-code-of-conduct"
+                  }
                   className="font-semibold text-[#149D8E] hover:underline"
                 >
-                  Borrower Code of Conduct
+                  {isLender
+                    ? "Lender Code of Conduct"
+                    : "Borrower Code of Conduct"}
                 </Link>
                 . I confirm I am 18+ and a resident of Uganda.
               </p>
@@ -314,7 +440,7 @@ export default function RegisterPage() {
           <p className="mt-6 text-center text-sm text-gray-500">
             Already have an account?{" "}
             <Link
-              href="/auth/signin"
+              href={signInHref}
               className="font-semibold text-[#149D8E] hover:underline"
             >
               Sign in

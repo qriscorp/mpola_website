@@ -5,7 +5,12 @@ import { useRouter } from "next/navigation";
 import { MailCheck, RefreshCw } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { Input } from "@/components/ui/input";
-import { useSendOtp, useVerifyOtp } from "@/hooks/use-auth";
+import {
+  useSendOtp,
+  useVerifyOtp,
+  useSendSignupEmailOtp,
+  useVerifySignupEmailOtp,
+} from "@/hooks/use-auth";
 
 function getCookie(name: string): string | undefined {
   return document.cookie
@@ -16,6 +21,7 @@ function getCookie(name: string): string | undefined {
 
 export default function VerifyEmailPage() {
   const router = useRouter();
+  const [draftId, setDraftId] = useState("");
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState(["", "", "", "", "", ""]);
@@ -24,8 +30,24 @@ export default function VerifyEmailPage() {
 
   const { mutate: sendOtp, isPending: isSending } = useSendOtp();
   const { mutate: verifyOtp, isPending: isVerifying } = useVerifyOtp();
+  const { mutate: sendSignupOtp, isPending: isSendingSignup } =
+    useSendSignupEmailOtp();
+  const { mutate: verifySignupOtp, isPending: isVerifyingSignup } =
+    useVerifySignupEmailOtp();
 
   useEffect(() => {
+    const draft = getCookie("lf_signup_draft") || "";
+    const draftEmail = decodeURIComponent(getCookie("lf_signup_email") || "");
+    if (draft) {
+      setDraftId(draft);
+      setEmail(draftEmail);
+      if (!autoSentRef.current) {
+        autoSentRef.current = true;
+        sendSignupOtp(draft);
+      }
+      return;
+    }
+
     const u = getCookie("lf_username") || "";
     const e = decodeURIComponent(getCookie("lf_email") || "");
     const verified = getCookie("lf_verified");
@@ -50,7 +72,7 @@ export default function VerifyEmailPage() {
       autoSentRef.current = true;
       sendOtp(u);
     }
-  }, [router, sendOtp]);
+  }, [router, sendOtp, sendSignupOtp]);
 
   function handleDigit(index: number, value: string) {
     const digit = value.replace(/\D/g, "").slice(-1);
@@ -81,12 +103,23 @@ export default function VerifyEmailPage() {
     e.preventDefault();
     const fullCode = code.join("");
     if (fullCode.length < 6) return;
+    if (draftId) {
+      verifySignupOtp({ draftId, code: fullCode });
+      return;
+    }
     verifyOtp({ username, code: fullCode });
   }
 
   function handleResend() {
+    if (draftId) {
+      sendSignupOtp(draftId);
+      return;
+    }
     if (username) sendOtp(username);
   }
+
+  const sending = draftId ? isSendingSignup : isSending;
+  const verifying = draftId ? isVerifyingSignup : isVerifying;
 
   return (
     <div className="min-h-screen flex flex-col bg-[#f4f8f7]">
@@ -133,10 +166,10 @@ export default function VerifyEmailPage() {
 
             <button
               type="submit"
-              disabled={isVerifying || code.join("").length < 6}
+              disabled={verifying || code.join("").length < 6}
               className="w-full bg-[#2BB5A0] text-white py-3 rounded-lg font-medium text-sm hover:bg-[#239E8C] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isVerifying ? "Verifying…" : "Verify Email"}
+              {verifying ? "Verifying…" : "Verify Email"}
             </button>
           </form>
 
@@ -144,11 +177,11 @@ export default function VerifyEmailPage() {
             Didn&apos;t receive it?{" "}
             <button
               onClick={handleResend}
-              disabled={isSending}
+              disabled={sending}
               className="text-[#2BB5A0] font-medium hover:underline inline-flex items-center gap-1 disabled:opacity-50"
             >
               <RefreshCw className="w-3 h-3" />
-              {isSending ? "Sending…" : "Resend code"}
+              {sending ? "Sending…" : "Resend code"}
             </button>
           </p>
         </div>

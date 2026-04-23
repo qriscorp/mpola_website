@@ -54,11 +54,13 @@ export function useSignIn() {
 export function useRegister() {
   const router = useRouter();
   return useMutation({
-    mutationFn: (data: RegisterIndividualFormData | RegisterBusinessFormData) =>
-      api.register(data as unknown as Record<string, unknown>),
+    mutationFn: (
+      data:
+        | (RegisterIndividualFormData & { role?: "borrower" | "lender" })
+        | (RegisterBusinessFormData & { role?: "borrower" | "lender" }),
+    ) => api.register(data as unknown as Record<string, unknown>),
     onSuccess: () => {
-      document.cookie = "lf_signup_flow=true; path=/";
-      toast.success("Account created! Please verify your email.");
+      toast.success("Registration started. Please verify your email.");
       router.push("/auth/verify-email");
     },
     onError: (error: Error) => {
@@ -89,14 +91,89 @@ export function useLenderSignIn() {
 export function useLenderRegister() {
   const router = useRouter();
   return useMutation({
-    mutationFn: (data: Record<string, unknown>) => api.lenderRegister(data),
+    mutationFn: (data: Record<string, unknown>) =>
+      api.register({ ...data, role: "lender" }),
     onSuccess: () => {
-      document.cookie = "lf_signup_flow=true; path=/";
-      toast.success("Lender account created! Please verify your email.");
+      toast.success("Registration started. Please verify your email.");
       router.push("/auth/verify-email");
     },
     onError: (error: Error) => {
       toast.error(error.message || "Registration failed. Please try again.");
+    },
+  });
+}
+
+export function useSendSignupEmailOtp() {
+  return useMutation({
+    mutationFn: (draftId: string) => api.sendSignupEmailOtp(draftId),
+    onSuccess: () => {
+      toast.success("Verification code sent to your email!");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Failed to send OTP. Please try again.");
+    },
+  });
+}
+
+export function useVerifySignupEmailOtp() {
+  const router = useRouter();
+  return useMutation({
+    mutationFn: ({ draftId, code }: { draftId: string; code: string }) =>
+      api.verifySignupEmailOtp(draftId, code),
+    onSuccess: () => {
+      toast.success("Email verified!");
+      router.push("/auth/verify-phone");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Invalid code. Please try again.");
+    },
+  });
+}
+
+export function useSendSignupPhoneOtp() {
+  return useMutation({
+    mutationFn: ({
+      draftId,
+      phoneNumber,
+    }: {
+      draftId: string;
+      phoneNumber: string;
+    }) => api.sendSignupPhoneOtp(draftId, phoneNumber),
+    onSuccess: () => {
+      toast.success("Verification code sent to your phone!");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Failed to send SMS. Please try again.");
+    },
+  });
+}
+
+export function useVerifySignupPhoneOtp() {
+  const router = useRouter();
+  return useMutation({
+    mutationFn: ({
+      draftId,
+      phoneNumber,
+      code,
+    }: {
+      draftId: string;
+      phoneNumber: string;
+      code: string;
+    }) => api.verifySignupPhoneOtp(draftId, phoneNumber, code),
+    onSuccess: () => {
+      const role = getCookie("lf_signup_role") || "borrower";
+      document.cookie = "lf_signup_flow=; path=/; max-age=0";
+      document.cookie = "lf_signup_draft=; path=/; max-age=0";
+      document.cookie = "lf_signup_role=; path=/; max-age=0";
+      document.cookie = "lf_signup_email=; path=/; max-age=0";
+      document.cookie = "lf_signup_phone=; path=/; max-age=0";
+      document.cookie = "lf_signup_email_verified=; path=/; max-age=0";
+      document.cookie = "lf_signup_phone_verified=; path=/; max-age=0";
+      toast.success("Account verified! Please sign in to continue.");
+      router.push(role === "lender" ? "/auth/lender-signin" : "/auth/signin");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Invalid code. Please try again.");
     },
   });
 }

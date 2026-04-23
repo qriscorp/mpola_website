@@ -70,6 +70,15 @@ export interface AuthResponse {
   refresh_token: string;
 }
 
+export interface SignupDraftResponse {
+  status: number;
+  message: string;
+  draft_id: string;
+  email: string;
+  phone_number?: string;
+  role: "borrower" | "lender";
+}
+
 async function apiPost<T>(path: string, body: unknown): Promise<T> {
   const res = await fetch(`${API_BASE_URL}${path}`, {
     method: "POST",
@@ -114,6 +123,52 @@ function storeTokens(data: AuthResponse) {
   }
 }
 
+function storeSignupDraft(
+  data: SignupDraftResponse,
+  payload?: Record<string, unknown>,
+) {
+  const longAge = 24 * 60 * 60;
+  document.cookie = `lf_signup_flow=true; path=/; max-age=${longAge}; SameSite=Lax`;
+  document.cookie = `lf_signup_draft=${data.draft_id}; path=/; max-age=${longAge}; SameSite=Lax`;
+  document.cookie = `lf_signup_role=${data.role}; path=/; max-age=${longAge}; SameSite=Lax`;
+  document.cookie = `lf_signup_email=${encodeURIComponent(data.email)}; path=/; max-age=${longAge}; SameSite=Lax`;
+  document.cookie = `lf_signup_email_verified=false; path=/; max-age=${longAge}; SameSite=Lax`;
+  document.cookie = `lf_signup_phone_verified=false; path=/; max-age=${longAge}; SameSite=Lax`;
+  if (payload?.accountType) {
+    document.cookie = `lf_signup_account_type=${String(payload.accountType)}; path=/; max-age=${longAge}; SameSite=Lax`;
+  }
+  if (payload?.fullName) {
+    document.cookie = `lf_signup_full_name=${encodeURIComponent(String(payload.fullName))}; path=/; max-age=${longAge}; SameSite=Lax`;
+  }
+  if (payload?.nin) {
+    document.cookie = `lf_signup_nin=${encodeURIComponent(String(payload.nin))}; path=/; max-age=${longAge}; SameSite=Lax`;
+  }
+  if (payload?.businessName) {
+    document.cookie = `lf_signup_business_name=${encodeURIComponent(String(payload.businessName))}; path=/; max-age=${longAge}; SameSite=Lax`;
+  }
+  if (payload?.registrationNumber) {
+    document.cookie = `lf_signup_registration_number=${encodeURIComponent(String(payload.registrationNumber))}; path=/; max-age=${longAge}; SameSite=Lax`;
+  }
+  if (data.phone_number) {
+    document.cookie = `lf_signup_phone=${data.phone_number}; path=/; max-age=${longAge}; SameSite=Lax`;
+  }
+}
+
+function clearSignupDraftCookies() {
+  document.cookie = "lf_signup_flow=; path=/; max-age=0";
+  document.cookie = "lf_signup_draft=; path=/; max-age=0";
+  document.cookie = "lf_signup_role=; path=/; max-age=0";
+  document.cookie = "lf_signup_email=; path=/; max-age=0";
+  document.cookie = "lf_signup_phone=; path=/; max-age=0";
+  document.cookie = "lf_signup_email_verified=; path=/; max-age=0";
+  document.cookie = "lf_signup_phone_verified=; path=/; max-age=0";
+  document.cookie = "lf_signup_account_type=; path=/; max-age=0";
+  document.cookie = "lf_signup_full_name=; path=/; max-age=0";
+  document.cookie = "lf_signup_nin=; path=/; max-age=0";
+  document.cookie = "lf_signup_business_name=; path=/; max-age=0";
+  document.cookie = "lf_signup_registration_number=; path=/; max-age=0";
+}
+
 // Normalize phone: if user typed 9 digits, prepend 256
 function normalizePhone(input: string): string {
   const digits = input.replace(/\D/g, "");
@@ -145,8 +200,10 @@ export const api = {
     return mapAuthUser(res);
   },
 
-  register: async (data: Record<string, unknown>): Promise<User> => {
-    const res = await apiPost<AuthResponse>("/auth/register", {
+  register: async (
+    data: Record<string, unknown>,
+  ): Promise<SignupDraftResponse> => {
+    const res = await apiPost<SignupDraftResponse>("/auth/register_start", {
       email: data.email,
       password: data.password,
       full_name: data.fullName,
@@ -155,8 +212,8 @@ export const api = {
       account_type: data.accountType || "individual",
       role: data.role || "borrower",
     });
-    storeTokens(res);
-    return mapAuthUser(res);
+    storeSignupDraft(res, data);
+    return res;
   },
 
   lenderSignIn: async (data: {
@@ -184,18 +241,10 @@ export const api = {
     return mapAuthUser(res);
   },
 
-  lenderRegister: async (data: Record<string, unknown>): Promise<User> => {
-    const res = await apiPost<AuthResponse>("/auth/register", {
-      email: data.email,
-      password: data.password,
-      full_name: data.fullName,
-      phone_number: normalizePhone(String(data.phone || "")),
-      nin: data.nin,
-      account_type: data.accountType || "individual",
-      role: "lender",
-    });
-    storeTokens(res);
-    return mapAuthUser(res);
+  lenderRegister: async (
+    data: Record<string, unknown>,
+  ): Promise<SignupDraftResponse> => {
+    return api.register({ ...data, role: "lender" });
   },
 
   signOut: () => {
@@ -207,6 +256,63 @@ export const api = {
     document.cookie = "lf_username=; path=/; max-age=0";
     document.cookie = "lf_email=; path=/; max-age=0";
     document.cookie = "lf_phone=; path=/; max-age=0";
+    clearSignupDraftCookies();
+  },
+
+  // ─── Signup Draft OTP Verification ──────────────────────
+
+  sendSignupEmailOtp: async (
+    draftId: string,
+  ): Promise<{ status: number; message: string }> => {
+    return apiPost("/auth/send_signup_email_otp", { draft_id: draftId });
+  },
+
+  verifySignupEmailOtp: async (
+    draftId: string,
+    code: string,
+  ): Promise<{ status: number; message: string }> => {
+    const res = await apiPost<{ status: number; message: string }>(
+      "/auth/verify_signup_email_otp",
+      {
+        draft_id: draftId,
+        code,
+      },
+    );
+    document.cookie = `lf_signup_email_verified=true; path=/; max-age=${24 * 60 * 60}; SameSite=Lax`;
+    return res;
+  },
+
+  sendSignupPhoneOtp: async (
+    draftId: string,
+    phoneNumber: string,
+  ): Promise<{ status: number; message: string }> => {
+    const normalizedPhone = normalizePhone(phoneNumber);
+    const res = await apiPost<{ status: number; message: string }>(
+      "/auth/send_signup_phone_otp",
+      {
+        draft_id: draftId,
+        phone_number: normalizedPhone,
+      },
+    );
+    document.cookie = `lf_signup_phone=${normalizedPhone}; path=/; max-age=${24 * 60 * 60}; SameSite=Lax`;
+    return res;
+  },
+
+  verifySignupPhoneOtp: async (
+    draftId: string,
+    phoneNumber: string,
+    code: string,
+  ): Promise<{ status: number; message: string }> => {
+    const res = await apiPost<{ status: number; message: string }>(
+      "/auth/verify_signup_phone_otp",
+      {
+        draft_id: draftId,
+        phone_number: normalizePhone(phoneNumber),
+        code,
+      },
+    );
+    document.cookie = `lf_signup_phone_verified=true; path=/; max-age=${24 * 60 * 60}; SameSite=Lax`;
+    return res;
   },
 
   // ─── OTP / Verification ───────────────────────────────────

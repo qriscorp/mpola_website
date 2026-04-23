@@ -6,7 +6,12 @@ import { Smartphone, RefreshCw } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useSendPhoneOtp, useVerifyPhoneOtp } from "@/hooks/use-auth";
+import {
+  useSendPhoneOtp,
+  useVerifyPhoneOtp,
+  useSendSignupPhoneOtp,
+  useVerifySignupPhoneOtp,
+} from "@/hooks/use-auth";
 
 function getCookie(name: string): string | undefined {
   return document.cookie
@@ -25,6 +30,7 @@ function toLocalDisplay(phone: string): string {
 
 export default function VerifyPhonePage() {
   const router = useRouter();
+  const [draftId, setDraftId] = useState("");
   const [username, setUsername] = useState("");
   const [phone, setPhone] = useState("");
   const [codeSent, setCodeSent] = useState(false);
@@ -34,8 +40,36 @@ export default function VerifyPhonePage() {
   const { mutate: sendPhoneOtp, isPending: isSending } = useSendPhoneOtp();
   const { mutate: verifyPhoneOtp, isPending: isVerifying } =
     useVerifyPhoneOtp();
+  const { mutate: sendSignupPhoneOtp, isPending: isSendingSignup } =
+    useSendSignupPhoneOtp();
+  const { mutate: verifySignupPhoneOtp, isPending: isVerifyingSignup } =
+    useVerifySignupPhoneOtp();
 
   useEffect(() => {
+    const draft = getCookie("lf_signup_draft") || "";
+    if (draft) {
+      const rawPhone = getCookie("lf_signup_phone") || "";
+      const emailVerified = getCookie("lf_signup_email_verified");
+      const phoneVerified = getCookie("lf_signup_phone_verified");
+
+      if (emailVerified !== "true") {
+        router.replace("/auth/verify-email");
+        return;
+      }
+
+      if (phoneVerified === "true") {
+        const role = getCookie("lf_signup_role") || "borrower";
+        router.replace(
+          role === "lender" ? "/auth/lender-signin" : "/auth/signin",
+        );
+        return;
+      }
+
+      setDraftId(draft);
+      setPhone(toLocalDisplay(rawPhone));
+      return;
+    }
+
     const u = getCookie("lf_username") || "";
     const rawPhone = getCookie("lf_phone") || "";
     const phoneVerified = getCookie("lf_phone_verified");
@@ -61,6 +95,13 @@ export default function VerifyPhonePage() {
 
   function handleSend() {
     if (!phone) return;
+    if (draftId) {
+      sendSignupPhoneOtp(
+        { draftId, phoneNumber: phone },
+        { onSuccess: () => setCodeSent(true) },
+      );
+      return;
+    }
     sendPhoneOtp(
       { username, phoneNumber: phone },
       { onSuccess: () => setCodeSent(true) },
@@ -96,8 +137,15 @@ export default function VerifyPhonePage() {
     e.preventDefault();
     const fullCode = otp.join("");
     if (fullCode.length < 6) return;
+    if (draftId) {
+      verifySignupPhoneOtp({ draftId, phoneNumber: phone, code: fullCode });
+      return;
+    }
     verifyPhoneOtp({ username, phoneNumber: phone, code: fullCode });
   }
+
+  const sending = draftId ? isSendingSignup : isSending;
+  const verifying = draftId ? isVerifyingSignup : isVerifying;
 
   return (
     <div className="min-h-screen flex flex-col bg-[#f4f8f7]">
@@ -143,10 +191,10 @@ export default function VerifyPhonePage() {
             {!codeSent ? (
               <button
                 onClick={handleSend}
-                disabled={isSending || !phone}
+                disabled={sending || !phone}
                 className="w-full bg-[#2BB5A0] text-white py-3 rounded-lg font-medium text-sm hover:bg-[#239E8C] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isSending ? "Sending…" : "Send Verification Code"}
+                {sending ? "Sending…" : "Send Verification Code"}
               </button>
             ) : (
               <form onSubmit={handleVerify} className="space-y-5">
@@ -179,10 +227,10 @@ export default function VerifyPhonePage() {
 
                 <button
                   type="submit"
-                  disabled={isVerifying || otp.join("").length < 6}
+                  disabled={verifying || otp.join("").length < 6}
                   className="w-full bg-[#2BB5A0] text-white py-3 rounded-lg font-medium text-sm hover:bg-[#239E8C] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isVerifying ? "Verifying…" : "Confirm Phone"}
+                  {verifying ? "Verifying…" : "Confirm Phone"}
                 </button>
 
                 <p className="text-center text-sm text-gray-500">
@@ -190,11 +238,11 @@ export default function VerifyPhonePage() {
                   <button
                     type="button"
                     onClick={handleSend}
-                    disabled={isSending}
+                    disabled={sending}
                     className="text-[#2BB5A0] font-medium hover:underline inline-flex items-center gap-1 disabled:opacity-50"
                   >
                     <RefreshCw className="w-3 h-3" />
-                    {isSending ? "Sending…" : "Resend"}
+                    {sending ? "Sending…" : "Resend"}
                   </button>
                 </p>
               </form>
