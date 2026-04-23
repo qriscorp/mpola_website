@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { Suspense, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Eye, EyeOff, Mail, Phone } from "lucide-react";
@@ -17,6 +17,14 @@ import {
 type Step = "request" | "verify" | "reset";
 
 export default function ForgotPasswordPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-white" />}>
+      <ForgotPasswordContent />
+    </Suspense>
+  );
+}
+
+function ForgotPasswordContent() {
   const searchParams = useSearchParams();
   const from = searchParams.get("from");
   const isLender = from === "lender";

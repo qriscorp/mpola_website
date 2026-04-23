@@ -6,7 +6,8 @@ import { Search, MapPin, FileText, Users } from "lucide-react";
 import { LenderPageHeader } from "@/components/lender-top-nav";
 import { useMarketplaceBorrowers } from "@/hooks/use-lender";
 
-const tabs = ["All", "Business", "Personal", "Verified KYC"];
+const tabs = ["All", "Business", "Personal", "Verified KYC"] as const;
+type MarketplaceTab = (typeof tabs)[number];
 
 const avatarColors = [
   "bg-[#1B2B3A]",
@@ -19,11 +20,11 @@ const avatarColors = [
 
 export default function MarketplacePage() {
   const { data: borrowers = [] } = useMarketplaceBorrowers();
-  const [activeTab, setActiveTab] = useState("All");
+  const [activeTab, setActiveTab] = useState<MarketplaceTab>("All");
   const [query, setQuery] = useState("");
 
   const counts = useMemo(
-    () => ({
+    (): Record<MarketplaceTab, number> => ({
       All: borrowers.length,
       Business: borrowers.filter((b) => b.loanType === "Business").length,
       Personal: borrowers.filter((b) => b.loanType === "Personal").length,
