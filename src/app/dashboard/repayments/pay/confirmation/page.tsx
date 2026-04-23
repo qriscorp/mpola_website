@@ -26,10 +26,10 @@ export default function PaymentConfirmationPage() {
                 />
               </svg>
             </div>
-            <h2 className="text-3xl sm:text-5xl leading-tight font-black text-[#1B2B3A]">
+            <h2 className="text-2xl sm:text-3xl leading-tight font-black text-[#1B2B3A]">
               Payment Successful
             </h2>
-            <p className="text-base sm:text-2xl text-gray-500">
+            <p className="text-sm sm:text-base text-gray-500">
               Transaction confirmed
             </p>
           </div>
@@ -45,20 +45,18 @@ export default function PaymentConfirmationPage() {
                 key={String(label)}
                 className="flex items-center justify-between border-b border-[#B9DDD7] py-3"
               >
-                <span className="text-sm sm:text-2xl text-gray-500">
-                  {label}
-                </span>
-                <span className="text-sm sm:text-2xl font-bold text-[#1B2B3A]">
+                <span className="text-sm text-gray-500">{label}</span>
+                <span className="text-sm font-semibold text-[#1B2B3A]">
                   {value}
                 </span>
               </div>
             ))}
 
             <div className="flex items-center justify-between pt-2">
-              <span className="text-2xl sm:text-4xl font-black text-[#1B2B3A]">
+              <span className="text-lg sm:text-xl font-bold text-[#1B2B3A]">
                 Amount Paid
               </span>
-              <span className="text-2xl sm:text-5xl leading-none font-black text-[#19A44B]">
+              <span className="text-2xl sm:text-3xl leading-none font-black text-[#19A44B]">
                 UGX 2,400,000
               </span>
             </div>
@@ -66,12 +64,12 @@ export default function PaymentConfirmationPage() {
         </div>
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <button className="rounded-xl border border-gray-300 bg-white px-4 py-3 text-base sm:text-xl font-bold text-[#1B2B3A] transition-colors hover:bg-gray-50">
+          <button className="rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm font-semibold text-[#1B2B3A] transition-colors hover:bg-gray-50">
             Download Receipt
           </button>
           <Link
             href="/dashboard/repayments"
-            className="inline-flex items-center justify-center rounded-xl bg-[#149D8E] px-4 py-3 text-base sm:text-xl font-bold text-white transition-colors hover:bg-[#108a7d]"
+            className="inline-flex items-center justify-center rounded-xl bg-[#149D8E] px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#108a7d]"
           >
             View Schedule
           </Link>

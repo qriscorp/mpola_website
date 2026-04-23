@@ -10,7 +10,7 @@ export default function ProfilePage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Personal Information */}
         <div className="bg-white rounded-2xl border border-gray-200 p-6">
-          <h2 className="text-2xl sm:text-3xl leading-tight font-black text-[#1B2B3A] mb-5">
+          <h2 className="text-xl sm:text-2xl leading-tight font-black text-[#1B2B3A] mb-5">
             Personal Information
           </h2>
 
@@ -20,7 +20,7 @@ export default function ProfilePage() {
               AK
             </div>
             <div>
-              <p className="text-2xl sm:text-4xl leading-tight font-black text-[#1B2B3A]">
+              <p className="text-xl sm:text-2xl leading-tight font-black text-[#1B2B3A]">
                 Agnes Kyomuhendo
               </p>
               <p className="text-sm text-gray-400">Borrower since Feb 2024</p>
@@ -57,7 +57,7 @@ export default function ProfilePage() {
 
         {/* KYC Status */}
         <div className="bg-white rounded-2xl border border-gray-200 p-6 self-start">
-          <h2 className="text-2xl sm:text-3xl leading-tight font-black text-[#1B2B3A] mb-5">
+          <h2 className="text-xl sm:text-2xl leading-tight font-black text-[#1B2B3A] mb-5">
             KYC Status
           </h2>
           <div className="space-y-4">

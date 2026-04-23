@@ -50,6 +50,23 @@ export default function RegisterPage() {
     }
   }, []);
   const isLender = portal === "lender";
+  const accentBgClass = isLender ? "bg-[#C4A55A]" : "bg-[#2BB5A0]";
+  const accentHoverBgClass = isLender
+    ? "hover:bg-[#b3944a]"
+    : "hover:bg-[#239E8C]";
+  const accentTextClass = isLender ? "text-[#C4A55A]" : "text-[#149D8E]";
+  const accentSoftBgClass = isLender ? "bg-[#FFF8EC]" : "bg-[#F2FBF9]";
+  const accentSoftBorderClass = isLender
+    ? "border-[#E8D5A3]"
+    : "border-[#D5ECE8]";
+  const accentPrefixBgClass = isLender ? "bg-[#FFF8EC]" : "bg-[#E8F8F5]";
+  const accentPrefixTextClass = isLender ? "text-[#C4A55A]" : "text-[#149D8E]";
+  const accentAsideClass = isLender
+    ? "border-[#E8D5A3] bg-[#FFF8EC]"
+    : "border-[#CBEAE4] bg-[#E8F8F5]";
+  const accentCheckboxClass = isLender
+    ? "data-[state=checked]:border-[#C4A55A] data-[state=checked]:bg-[#C4A55A]"
+    : "data-[state=checked]:border-[#2BB5A0] data-[state=checked]:bg-[#2BB5A0]";
   const signInHref = isLender ? "/auth/lender-signin" : "/auth/signin";
   const [hasDraft, setHasDraft] = useState(false);
   const [draftEmail, setDraftEmail] = useState("");
@@ -159,7 +176,7 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen bg-[linear-gradient(180deg,#EEF8F6_0%,#F8FBFB_38%,#FFFFFF_100%)]">
-      <div className="h-1 bg-[#2BB5A0]" />
+      <div className={`h-1 ${accentBgClass}`} />
 
       <div className="mx-auto w-full max-w-5xl px-4 py-5 sm:px-6">
         <Link
@@ -171,9 +188,11 @@ export default function RegisterPage() {
       </div>
 
       <div className="mx-auto grid w-full max-w-5xl gap-6 px-4 pb-10 sm:px-6 lg:grid-cols-[0.9fr_1.1fr]">
-        <aside className="rounded-2xl border border-[#CBEAE4] bg-[#E8F8F5] p-6 sm:p-8">
+        <aside className={`rounded-2xl border p-6 sm:p-8 ${accentAsideClass}`}>
           <Logo asLink={false} />
-          <p className="mt-6 text-xs font-semibold uppercase tracking-wider text-[#149D8E]">
+          <p
+            className={`mt-6 text-xs font-semibold uppercase tracking-wider ${accentTextClass}`}
+          >
             {isLender ? "Lender Onboarding" : "Borrower Onboarding"}
           </p>
           <h1 className="mt-2 text-3xl font-black leading-tight text-[#1B2B3A]">
@@ -196,7 +215,7 @@ export default function RegisterPage() {
                 key={item}
                 className="flex items-center gap-2 text-sm font-medium text-[#1B2B3A]"
               >
-                <span className="h-2 w-2 rounded-full bg-[#2BB5A0]" />
+                <span className={`h-2 w-2 rounded-full ${accentBgClass}`} />
                 {item}
               </div>
             ))}
@@ -206,7 +225,7 @@ export default function RegisterPage() {
         <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
           <div className="mb-6">
             <div className="mb-3 flex gap-2">
-              <span className="h-1.5 flex-1 rounded-full bg-[#2BB5A0]" />
+              <span className={`h-1.5 flex-1 rounded-full ${accentBgClass}`} />
               <span className="h-1.5 flex-1 rounded-full bg-gray-200" />
               <span className="h-1.5 flex-1 rounded-full bg-gray-200" />
             </div>
@@ -226,7 +245,7 @@ export default function RegisterPage() {
               type="button"
               className={`rounded-md px-4 py-2 text-sm font-semibold transition-colors ${
                 accountType === "individual"
-                  ? "bg-[#2BB5A0] text-white"
+                  ? `${accentBgClass} text-white`
                   : "text-gray-600 hover:text-[#1B2B3A]"
               }`}
               onClick={() => setAccountType("individual")}
@@ -237,7 +256,7 @@ export default function RegisterPage() {
               type="button"
               className={`rounded-md px-4 py-2 text-sm font-semibold transition-colors ${
                 accountType === "business"
-                  ? "bg-[#2BB5A0] text-white"
+                  ? `${accentBgClass} text-white`
                   : "text-gray-600 hover:text-[#1B2B3A]"
               }`}
               onClick={() => setAccountType("business")}
@@ -248,7 +267,9 @@ export default function RegisterPage() {
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             {hasDraft && (
-              <div className="rounded-lg border border-[#D5ECE8] bg-[#F2FBF9] p-3.5">
+              <div
+                className={`rounded-lg border p-3.5 ${accentSoftBorderClass} ${accentSoftBgClass}`}
+              >
                 <p className="text-xs text-gray-600">
                   Resume signup draft for{" "}
                   <span className="font-semibold text-[#1B2B3A]">
@@ -259,7 +280,7 @@ export default function RegisterPage() {
                 <div className="mt-2 flex items-center gap-3">
                   <Link
                     href={resumeHref}
-                    className="text-xs font-semibold text-[#149D8E] hover:underline"
+                    className={`text-xs font-semibold hover:underline ${accentTextClass}`}
                   >
                     {resumeLabel}
                   </Link>
@@ -331,7 +352,9 @@ export default function RegisterPage() {
             <div>
               <Label>Phone Number</Label>
               <div className="mt-1.5 flex">
-                <span className="inline-flex items-center rounded-l-lg border border-r-0 border-input bg-[#E8F8F5] px-3 text-sm font-semibold text-[#149D8E]">
+                <span
+                  className={`inline-flex items-center rounded-l-lg border border-r-0 border-input px-3 text-sm font-semibold ${accentPrefixBgClass} ${accentPrefixTextClass}`}
+                >
                   +256
                 </span>
                 <Input
@@ -356,7 +379,9 @@ export default function RegisterPage() {
                   aria-invalid={!!errors.email}
                   {...register("email")}
                 />
-                <Mail className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#2BB5A0]" />
+                <Mail
+                  className={`absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 ${accentTextClass}`}
+                />
               </div>
               {errors.email && (
                 <p className="mt-1 text-xs text-red-500">
@@ -398,27 +423,29 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            <div className="flex items-start gap-2.5 rounded-lg border border-[#D5ECE8] bg-[#F2FBF9] p-3.5">
+            <div
+              className={`flex items-start gap-2.5 rounded-lg border p-3.5 ${accentSoftBorderClass} ${accentSoftBgClass}`}
+            >
               <Checkbox
                 id="terms"
                 checked={watch("agreeToTerms") as boolean}
                 onCheckedChange={(checked) =>
                   setValue("agreeToTerms" as never, !!checked as never)
                 }
-                className="mt-0.5 data-[state=checked]:border-[#2BB5A0] data-[state=checked]:bg-[#2BB5A0]"
+                className={`mt-0.5 ${accentCheckboxClass}`}
               />
               <p className="text-xs leading-relaxed text-gray-600">
                 I agree to the{" "}
                 <Link
                   href="/platform-terms"
-                  className="font-semibold text-[#149D8E] hover:underline"
+                  className={`font-semibold hover:underline ${accentTextClass}`}
                 >
                   Platform Terms
                 </Link>
                 ,{" "}
                 <Link
                   href="/privacy-policy"
-                  className="font-semibold text-[#149D8E] hover:underline"
+                  className={`font-semibold hover:underline ${accentTextClass}`}
                 >
                   Privacy Policy
                 </Link>
@@ -429,7 +456,7 @@ export default function RegisterPage() {
                       ? "/lender-code-of-conduct"
                       : "/borrower-code-of-conduct"
                   }
-                  className="font-semibold text-[#149D8E] hover:underline"
+                  className={`font-semibold hover:underline ${accentTextClass}`}
                 >
                   {isLender
                     ? "Lender Code of Conduct"
@@ -442,7 +469,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={isPending}
-              className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#2BB5A0] px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#239E8C] disabled:cursor-not-allowed disabled:opacity-50"
+              className={`mt-2 inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${accentBgClass} ${accentHoverBgClass}`}
             >
               {isPending ? "Creating account..." : "Continue to Verification"}
               <ArrowRight className="h-4 w-4" />
@@ -453,7 +480,7 @@ export default function RegisterPage() {
             Already have an account?{" "}
             <Link
               href={signInHref}
-              className="font-semibold text-[#149D8E] hover:underline"
+              className={`font-semibold hover:underline ${accentTextClass}`}
             >
               Sign in
             </Link>
