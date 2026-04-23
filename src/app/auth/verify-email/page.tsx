@@ -39,6 +39,11 @@ export default function VerifyEmailPage() {
     const draft = getCookie("lf_signup_draft") || "";
     const draftEmail = decodeURIComponent(getCookie("lf_signup_email") || "");
     if (draft) {
+      const emailVerified = getCookie("lf_signup_email_verified") === "true";
+      if (emailVerified) {
+        router.replace("/auth/verify-phone");
+        return;
+      }
       setDraftId(draft);
       setEmail(draftEmail);
       if (!autoSentRef.current) {

@@ -53,6 +53,8 @@ export default function RegisterPage() {
   const signInHref = isLender ? "/auth/lender-signin" : "/auth/signin";
   const [hasDraft, setHasDraft] = useState(false);
   const [draftEmail, setDraftEmail] = useState("");
+  const [resumeHref, setResumeHref] = useState("/auth/verify-email");
+  const [resumeLabel, setResumeLabel] = useState("Continue email verification");
   const [accountType, setAccountType] = useState<AccountType>("individual");
   const { mutate: registerUser, isPending } = useRegister();
 
@@ -82,6 +84,16 @@ export default function RegisterPage() {
 
     setHasDraft(true);
     setDraftEmail(decodeURIComponent(getCookie("lf_signup_email") || ""));
+
+    const emailVerified = getCookie("lf_signup_email_verified") === "true";
+    const nextHref = emailVerified
+      ? "/auth/verify-phone"
+      : "/auth/verify-email";
+    const nextLabel = emailVerified
+      ? "Continue phone verification"
+      : "Continue email verification";
+    setResumeHref(nextHref);
+    setResumeLabel(nextLabel);
 
     const accountTypeCookie = getCookie("lf_signup_account_type");
     if (accountTypeCookie === "business") {
@@ -246,10 +258,10 @@ export default function RegisterPage() {
                 </p>
                 <div className="mt-2 flex items-center gap-3">
                   <Link
-                    href="/auth/verify-email"
+                    href={resumeHref}
                     className="text-xs font-semibold text-[#149D8E] hover:underline"
                   >
-                    Continue verification
+                    {resumeLabel}
                   </Link>
                   <button
                     type="button"

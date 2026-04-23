@@ -50,23 +50,16 @@ export default function VerifyPhonePage() {
     if (draft) {
       const rawPhone = getCookie("lf_signup_phone") || "";
       const emailVerified = getCookie("lf_signup_email_verified");
-      const phoneVerified = getCookie("lf_signup_phone_verified");
 
       if (emailVerified !== "true") {
         router.replace("/auth/verify-email");
         return;
       }
 
-      if (phoneVerified === "true") {
-        const role = getCookie("lf_signup_role") || "borrower";
-        router.replace(
-          role === "lender" ? "/auth/lender-signin" : "/auth/signin",
-        );
-        return;
-      }
-
-      setDraftId(draft);
-      setPhone(toLocalDisplay(rawPhone));
+      queueMicrotask(() => {
+        setDraftId(draft);
+        setPhone(toLocalDisplay(rawPhone));
+      });
       return;
     }
 
