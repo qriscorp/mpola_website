@@ -6,6 +6,7 @@ import { Smartphone, RefreshCw } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { api } from "@/lib/api";
 import {
   useSendPhoneOtp,
   useVerifyPhoneOtp,
@@ -57,29 +58,40 @@ export default function VerifyPhonePage() {
     useVerifySignupPhoneOtp();
 
   useEffect(() => {
+    const loadDraftStatus = async (draft: string, fallbackPhone: string) => {
+      try {
+        const status = await api.getSignupDraftStatus(draft);
+        const role =
+          status.draft?.role || getCookie("lf_signup_role") || "borrower";
+
+        if (status.account_created || status.draft?.is_completed) {
+          router.replace(
+            role === "lender" ? "/auth/lender-signin" : "/auth/signin",
+          );
+          return;
+        }
+
+        if (status.draft?.next_step === "verify_email") {
+          router.replace("/auth/verify-email");
+          return;
+        }
+
+        queueMicrotask(() => {
+          setDraftId(status.draft?.draft_id || draft);
+          setPhone(toLocalDisplay(status.draft?.phone_number || fallbackPhone));
+        });
+      } catch {
+        queueMicrotask(() => {
+          setDraftId(draft);
+          setPhone(toLocalDisplay(fallbackPhone));
+        });
+      }
+    };
+
     const draft = getCookie("lf_signup_draft") || "";
     if (draft) {
-      const phoneVerified = getCookie("lf_signup_phone_verified") === "true";
-      if (phoneVerified) {
-        const role = getCookie("lf_signup_role") || "borrower";
-        router.replace(
-          role === "lender" ? "/auth/lender-signin" : "/auth/signin",
-        );
-        return;
-      }
-
       const rawPhone = getCookie("lf_signup_phone") || "";
-      const emailVerified = getCookie("lf_signup_email_verified");
-
-      if (emailVerified !== "true") {
-        router.replace("/auth/verify-email");
-        return;
-      }
-
-      queueMicrotask(() => {
-        setDraftId(draft);
-        setPhone(toLocalDisplay(rawPhone));
-      });
+      void loadDraftStatus(draft, rawPhone);
       return;
     }
 

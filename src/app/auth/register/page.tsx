@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, ArrowRight, Mail } from "lucide-react";
@@ -10,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useRegister } from "@/hooks/use-auth";
+import { api, type SignupDraftPayload } from "@/lib/api";
 import {
   registerIndividualSchema,
   registerBusinessSchema,
@@ -42,7 +44,35 @@ function clearSignupDraftCookies() {
   document.cookie = "lf_signup_form_draft=; path=/; max-age=0";
 }
 
-function getSignupDraftResumeRoute() {
+function getSignupDraftResumeRoute(draft?: SignupDraftPayload) {
+  if (draft?.next_step === "verify_phone") {
+    return {
+      href: "/auth/verify-phone",
+      label: "Continue phone verification",
+    };
+  }
+
+  if (draft?.next_step === "verify_email") {
+    return {
+      href: "/auth/verify-email",
+      label: "Continue email verification",
+    };
+  }
+
+  if (draft?.email_verified === true && draft?.phone_verified !== true) {
+    return {
+      href: "/auth/verify-phone",
+      label: "Continue phone verification",
+    };
+  }
+
+  if (draft?.is_completed) {
+    return {
+      href: draft.role === "lender" ? "/auth/lender-signin" : "/auth/signin",
+      label: "Sign in",
+    };
+  }
+
   const emailVerified = getCookie("lf_signup_email_verified") === "true";
   const phoneVerified = getCookie("lf_signup_phone_verified") === "true";
 
@@ -82,6 +112,7 @@ function writeSignupFormDraftCookie(data: Record<string, unknown>) {
 }
 
 export default function RegisterPage() {
+  const router = useRouter();
   const [portal, setPortal] = useState<"borrower" | "lender">("borrower");
   useEffect(() => {
     const fromQuery = new URLSearchParams(window.location.search).get("portal");
@@ -113,6 +144,7 @@ export default function RegisterPage() {
   const [draftEmail, setDraftEmail] = useState("");
   const [resumeHref, setResumeHref] = useState("/auth/verify-email");
   const [resumeLabel, setResumeLabel] = useState("Continue email verification");
+  const [isResolvingResume, setIsResolvingResume] = useState(false);
   const [accountType, setAccountType] = useState<AccountType>("individual");
   const { mutate: registerUser, isPending } = useRegister();
 
@@ -142,8 +174,11 @@ export default function RegisterPage() {
         const localAccountType =
           localDraft.accountType === "business" ? "business" : "individual";
         setAccountType(localAccountType);
-        individualForm.setValue("accountType", localAccountType);
-        businessForm.setValue("accountType", localAccountType);
+        if (localAccountType === "business") {
+          businessForm.setValue("accountType", "business");
+        } else {
+          individualForm.setValue("accountType", "individual");
+        }
 
         const fullName = String(localDraft.fullName || "");
         const nin = String(localDraft.nin || "");
@@ -184,15 +219,35 @@ export default function RegisterPage() {
     setHasLocalFormDraft(false);
     setDraftEmail(decodeURIComponent(getCookie("lf_signup_email") || ""));
 
-    const next = getSignupDraftResumeRoute();
-    if (next.href === "/auth/signin") {
-      clearSignupDraftCookies();
-      setHasDraft(false);
-      return;
-    }
+    const loadDraftStatus = async () => {
+      try {
+        const status = await api.getSignupDraftStatus(draftId);
+        if (status.account_created || status.draft?.is_completed) {
+          clearSignupDraftCookies();
+          setHasDraft(false);
+          return;
+        }
 
-    setResumeHref(next.href);
-    setResumeLabel(next.label);
+        if (status.draft?.email) {
+          setDraftEmail(status.draft.email);
+        }
+
+        const fromStatus = getSignupDraftResumeRoute(status.draft);
+        setResumeHref(fromStatus.href);
+        setResumeLabel(fromStatus.label);
+      } catch {
+        const fallback = getSignupDraftResumeRoute();
+        if (fallback.href === "/auth/signin") {
+          clearSignupDraftCookies();
+          setHasDraft(false);
+          return;
+        }
+        setResumeHref(fallback.href);
+        setResumeLabel(fallback.label);
+      }
+    };
+
+    void loadDraftStatus();
 
     const accountTypeCookie = getCookie("lf_signup_account_type");
     if (accountTypeCookie === "business") {
@@ -318,6 +373,36 @@ export default function RegisterPage() {
     registerUser({ ...data, role: portal });
   };
 
+  const handleResumeDraft = async () => {
+    const draftId = getCookie("lf_signup_draft") || "";
+    if (!draftId) {
+      setHasDraft(false);
+      return;
+    }
+
+    setIsResolvingResume(true);
+    try {
+      const status = await api.getSignupDraftStatus(draftId);
+      if (status.account_created || status.draft?.is_completed) {
+        clearSignupDraftCookies();
+        setHasDraft(false);
+        router.push(
+          portal === "lender" ? "/auth/lender-signin" : "/auth/signin",
+        );
+        return;
+      }
+
+      const next = getSignupDraftResumeRoute(status.draft);
+      setResumeHref(next.href);
+      setResumeLabel(next.label);
+      router.push(next.href);
+    } catch {
+      router.push(resumeHref);
+    } finally {
+      setIsResolvingResume(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[linear-gradient(180deg,#EEF8F6_0%,#F8FBFB_38%,#FFFFFF_100%)]">
       <div className={`h-1 ${accentBgClass}`} />
@@ -422,12 +507,15 @@ export default function RegisterPage() {
                   .
                 </p>
                 <div className="mt-2 flex items-center gap-3">
-                  <Link
-                    href={resumeHref}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      void handleResumeDraft();
+                    }}
                     className={`text-xs font-semibold hover:underline ${accentTextClass}`}
                   >
-                    {resumeLabel}
-                  </Link>
+                    {isResolvingResume ? "Checking status..." : resumeLabel}
+                  </button>
                   <button
                     type="button"
                     onClick={() => {

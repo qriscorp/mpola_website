@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { MailCheck, RefreshCw } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { Input } from "@/components/ui/input";
+import { api } from "@/lib/api";
 import {
   useSendOtp,
   useVerifyOtp,
@@ -33,8 +34,9 @@ function getSignupFormDraftRole(): "borrower" | "lender" | null {
 export default function VerifyEmailPage() {
   const router = useRouter();
   const [draftId, setDraftId] = useState("");
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(() =>
+    decodeURIComponent(getCookie("lf_email") || ""),
+  );
   const [code, setCode] = useState(["", "", "", "", "", ""]);
   const inputs = useRef<(HTMLInputElement | null)[]>([]);
   const autoSentRef = useRef(false);
@@ -47,35 +49,50 @@ export default function VerifyEmailPage() {
     useVerifySignupEmailOtp();
 
   useEffect(() => {
+    const loadDraftStatus = async (draft: string, fallbackEmail: string) => {
+      try {
+        const status = await api.getSignupDraftStatus(draft);
+        const role =
+          status.draft?.role || getCookie("lf_signup_role") || "borrower";
+
+        if (status.account_created || status.draft?.is_completed) {
+          router.replace(
+            role === "lender" ? "/auth/lender-signin" : "/auth/signin",
+          );
+          return;
+        }
+
+        if (status.draft?.next_step === "verify_phone") {
+          router.replace("/auth/verify-phone");
+          return;
+        }
+
+        const nextDraftId = status.draft?.draft_id || draft;
+        setDraftId(nextDraftId);
+        setEmail(status.draft?.email || fallbackEmail);
+
+        if (!autoSentRef.current) {
+          autoSentRef.current = true;
+          sendSignupOtp(nextDraftId);
+        }
+      } catch {
+        setDraftId(draft);
+        setEmail(fallbackEmail);
+        if (!autoSentRef.current) {
+          autoSentRef.current = true;
+          sendSignupOtp(draft);
+        }
+      }
+    };
+
     const draft = getCookie("lf_signup_draft") || "";
     const draftEmail = decodeURIComponent(getCookie("lf_signup_email") || "");
     if (draft) {
-      const emailVerified = getCookie("lf_signup_email_verified") === "true";
-      const phoneVerified = getCookie("lf_signup_phone_verified") === "true";
-
-      if (emailVerified && phoneVerified) {
-        const role = getCookie("lf_signup_role") || "borrower";
-        router.replace(
-          role === "lender" ? "/auth/lender-signin" : "/auth/signin",
-        );
-        return;
-      }
-
-      if (emailVerified) {
-        router.replace("/auth/verify-phone");
-        return;
-      }
-      setDraftId(draft);
-      setEmail(draftEmail);
-      if (!autoSentRef.current) {
-        autoSentRef.current = true;
-        sendSignupOtp(draft);
-      }
+      void loadDraftStatus(draft, draftEmail);
       return;
     }
 
     const u = getCookie("lf_username") || "";
-    const e = decodeURIComponent(getCookie("lf_email") || "");
     const verified = getCookie("lf_verified");
 
     if (!u) {
@@ -94,9 +111,6 @@ export default function VerifyEmailPage() {
       );
       return;
     }
-
-    setUsername(u);
-    setEmail(e);
 
     // Auto-send OTP on first mount so the user always has a fresh code
     if (!autoSentRef.current) {
@@ -138,6 +152,7 @@ export default function VerifyEmailPage() {
       verifySignupOtp({ draftId, code: fullCode });
       return;
     }
+    const username = getCookie("lf_username") || "";
     verifyOtp({ username, code: fullCode });
   }
 
@@ -146,6 +161,7 @@ export default function VerifyEmailPage() {
       sendSignupOtp(draftId);
       return;
     }
+    const username = getCookie("lf_username") || "";
     if (username) sendOtp(username);
   }
 

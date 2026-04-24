@@ -29,15 +29,37 @@ function clearSignupDraftCookies() {
   document.cookie = "lf_signup_form_draft=; path=/; max-age=0";
 }
 
-function resolveSignupDraftRoute(role?: string): string {
-  const emailVerified = getCookie("lf_signup_email_verified") === "true";
-  const phoneVerified = getCookie("lf_signup_phone_verified") === "true";
+function resolveSignupDraftRoute(
+  draft?: {
+    next_step?: string;
+    role?: string;
+    email_verified?: boolean;
+    phone_verified?: boolean;
+    is_completed?: boolean;
+  },
+  fallbackRole?: string,
+): string {
+  const role =
+    draft?.role || fallbackRole || getCookie("lf_signup_role") || "borrower";
 
-  if (!emailVerified) {
+  if (draft?.is_completed) {
+    return role === "lender" ? "/auth/lender-signin" : "/auth/signin";
+  }
+
+  if (draft?.next_step === "verify_phone") {
+    return "/auth/verify-phone";
+  }
+  if (draft?.next_step === "verify_email") {
     return "/auth/verify-email";
   }
-  if (!phoneVerified) {
+
+  if (draft?.email_verified === true && draft?.phone_verified !== true) {
     return "/auth/verify-phone";
+  }
+
+  // Default to email verification whenever an active draft exists.
+  if (getCookie("lf_signup_draft")) {
+    return "/auth/verify-email";
   }
 
   return role === "lender" ? "/auth/lender-signin" : "/auth/signin";
@@ -84,10 +106,10 @@ export function useRegister() {
         | (RegisterIndividualFormData & { role?: "borrower" | "lender" })
         | (RegisterBusinessFormData & { role?: "borrower" | "lender" }),
     ) => api.register(data as unknown as Record<string, unknown>),
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast.success("Registration started. Please verify your email.");
       const role = getCookie("lf_signup_role") || "borrower";
-      router.push(resolveSignupDraftRoute(role));
+      router.push(resolveSignupDraftRoute(data.draft, role));
     },
     onError: (error: Error) => {
       toast.error(error.message || "Registration failed. Please try again.");
@@ -119,10 +141,10 @@ export function useLenderRegister() {
   return useMutation({
     mutationFn: (data: Record<string, unknown>) =>
       api.register({ ...data, role: "lender" }),
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast.success("Registration started. Please verify your email.");
       const role = getCookie("lf_signup_role") || "lender";
-      router.push(resolveSignupDraftRoute(role));
+      router.push(resolveSignupDraftRoute(data.draft, role));
     },
     onError: (error: Error) => {
       toast.error(error.message || "Registration failed. Please try again.");
@@ -150,12 +172,12 @@ export function useVerifySignupEmailOtp() {
     onSuccess: (data) => {
       toast.success("Email verified!");
       const role = getCookie("lf_signup_role") || "borrower";
-      if (data.message?.toLowerCase().includes("account created")) {
+      if (data.account_created || data.draft?.is_completed) {
         clearSignupDraftCookies();
         router.push(role === "lender" ? "/auth/lender-signin" : "/auth/signin");
         return;
       }
-      router.push(resolveSignupDraftRoute(role));
+      router.push(resolveSignupDraftRoute(data.draft, role));
     },
     onError: (error: Error) => {
       toast.error(error.message || "Invalid code. Please try again.");
@@ -195,21 +217,15 @@ export function useVerifySignupPhoneOtp() {
     }) => api.verifySignupPhoneOtp(draftId, phoneNumber, code),
     onSuccess: (data) => {
       const role = getCookie("lf_signup_role") || "borrower";
-      const message = data.message?.toLowerCase() || "";
 
-      if (message.includes("account created")) {
+      if (data.account_created || data.draft?.is_completed) {
         clearSignupDraftCookies();
         toast.success("Account verified! Please sign in to continue.");
         router.push(role === "lender" ? "/auth/lender-signin" : "/auth/signin");
         return;
       }
 
-      if (message.includes("verify email")) {
-        router.push("/auth/verify-email");
-        return;
-      }
-
-      router.push(resolveSignupDraftRoute(role));
+      router.push(resolveSignupDraftRoute(data.draft, role));
     },
     onError: (error: Error) => {
       toast.error(error.message || "Invalid code. Please try again.");

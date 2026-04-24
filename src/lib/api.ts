@@ -77,6 +77,26 @@ export interface SignupDraftResponse {
   email: string;
   phone_number?: string;
   role: "borrower" | "lender";
+  account_created?: boolean;
+  draft?: SignupDraftPayload;
+}
+
+export interface SignupDraftPayload {
+  draft_id: string;
+  email: string;
+  phone_number?: string;
+  role: "borrower" | "lender";
+  email_verified: boolean;
+  phone_verified: boolean;
+  is_completed: boolean;
+  next_step?: "verify_email" | "verify_phone" | "completed" | string;
+}
+
+export interface SignupDraftStatusResponse {
+  status: number;
+  message: string;
+  account_created?: boolean;
+  draft?: SignupDraftPayload;
 }
 
 async function apiPost<T>(path: string, body: unknown): Promise<T> {
@@ -88,6 +108,20 @@ async function apiPost<T>(path: string, body: unknown): Promise<T> {
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: "Request failed" }));
     throw new Error(err.detail || `HTTP ${res.status}`);
+  }
+  return res.json();
+}
+
+async function apiGet<T>(path: string): Promise<T> {
+  const res = await fetch(`${API_BASE_URL}${path}`, {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+  });
+  if (!res.ok) {
+    const err = await res
+      .json()
+      .catch(() => ({ detail: "Request failed", message: "Request failed" }));
+    throw new Error(err.detail || err.message || `HTTP ${res.status}`);
   }
   return res.json();
 }
@@ -133,8 +167,8 @@ function storeSignupDraft(
   document.cookie = `lf_signup_draft=${data.draft_id}; path=/; max-age=${longAge}; SameSite=Lax`;
   document.cookie = `lf_signup_role=${data.role}; path=/; max-age=${longAge}; SameSite=Lax`;
   document.cookie = `lf_signup_email=${encodeURIComponent(data.email)}; path=/; max-age=${longAge}; SameSite=Lax`;
-  document.cookie = `lf_signup_email_verified=false; path=/; max-age=${longAge}; SameSite=Lax`;
-  document.cookie = `lf_signup_phone_verified=false; path=/; max-age=${longAge}; SameSite=Lax`;
+  document.cookie = `lf_signup_email_verified=${data.draft?.email_verified ? "true" : "false"}; path=/; max-age=${longAge}; SameSite=Lax`;
+  document.cookie = `lf_signup_phone_verified=${data.draft?.phone_verified ? "true" : "false"}; path=/; max-age=${longAge}; SameSite=Lax`;
   if (payload?.accountType) {
     document.cookie = `lf_signup_account_type=${String(payload.accountType)}; path=/; max-age=${longAge}; SameSite=Lax`;
   }
@@ -152,6 +186,19 @@ function storeSignupDraft(
   }
   if (data.phone_number) {
     document.cookie = `lf_signup_phone=${data.phone_number}; path=/; max-age=${longAge}; SameSite=Lax`;
+  }
+}
+
+function storeSignupDraftFromPayload(draft: SignupDraftPayload) {
+  const longAge = 24 * 60 * 60;
+  document.cookie = `lf_signup_flow=true; path=/; max-age=${longAge}; SameSite=Lax`;
+  document.cookie = `lf_signup_draft=${draft.draft_id}; path=/; max-age=${longAge}; SameSite=Lax`;
+  document.cookie = `lf_signup_role=${draft.role}; path=/; max-age=${longAge}; SameSite=Lax`;
+  document.cookie = `lf_signup_email=${encodeURIComponent(draft.email)}; path=/; max-age=${longAge}; SameSite=Lax`;
+  document.cookie = `lf_signup_email_verified=${draft.email_verified ? "true" : "false"}; path=/; max-age=${longAge}; SameSite=Lax`;
+  document.cookie = `lf_signup_phone_verified=${draft.phone_verified ? "true" : "false"}; path=/; max-age=${longAge}; SameSite=Lax`;
+  if (draft.phone_number) {
+    document.cookie = `lf_signup_phone=${draft.phone_number}; path=/; max-age=${longAge}; SameSite=Lax`;
   }
 }
 
@@ -215,6 +262,9 @@ export const api = {
       role: data.role || "borrower",
     });
     storeSignupDraft(res, data);
+    if (res.draft) {
+      storeSignupDraftFromPayload(res.draft);
+    }
     return res;
   },
 
@@ -261,42 +311,75 @@ export const api = {
     clearSignupDraftCookies();
   },
 
+  getSignupDraftStatus: async (
+    draftId: string,
+  ): Promise<SignupDraftStatusResponse> => {
+    const res = await apiGet<SignupDraftStatusResponse>(
+      `/auth/signup_draft/${draftId}`,
+    );
+    if (res.account_created || res.draft?.is_completed) {
+      clearSignupDraftCookies();
+    } else if (res.draft) {
+      storeSignupDraftFromPayload(res.draft);
+    }
+    return res;
+  },
+
   // ─── Signup Draft OTP Verification ──────────────────────
 
   sendSignupEmailOtp: async (
     draftId: string,
-  ): Promise<{ status: number; message: string }> => {
-    return apiPost("/auth/send_signup_email_otp", { draft_id: draftId });
+  ): Promise<SignupDraftStatusResponse> => {
+    const res = await apiPost<SignupDraftStatusResponse>(
+      "/auth/send_signup_email_otp",
+      { draft_id: draftId },
+    );
+    if (res.account_created || res.draft?.is_completed) {
+      clearSignupDraftCookies();
+    } else if (res.draft) {
+      storeSignupDraftFromPayload(res.draft);
+    }
+    return res;
   },
 
   verifySignupEmailOtp: async (
     draftId: string,
     code: string,
-  ): Promise<{ status: number; message: string }> => {
-    const res = await apiPost<{ status: number; message: string }>(
+  ): Promise<SignupDraftStatusResponse> => {
+    const res = await apiPost<SignupDraftStatusResponse>(
       "/auth/verify_signup_email_otp",
       {
         draft_id: draftId,
         code,
       },
     );
-    document.cookie = `lf_signup_email_verified=true; path=/; max-age=${24 * 60 * 60}; SameSite=Lax`;
+    if (res.account_created || res.draft?.is_completed) {
+      clearSignupDraftCookies();
+    } else if (res.draft) {
+      storeSignupDraftFromPayload(res.draft);
+    }
     return res;
   },
 
   sendSignupPhoneOtp: async (
     draftId: string,
     phoneNumber: string,
-  ): Promise<{ status: number; message: string }> => {
+  ): Promise<SignupDraftStatusResponse> => {
     const normalizedPhone = normalizePhone(phoneNumber);
-    const res = await apiPost<{ status: number; message: string }>(
+    const res = await apiPost<SignupDraftStatusResponse>(
       "/auth/send_signup_phone_otp",
       {
         draft_id: draftId,
         phone_number: normalizedPhone,
       },
     );
-    document.cookie = `lf_signup_phone=${normalizedPhone}; path=/; max-age=${24 * 60 * 60}; SameSite=Lax`;
+    if (res.account_created || res.draft?.is_completed) {
+      clearSignupDraftCookies();
+    } else if (res.draft) {
+      storeSignupDraftFromPayload(res.draft);
+    } else {
+      document.cookie = `lf_signup_phone=${normalizedPhone}; path=/; max-age=${24 * 60 * 60}; SameSite=Lax`;
+    }
     return res;
   },
 
@@ -304,8 +387,8 @@ export const api = {
     draftId: string,
     phoneNumber: string,
     code: string,
-  ): Promise<{ status: number; message: string }> => {
-    const res = await apiPost<{ status: number; message: string }>(
+  ): Promise<SignupDraftStatusResponse> => {
+    const res = await apiPost<SignupDraftStatusResponse>(
       "/auth/verify_signup_phone_otp",
       {
         draft_id: draftId,
@@ -313,7 +396,11 @@ export const api = {
         code,
       },
     );
-    document.cookie = `lf_signup_phone_verified=true; path=/; max-age=${24 * 60 * 60}; SameSite=Lax`;
+    if (res.account_created || res.draft?.is_completed) {
+      clearSignupDraftCookies();
+    } else if (res.draft) {
+      storeSignupDraftFromPayload(res.draft);
+    }
     return res;
   },
 
