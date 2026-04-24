@@ -14,6 +14,9 @@ import {
 } from "@/hooks/use-auth";
 
 function getCookie(name: string): string | undefined {
+  if (typeof document === "undefined") {
+    return undefined;
+  }
   return document.cookie
     .split("; ")
     .find((c) => c.startsWith(`${name}=`))
