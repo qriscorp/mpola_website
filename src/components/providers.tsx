@@ -5,6 +5,7 @@ import { ThemeProvider } from "next-themes";
 import { useState, type ReactNode } from "react";
 import { Toaster } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { PwaInstallBanner } from "./pwa-install-banner";
 
 export function Providers({ children }: { children: ReactNode }) {
   const [queryClient] = useState(
@@ -29,6 +30,7 @@ export function Providers({ children }: { children: ReactNode }) {
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
           {children}
+          <PwaInstallBanner />
           <Toaster
             position="top-right"
             toastOptions={{

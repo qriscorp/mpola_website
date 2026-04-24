@@ -128,6 +128,7 @@ function storeSignupDraft(
   payload?: Record<string, unknown>,
 ) {
   const longAge = 24 * 60 * 60;
+  document.cookie = "lf_signup_form_draft=; path=/; max-age=0";
   document.cookie = `lf_signup_flow=true; path=/; max-age=${longAge}; SameSite=Lax`;
   document.cookie = `lf_signup_draft=${data.draft_id}; path=/; max-age=${longAge}; SameSite=Lax`;
   document.cookie = `lf_signup_role=${data.role}; path=/; max-age=${longAge}; SameSite=Lax`;
@@ -167,6 +168,7 @@ function clearSignupDraftCookies() {
   document.cookie = "lf_signup_nin=; path=/; max-age=0";
   document.cookie = "lf_signup_business_name=; path=/; max-age=0";
   document.cookie = "lf_signup_registration_number=; path=/; max-age=0";
+  document.cookie = "lf_signup_form_draft=; path=/; max-age=0";
 }
 
 // Normalize phone: if user typed 9 digits, prepend 256

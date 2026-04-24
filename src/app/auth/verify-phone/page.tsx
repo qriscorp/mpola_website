@@ -20,6 +20,17 @@ function getCookie(name: string): string | undefined {
     ?.split("=")[1];
 }
 
+function getSignupFormDraftRole(): "borrower" | "lender" | null {
+  const raw = getCookie("lf_signup_form_draft");
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(decodeURIComponent(raw)) as { role?: string };
+    return parsed.role === "lender" ? "lender" : "borrower";
+  } catch {
+    return null;
+  }
+}
+
 /** Strip 256 prefix for display in +256 | [input] UI */
 function toLocalDisplay(phone: string): string {
   const digits = phone.replace(/\D/g, "");
@@ -48,6 +59,15 @@ export default function VerifyPhonePage() {
   useEffect(() => {
     const draft = getCookie("lf_signup_draft") || "";
     if (draft) {
+      const phoneVerified = getCookie("lf_signup_phone_verified") === "true";
+      if (phoneVerified) {
+        const role = getCookie("lf_signup_role") || "borrower";
+        router.replace(
+          role === "lender" ? "/auth/lender-signin" : "/auth/signin",
+        );
+        return;
+      }
+
       const rawPhone = getCookie("lf_signup_phone") || "";
       const emailVerified = getCookie("lf_signup_email_verified");
 
@@ -69,6 +89,11 @@ export default function VerifyPhonePage() {
     const verified = getCookie("lf_verified");
 
     if (!u) {
+      const draftRole = getSignupFormDraftRole();
+      if (draftRole) {
+        router.replace(`/auth/register?portal=${draftRole}`);
+        return;
+      }
       router.replace("/auth/signin");
       return;
     }

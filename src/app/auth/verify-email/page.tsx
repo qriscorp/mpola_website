@@ -19,6 +19,17 @@ function getCookie(name: string): string | undefined {
     ?.split("=")[1];
 }
 
+function getSignupFormDraftRole(): "borrower" | "lender" | null {
+  const raw = getCookie("lf_signup_form_draft");
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(decodeURIComponent(raw)) as { role?: string };
+    return parsed.role === "lender" ? "lender" : "borrower";
+  } catch {
+    return null;
+  }
+}
+
 export default function VerifyEmailPage() {
   const router = useRouter();
   const [draftId, setDraftId] = useState("");
@@ -40,6 +51,16 @@ export default function VerifyEmailPage() {
     const draftEmail = decodeURIComponent(getCookie("lf_signup_email") || "");
     if (draft) {
       const emailVerified = getCookie("lf_signup_email_verified") === "true";
+      const phoneVerified = getCookie("lf_signup_phone_verified") === "true";
+
+      if (emailVerified && phoneVerified) {
+        const role = getCookie("lf_signup_role") || "borrower";
+        router.replace(
+          role === "lender" ? "/auth/lender-signin" : "/auth/signin",
+        );
+        return;
+      }
+
       if (emailVerified) {
         router.replace("/auth/verify-phone");
         return;
@@ -58,6 +79,11 @@ export default function VerifyEmailPage() {
     const verified = getCookie("lf_verified");
 
     if (!u) {
+      const draftRole = getSignupFormDraftRole();
+      if (draftRole) {
+        router.replace(`/auth/register?portal=${draftRole}`);
+        return;
+      }
       router.replace("/auth/signin");
       return;
     }

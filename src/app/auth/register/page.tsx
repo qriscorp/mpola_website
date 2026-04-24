@@ -39,6 +39,46 @@ function clearSignupDraftCookies() {
   document.cookie = "lf_signup_nin=; path=/; max-age=0";
   document.cookie = "lf_signup_business_name=; path=/; max-age=0";
   document.cookie = "lf_signup_registration_number=; path=/; max-age=0";
+  document.cookie = "lf_signup_form_draft=; path=/; max-age=0";
+}
+
+function getSignupDraftResumeRoute() {
+  const emailVerified = getCookie("lf_signup_email_verified") === "true";
+  const phoneVerified = getCookie("lf_signup_phone_verified") === "true";
+
+  if (!emailVerified) {
+    return {
+      href: "/auth/verify-email",
+      label: "Continue email verification",
+    };
+  }
+
+  if (!phoneVerified) {
+    return {
+      href: "/auth/verify-phone",
+      label: "Continue phone verification",
+    };
+  }
+
+  return {
+    href: "/auth/signin",
+    label: "Sign in",
+  };
+}
+
+function readSignupFormDraftCookie(): Record<string, unknown> | null {
+  const raw = getCookie("lf_signup_form_draft");
+  if (!raw) return null;
+  try {
+    return JSON.parse(decodeURIComponent(raw)) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+}
+
+function writeSignupFormDraftCookie(data: Record<string, unknown>) {
+  const maxAge = 24 * 60 * 60;
+  document.cookie = `lf_signup_form_draft=${encodeURIComponent(JSON.stringify(data))}; path=/; max-age=${maxAge}; SameSite=Lax`;
 }
 
 export default function RegisterPage() {
@@ -69,6 +109,7 @@ export default function RegisterPage() {
     : "data-[state=checked]:border-[#2BB5A0] data-[state=checked]:bg-[#2BB5A0]";
   const signInHref = isLender ? "/auth/lender-signin" : "/auth/signin";
   const [hasDraft, setHasDraft] = useState(false);
+  const [hasLocalFormDraft, setHasLocalFormDraft] = useState(false);
   const [draftEmail, setDraftEmail] = useState("");
   const [resumeHref, setResumeHref] = useState("/auth/verify-email");
   const [resumeLabel, setResumeLabel] = useState("Continue email verification");
@@ -96,21 +137,62 @@ export default function RegisterPage() {
     const draftRole = getCookie("lf_signup_role") || "borrower";
     if (!draftId || draftRole !== portal) {
       setHasDraft(false);
+      const localDraft = readSignupFormDraftCookie();
+      if (localDraft?.role === portal) {
+        const localAccountType =
+          localDraft.accountType === "business" ? "business" : "individual";
+        setAccountType(localAccountType);
+        individualForm.setValue("accountType", localAccountType);
+        businessForm.setValue("accountType", localAccountType);
+
+        const fullName = String(localDraft.fullName || "");
+        const nin = String(localDraft.nin || "");
+        const phone = String(localDraft.phone || "");
+        const email = String(localDraft.email || "");
+        const password = String(localDraft.password || "");
+        const confirmPassword = String(localDraft.confirmPassword || "");
+        const businessName = String(localDraft.businessName || "");
+        const registrationNumber = String(localDraft.registrationNumber || "");
+        const agreeToTerms = localDraft.agreeToTerms !== false;
+
+        individualForm.setValue("fullName", fullName);
+        individualForm.setValue("nin", nin);
+        individualForm.setValue("phone", phone);
+        individualForm.setValue("email", email);
+        individualForm.setValue("password", password);
+        individualForm.setValue("confirmPassword", confirmPassword);
+        individualForm.setValue("agreeToTerms", agreeToTerms as true);
+
+        businessForm.setValue("fullName", fullName);
+        businessForm.setValue("nin", nin);
+        businessForm.setValue("phone", phone);
+        businessForm.setValue("email", email);
+        businessForm.setValue("password", password);
+        businessForm.setValue("confirmPassword", confirmPassword);
+        businessForm.setValue("businessName", businessName);
+        businessForm.setValue("registrationNumber", registrationNumber);
+        businessForm.setValue("agreeToTerms", agreeToTerms as true);
+
+        setHasLocalFormDraft(true);
+      } else {
+        setHasLocalFormDraft(false);
+      }
       return;
     }
 
     setHasDraft(true);
+    setHasLocalFormDraft(false);
     setDraftEmail(decodeURIComponent(getCookie("lf_signup_email") || ""));
 
-    const emailVerified = getCookie("lf_signup_email_verified") === "true";
-    const nextHref = emailVerified
-      ? "/auth/verify-phone"
-      : "/auth/verify-email";
-    const nextLabel = emailVerified
-      ? "Continue phone verification"
-      : "Continue email verification";
-    setResumeHref(nextHref);
-    setResumeLabel(nextLabel);
+    const next = getSignupDraftResumeRoute();
+    if (next.href === "/auth/signin") {
+      clearSignupDraftCookies();
+      setHasDraft(false);
+      return;
+    }
+
+    setResumeHref(next.href);
+    setResumeLabel(next.label);
 
     const accountTypeCookie = getCookie("lf_signup_account_type");
     if (accountTypeCookie === "business") {
@@ -167,6 +249,68 @@ export default function RegisterPage() {
     watch,
     setValue,
   } = form;
+
+  const watchedFullName = String(watch("fullName") || "");
+  const watchedNin = String(watch("nin") || "");
+  const watchedPhone = String(watch("phone") || "");
+  const watchedEmail = String(watch("email") || "");
+  const watchedPassword = String(watch("password") || "");
+  const watchedConfirmPassword = String(watch("confirmPassword") || "");
+  const watchedAgreeToTerms = Boolean(watch("agreeToTerms"));
+  const watchedBusinessName = String(watch("businessName" as never) || "");
+  const watchedRegistrationNumber = String(
+    watch("registrationNumber" as never) || "",
+  );
+
+  useEffect(() => {
+    if (hasDraft) {
+      return;
+    }
+
+    const hasAnyValue =
+      !!watchedFullName ||
+      !!watchedNin ||
+      !!watchedPhone ||
+      !!watchedEmail ||
+      !!watchedPassword ||
+      !!watchedConfirmPassword ||
+      (accountType === "business" &&
+        (!!watchedBusinessName || !!watchedRegistrationNumber));
+
+    if (!hasAnyValue) {
+      document.cookie = "lf_signup_form_draft=; path=/; max-age=0";
+      setHasLocalFormDraft(false);
+      return;
+    }
+
+    writeSignupFormDraftCookie({
+      role: portal,
+      accountType,
+      fullName: watchedFullName,
+      nin: watchedNin,
+      phone: watchedPhone,
+      email: watchedEmail,
+      password: watchedPassword,
+      confirmPassword: watchedConfirmPassword,
+      agreeToTerms: watchedAgreeToTerms,
+      businessName: watchedBusinessName,
+      registrationNumber: watchedRegistrationNumber,
+    });
+    setHasLocalFormDraft(true);
+  }, [
+    hasDraft,
+    portal,
+    accountType,
+    watchedFullName,
+    watchedNin,
+    watchedPhone,
+    watchedEmail,
+    watchedPassword,
+    watchedConfirmPassword,
+    watchedAgreeToTerms,
+    watchedBusinessName,
+    watchedRegistrationNumber,
+  ]);
 
   const onSubmit = (
     data: RegisterIndividualFormData | RegisterBusinessFormData,
@@ -289,12 +433,24 @@ export default function RegisterPage() {
                     onClick={() => {
                       clearSignupDraftCookies();
                       setHasDraft(false);
+                      setHasLocalFormDraft(false);
                     }}
                     className="text-xs font-semibold text-gray-500 hover:underline"
                   >
                     Start over
                   </button>
                 </div>
+              </div>
+            )}
+
+            {!hasDraft && hasLocalFormDraft && (
+              <div
+                className={`rounded-lg border p-3.5 ${accentSoftBorderClass} ${accentSoftBgClass}`}
+              >
+                <p className="text-xs text-gray-600">
+                  Restored your unfinished signup form. Continue where you left
+                  off.
+                </p>
               </div>
             )}
 

@@ -12,6 +12,23 @@ export const metadata: Metadata = {
   title: "Welend – Borrower Portal",
   description:
     "Fair credit, on your terms. Apply once. Compare offers from licensed lenders side-by-side.",
+  applicationName: "Welend",
+  manifest: "/manifest.webmanifest",
+  themeColor: "#2BB5A0",
+  icons: {
+    icon: [
+      { url: "/welend-icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/welend-icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+  },
+  appleWebApp: {
+    capable: true,
+    title: "Welend",
+    statusBarStyle: "default",
+  },
 };
 
 export default function RootLayout({

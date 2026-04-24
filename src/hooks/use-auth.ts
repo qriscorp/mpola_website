@@ -18,6 +18,31 @@ function getCookie(name: string): string | undefined {
     ?.split("=")[1];
 }
 
+function clearSignupDraftCookies() {
+  document.cookie = "lf_signup_flow=; path=/; max-age=0";
+  document.cookie = "lf_signup_draft=; path=/; max-age=0";
+  document.cookie = "lf_signup_role=; path=/; max-age=0";
+  document.cookie = "lf_signup_email=; path=/; max-age=0";
+  document.cookie = "lf_signup_phone=; path=/; max-age=0";
+  document.cookie = "lf_signup_email_verified=; path=/; max-age=0";
+  document.cookie = "lf_signup_phone_verified=; path=/; max-age=0";
+  document.cookie = "lf_signup_form_draft=; path=/; max-age=0";
+}
+
+function resolveSignupDraftRoute(role?: string): string {
+  const emailVerified = getCookie("lf_signup_email_verified") === "true";
+  const phoneVerified = getCookie("lf_signup_phone_verified") === "true";
+
+  if (!emailVerified) {
+    return "/auth/verify-email";
+  }
+  if (!phoneVerified) {
+    return "/auth/verify-phone";
+  }
+
+  return role === "lender" ? "/auth/lender-signin" : "/auth/signin";
+}
+
 /**
  * After a successful auth response the cookies are already written by storeTokens.
  * Decide where to send the user based on verification status.
@@ -61,7 +86,8 @@ export function useRegister() {
     ) => api.register(data as unknown as Record<string, unknown>),
     onSuccess: () => {
       toast.success("Registration started. Please verify your email.");
-      router.push("/auth/verify-email");
+      const role = getCookie("lf_signup_role") || "borrower";
+      router.push(resolveSignupDraftRoute(role));
     },
     onError: (error: Error) => {
       toast.error(error.message || "Registration failed. Please try again.");
@@ -95,7 +121,8 @@ export function useLenderRegister() {
       api.register({ ...data, role: "lender" }),
     onSuccess: () => {
       toast.success("Registration started. Please verify your email.");
-      router.push("/auth/verify-email");
+      const role = getCookie("lf_signup_role") || "lender";
+      router.push(resolveSignupDraftRoute(role));
     },
     onError: (error: Error) => {
       toast.error(error.message || "Registration failed. Please try again.");
@@ -120,9 +147,15 @@ export function useVerifySignupEmailOtp() {
   return useMutation({
     mutationFn: ({ draftId, code }: { draftId: string; code: string }) =>
       api.verifySignupEmailOtp(draftId, code),
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast.success("Email verified!");
-      router.push("/auth/verify-phone");
+      const role = getCookie("lf_signup_role") || "borrower";
+      if (data.message?.toLowerCase().includes("account created")) {
+        clearSignupDraftCookies();
+        router.push(role === "lender" ? "/auth/lender-signin" : "/auth/signin");
+        return;
+      }
+      router.push(resolveSignupDraftRoute(role));
     },
     onError: (error: Error) => {
       toast.error(error.message || "Invalid code. Please try again.");
@@ -160,17 +193,23 @@ export function useVerifySignupPhoneOtp() {
       phoneNumber: string;
       code: string;
     }) => api.verifySignupPhoneOtp(draftId, phoneNumber, code),
-    onSuccess: () => {
+    onSuccess: (data) => {
       const role = getCookie("lf_signup_role") || "borrower";
-      document.cookie = "lf_signup_flow=; path=/; max-age=0";
-      document.cookie = "lf_signup_draft=; path=/; max-age=0";
-      document.cookie = "lf_signup_role=; path=/; max-age=0";
-      document.cookie = "lf_signup_email=; path=/; max-age=0";
-      document.cookie = "lf_signup_phone=; path=/; max-age=0";
-      document.cookie = "lf_signup_email_verified=; path=/; max-age=0";
-      document.cookie = "lf_signup_phone_verified=; path=/; max-age=0";
-      toast.success("Account verified! Please sign in to continue.");
-      router.push(role === "lender" ? "/auth/lender-signin" : "/auth/signin");
+      const message = data.message?.toLowerCase() || "";
+
+      if (message.includes("account created")) {
+        clearSignupDraftCookies();
+        toast.success("Account verified! Please sign in to continue.");
+        router.push(role === "lender" ? "/auth/lender-signin" : "/auth/signin");
+        return;
+      }
+
+      if (message.includes("verify email")) {
+        router.push("/auth/verify-email");
+        return;
+      }
+
+      router.push(resolveSignupDraftRoute(role));
     },
     onError: (error: Error) => {
       toast.error(error.message || "Invalid code. Please try again.");
