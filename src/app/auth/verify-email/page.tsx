@@ -97,8 +97,18 @@ export default function VerifyEmailPage() {
 
     const u = getCookie("lf_username") || "";
     const verified = getCookie("lf_verified");
+    const signupRole = getCookie("lf_signup_role");
+    const signupFlow = getCookie("lf_signup_flow") === "true";
+    const signupEmailCookie = getCookie("lf_signup_email");
 
     if (!u) {
+      if (signupFlow || signupRole || signupEmailCookie) {
+        router.replace(
+          `/auth/register?portal=${signupRole === "lender" ? "lender" : "borrower"}`,
+        );
+        return;
+      }
+
       const draftRole = getSignupFormDraftRole();
       if (draftRole) {
         router.replace(`/auth/register?portal=${draftRole}`);

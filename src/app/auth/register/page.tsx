@@ -90,9 +90,10 @@ function getSignupDraftResumeRoute(draft?: SignupDraftPayload) {
     };
   }
 
+  // Defensive default: keep active signup users in email verification path.
   return {
-    href: "/auth/signin",
-    label: "Sign in",
+    href: "/auth/verify-email",
+    label: "Continue email verification",
   };
 }
 
@@ -109,6 +110,22 @@ function readSignupFormDraftCookie(): Record<string, unknown> | null {
 function writeSignupFormDraftCookie(data: Record<string, unknown>) {
   const maxAge = 24 * 60 * 60;
   document.cookie = `lf_signup_form_draft=${encodeURIComponent(JSON.stringify(data))}; path=/; max-age=${maxAge}; SameSite=Lax`;
+}
+
+function hasMeaningfulLocalDraft(
+  data: Record<string, unknown> | null,
+): boolean {
+  if (!data) return false;
+  return Boolean(
+    data.fullName ||
+    data.nin ||
+    data.phone ||
+    data.email ||
+    data.password ||
+    data.confirmPassword ||
+    data.businessName ||
+    data.registrationNumber,
+  );
 }
 
 export default function RegisterPage() {
@@ -140,7 +157,6 @@ export default function RegisterPage() {
     : "data-[state=checked]:border-[#2BB5A0] data-[state=checked]:bg-[#2BB5A0]";
   const signInHref = isLender ? "/auth/lender-signin" : "/auth/signin";
   const [hasDraft, setHasDraft] = useState(false);
-  const [hasLocalFormDraft, setHasLocalFormDraft] = useState(false);
   const [draftEmail, setDraftEmail] = useState("");
   const [resumeHref, setResumeHref] = useState("/auth/verify-email");
   const [resumeLabel, setResumeLabel] = useState("Continue email verification");
@@ -170,7 +186,7 @@ export default function RegisterPage() {
     if (!draftId || draftRole !== portal) {
       setHasDraft(false);
       const localDraft = readSignupFormDraftCookie();
-      if (localDraft?.role === portal) {
+      if (localDraft?.role === portal && hasMeaningfulLocalDraft(localDraft)) {
         const localAccountType =
           localDraft.accountType === "business" ? "business" : "individual";
         setAccountType(localAccountType);
@@ -207,16 +223,13 @@ export default function RegisterPage() {
         businessForm.setValue("businessName", businessName);
         businessForm.setValue("registrationNumber", registrationNumber);
         businessForm.setValue("agreeToTerms", agreeToTerms as true);
-
-        setHasLocalFormDraft(true);
       } else {
-        setHasLocalFormDraft(false);
+        document.cookie = "lf_signup_form_draft=; path=/; max-age=0";
       }
       return;
     }
 
     setHasDraft(true);
-    setHasLocalFormDraft(false);
     setDraftEmail(decodeURIComponent(getCookie("lf_signup_email") || ""));
 
     const loadDraftStatus = async () => {
@@ -334,7 +347,6 @@ export default function RegisterPage() {
 
     if (!hasAnyValue) {
       document.cookie = "lf_signup_form_draft=; path=/; max-age=0";
-      setHasLocalFormDraft(false);
       return;
     }
 
@@ -351,7 +363,6 @@ export default function RegisterPage() {
       businessName: watchedBusinessName,
       registrationNumber: watchedRegistrationNumber,
     });
-    setHasLocalFormDraft(true);
   }, [
     hasDraft,
     portal,
@@ -521,24 +532,12 @@ export default function RegisterPage() {
                     onClick={() => {
                       clearSignupDraftCookies();
                       setHasDraft(false);
-                      setHasLocalFormDraft(false);
                     }}
                     className="text-xs font-semibold text-gray-500 hover:underline"
                   >
                     Start over
                   </button>
                 </div>
-              </div>
-            )}
-
-            {!hasDraft && hasLocalFormDraft && (
-              <div
-                className={`rounded-lg border p-3.5 ${accentSoftBorderClass} ${accentSoftBgClass}`}
-              >
-                <p className="text-xs text-gray-600">
-                  Restored your unfinished signup form. Continue where you left
-                  off.
-                </p>
               </div>
             )}
 

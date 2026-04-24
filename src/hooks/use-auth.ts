@@ -57,8 +57,12 @@ function resolveSignupDraftRoute(
     return "/auth/verify-phone";
   }
 
-  // Default to email verification whenever an active draft exists.
-  if (getCookie("lf_signup_draft")) {
+  // Default to email verification whenever signup flow hints exist.
+  if (
+    getCookie("lf_signup_draft") ||
+    getCookie("lf_signup_flow") === "true" ||
+    getCookie("lf_signup_email")
+  ) {
     return "/auth/verify-email";
   }
 
@@ -109,7 +113,12 @@ export function useRegister() {
     onSuccess: (data) => {
       toast.success("Registration started. Please verify your email.");
       const role = getCookie("lf_signup_role") || "borrower";
-      router.push(resolveSignupDraftRoute(data.draft, role));
+      if (data.account_created || data.draft?.is_completed) {
+        router.push(role === "lender" ? "/auth/lender-signin" : "/auth/signin");
+        return;
+      }
+      // Email-first signup UX.
+      router.push("/auth/verify-email");
     },
     onError: (error: Error) => {
       toast.error(error.message || "Registration failed. Please try again.");
@@ -144,7 +153,12 @@ export function useLenderRegister() {
     onSuccess: (data) => {
       toast.success("Registration started. Please verify your email.");
       const role = getCookie("lf_signup_role") || "lender";
-      router.push(resolveSignupDraftRoute(data.draft, role));
+      if (data.account_created || data.draft?.is_completed) {
+        router.push(role === "lender" ? "/auth/lender-signin" : "/auth/signin");
+        return;
+      }
+      // Email-first signup UX.
+      router.push("/auth/verify-email");
     },
     onError: (error: Error) => {
       toast.error(error.message || "Registration failed. Please try again.");
