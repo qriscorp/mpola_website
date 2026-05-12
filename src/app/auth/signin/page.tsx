@@ -57,7 +57,7 @@ export default function SignInPage() {
               L
             </div>
             <div>
-              <p className="text-xl font-extrabold text-[#1B2B3A]">WeLend</p>
+              <p className="text-xl font-extrabold text-[#1B2B3A]">Mpola</p>
               <p className="text-xs text-gray-400">Borrower Portal</p>
             </div>
           </div>

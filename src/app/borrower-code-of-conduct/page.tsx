@@ -39,7 +39,7 @@ export default function BorrowerCodeOfConductPage() {
               Effective date: 22 April 2026
             </p>
             <p className="mt-4 max-w-3xl text-sm leading-relaxed text-gray-600">
-              This code defines expected behavior for borrowers using Welend. It
+              This code defines expected behavior for borrowers using Mpola. It
               protects trust between borrowers, lenders, and the wider platform
               community.
             </p>

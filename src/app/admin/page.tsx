@@ -178,7 +178,7 @@ export default function AdminDashboardPage() {
             Admin Dashboard
           </h1>
           <p className="text-sm text-muted-foreground">
-            Welend Platform Analytics &mdash; Real-time overview
+            Mpola Platform Analytics &mdash; Real-time overview
           </p>
         </div>
         <Badge className="bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400 text-xs w-fit">

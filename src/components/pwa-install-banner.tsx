@@ -75,7 +75,7 @@ export function PwaInstallBanner() {
     <div className="fixed inset-x-0 top-0 z-50 border-b border-[#BDE8E2] bg-[#EAF9F6] px-3 py-2 text-[#0B2A29]">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
         <p className="text-xs font-semibold sm:text-sm">
-          Install Welend on your desktop for a faster app-like experience.
+          Install Mpola on your desktop for a faster app-like experience.
         </p>
         <div className="flex items-center gap-2">
           <button

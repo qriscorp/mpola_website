@@ -211,7 +211,7 @@ export default function ApplicationsPage() {
             </div>
 
             <p className="text-xs text-gray-400 mt-3">
-              WeLend will disburse funds from your wallet within 24 hours.
+              Mpola will disburse funds from your wallet within 24 hours.
             </p>
 
             <div className="flex gap-3 mt-6 justify-end">

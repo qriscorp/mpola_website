@@ -171,7 +171,7 @@ export default function ApplicantProfilePage() {
               Loan History
             </h3>
             <p className="text-sm text-gray-400">
-              No previous loans on WeLend.
+              No previous loans on Mpola.
             </p>
           </div>
         </div>

@@ -1,4 +1,4 @@
-export const APP_NAME = "Welend";
+export const APP_NAME = "Mpola";
 export const PORTAL_NAME = "BORROWER PORTAL";
 
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -83,7 +83,7 @@ export const DOCUMENT_TYPES = {
 } as const;
 
 export const PAYMENT_METHODS = [
-  "Welend Wallet",
+  "Mpola Wallet",
   "MTN MoMo",
   "Airtel Money",
 ] as const;

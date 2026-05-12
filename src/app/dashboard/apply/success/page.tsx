@@ -28,7 +28,7 @@ const timeline = [
   },
   {
     title: "Funds disbursed",
-    desc: "Money lands in your Welend wallet within 24 hours of acceptance",
+    desc: "Money lands in your Mpola wallet within 24 hours of acceptance",
     status: "pending",
   },
 ];

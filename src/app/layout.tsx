@@ -9,24 +9,22 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Welend – Borrower Portal",
+  title: "Mpola – Borrower Portal",
   description:
-    "Fair credit, on your terms. Apply once. Compare offers from licensed lenders side-by-side.",
-  applicationName: "Welend",
+    "Lend me, grow together. Apply once. Compare offers from licensed lenders side-by-side.",
+  applicationName: "Mpola",
   manifest: "/manifest.webmanifest",
-  themeColor: "#2BB5A0",
+  themeColor: "#1B4332",
   icons: {
     icon: [
-      { url: "/welend-icon-192.png", sizes: "192x192", type: "image/png" },
-      { url: "/welend-icon-512.png", sizes: "512x512", type: "image/png" },
+      { url: "/mpola_logo-3.png", sizes: "192x192", type: "image/png" },
+      { url: "/mpola_logo-3.png", sizes: "512x512", type: "image/png" },
     ],
-    apple: [
-      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
-    ],
+    apple: [{ url: "/mpola_logo-3.png", sizes: "180x180", type: "image/png" }],
   },
   appleWebApp: {
     capable: true,
-    title: "Welend",
+    title: "Mpola",
     statusBarStyle: "default",
   },
 };

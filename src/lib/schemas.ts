@@ -89,7 +89,7 @@ export type GuarantorFormData = z.infer<typeof guarantorSchema>;
 
 // ─── Payment Schema ───
 export const paymentSchema = z.object({
-  method: z.enum(["Welend Wallet", "MTN MoMo", "Airtel Money"]),
+  method: z.enum(["Mpola Wallet", "MTN MoMo", "Airtel Money"]),
   phone: z.string().optional(),
   amount: z.number().positive(),
 });

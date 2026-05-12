@@ -105,7 +105,7 @@ export function LenderSidebarContent({
           </span>
         </div>
         <div className="leading-tight">
-          <p className="text-white font-bold text-base leading-none">WeLend</p>
+          <p className="text-white font-bold text-base leading-none">Mpola</p>
           <p className="text-[#C4A55A] text-[10px] font-semibold tracking-widest uppercase mt-0.5">
             Lender Portal
           </p>

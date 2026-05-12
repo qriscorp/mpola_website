@@ -56,7 +56,7 @@ export default function LenderSignInPage() {
             </div>
             <div>
               <p className="font-bold text-[#1B2B3A] text-xl leading-none">
-                WeLend
+                Mpola
               </p>
               <p className="text-gray-400 text-sm mt-0.5">Lender Portal</p>
             </div>

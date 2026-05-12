@@ -1,21 +1,21 @@
 {
-  "name": "Welend",
-  "short_name": "Welend",
-  "description": "Welend borrower and lender portal",
+  "name": "Mpola",
+  "short_name": "Mpola",
+  "description": "Mpola borrower and lender portal — Lend me, grow together.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#2BB5A0",
+  "theme_color": "#1B4332",
   "icons": [
     {
-      "src": "/welend-icon-192.png",
+      "src": "/mpola_logo-3.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/welend-icon-512.png",
+      "src": "/mpola_logo-3.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"

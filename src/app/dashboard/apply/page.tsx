@@ -438,7 +438,7 @@ function Step4({ amount, duration }: { amount: number; duration: number }) {
         </div>
 
         <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-700">
-          By submitting, you agree to WeLend&apos;s terms and confirm the
+          By submitting, you agree to Mpola&apos;s terms and confirm the
           information above is accurate.
         </div>
       </CardContent>

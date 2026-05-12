@@ -40,7 +40,7 @@ export default function LenderCodeOfConductPage() {
             </p>
             <p className="mt-4 max-w-3xl text-sm leading-relaxed text-gray-600">
               This code sets the expected professional and ethical standard for
-              lenders operating on Welend.
+              lenders operating on Mpola.
             </p>
           </div>
 
@@ -58,7 +58,7 @@ export default function LenderCodeOfConductPage() {
 
           <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-relaxed text-amber-800">
             Material violations may result in restrictions, suspension,
-            permanent removal from Welend, and where required, escalation to
+            permanent removal from Mpola, and where required, escalation to
             appropriate regulators or authorities.
           </div>
         </div>

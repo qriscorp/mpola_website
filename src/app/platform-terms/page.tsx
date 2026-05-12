@@ -7,16 +7,16 @@ const sections = [
     title: "1. Eligibility and Account Integrity",
     points: [
       "You must be at least 18 years old and legally capable of entering into financial agreements in Uganda.",
-      "Information submitted to Welend must be accurate, complete, and kept up to date.",
+      "Information submitted to Mpola must be accurate, complete, and kept up to date.",
       "You are responsible for safeguarding your account credentials and all actions taken under your account.",
     ],
   },
   {
     title: "2. Acceptable Platform Use",
     points: [
-      "Do not misuse, disrupt, or attempt unauthorized access to Welend systems.",
+      "Do not misuse, disrupt, or attempt unauthorized access to Mpola systems.",
       "Fraudulent, abusive, discriminatory, or misleading behavior is prohibited.",
-      "Welend may suspend, restrict, or terminate access where misconduct or legal risk is identified.",
+      "Mpola may suspend, restrict, or terminate access where misconduct or legal risk is identified.",
     ],
   },
   {
@@ -30,9 +30,9 @@ const sections = [
   {
     title: "4. Compliance and Enforcement",
     points: [
-      "Welend may perform identity, compliance, and fraud checks to protect users and fulfill legal obligations.",
+      "Mpola may perform identity, compliance, and fraud checks to protect users and fulfill legal obligations.",
       "Non-compliance with platform policies, regulatory requirements, or lawful instructions may result in account action.",
-      "Where required, Welend may report suspicious activity to relevant regulators or authorities.",
+      "Where required, Mpola may report suspicious activity to relevant regulators or authorities.",
     ],
   },
 ];
@@ -65,7 +65,7 @@ export default function PlatformTermsPage() {
               Effective date: 22 April 2026
             </p>
             <p className="mt-4 max-w-3xl text-sm leading-relaxed text-gray-600">
-              These terms govern access to and use of Welend by borrowers and
+              These terms govern access to and use of Mpola by borrowers and
               lenders. By creating or using an account, you agree to these terms
               and all related platform policies.
             </p>

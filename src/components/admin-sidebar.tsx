@@ -78,7 +78,7 @@ export function AdminSidebarContent({
           </div>
           <div>
             <p className="text-sm font-medium">System Admin</p>
-            <p className="text-[10px] text-gray-400">admin@welend.ug</p>
+            <p className="text-[10px] text-gray-400">admin@mpola.ug</p>
           </div>
         </div>
         <Link

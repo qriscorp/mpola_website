@@ -34,7 +34,7 @@ export function LenderTopNav() {
               L
             </span>
           </div>
-          <span className="text-white font-bold text-sm">WeLend</span>
+          <span className="text-white font-bold text-sm">Mpola</span>
         </div>
       </div>
 

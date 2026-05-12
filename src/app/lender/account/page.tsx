@@ -68,7 +68,7 @@ export default function LenderAccountPage() {
             </div>
             <div>
               <h2 className="font-bold text-white text-lg leading-tight">
-                WeLend Lender Licence
+                Mpola Lender Licence
               </h2>
               <p className="text-sm text-white/50 mt-0.5">
                 Bank of Uganda Framework

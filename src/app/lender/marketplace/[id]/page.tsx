@@ -284,7 +284,7 @@ export default function BorrowerProfilePage({
               <Card className="bg-[#F5F0E0]/50 dark:bg-[#C4A55A]/10 border-[#E8D9B0] dark:border-[#C4A55A]/30">
                 <CardContent className="p-5">
                   <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-                    Welend Risk Assessment
+                    Mpola Risk Assessment
                   </p>
                   <div className="flex items-center gap-2 mb-2">
                     <ShieldCheck className="h-5 w-5 text-[#C4A55A]" />

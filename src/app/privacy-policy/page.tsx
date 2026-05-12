@@ -30,7 +30,7 @@ const sections = [
   {
     title: "4. Security and Retention",
     points: [
-      "Welend applies encryption, access controls, and monitoring to protect personal information.",
+      "Mpola applies encryption, access controls, and monitoring to protect personal information.",
       "Data is retained only as long as needed for operations, compliance, dispute resolution, and legal obligations.",
       "Users should safeguard their credentials and report unauthorized activity immediately.",
     ],
@@ -73,7 +73,7 @@ export default function PrivacyPolicyPage() {
               Effective date: 22 April 2026
             </p>
             <p className="mt-4 max-w-3xl text-sm leading-relaxed text-gray-600">
-              This policy explains how Welend collects, uses, stores, and
+              This policy explains how Mpola collects, uses, stores, and
               protects your information when you use the platform.
             </p>
           </div>

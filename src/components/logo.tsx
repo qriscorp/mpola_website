@@ -1,28 +1,33 @@
+import Image from "next/image";
 import Link from "next/link";
 
 export function Logo({
-  variant = "dark",
+  variant = "full",
   asLink = true,
 }: {
-  variant?: "dark" | "light";
+  variant?: "full" | "icon" | "wordmark";
   asLink?: boolean;
 }) {
-  const textColor = variant === "light" ? "text-white" : "text-[#1B2B3A]";
+  const src =
+    variant === "icon"
+      ? "/mpola_logo-3.png"
+      : variant === "wordmark"
+        ? "/mpola_logo-4.png"
+        : "/mpola_logo-2.png";
+
+  const width = variant === "icon" ? 40 : variant === "wordmark" ? 100 : 120;
+  const height = variant === "icon" ? 40 : 40;
+
   const content = (
-    <>
-      <div className="w-8 h-8 rounded-lg bg-[#2BB5A0] flex items-center justify-center">
-        <span className="text-white font-bold text-sm">L</span>
-      </div>
-      <span className={`font-semibold text-lg ${textColor}`}>Welend</span>
-    </>
+    <Image src={src} alt="Mpola" width={width} height={height} priority />
   );
 
   if (!asLink) {
-    return <div className="flex items-center gap-2">{content}</div>;
+    return <div className="flex items-center">{content}</div>;
   }
 
   return (
-    <Link href="/" className="flex items-center gap-2">
+    <Link href="/" className="flex items-center">
       {content}
     </Link>
   );

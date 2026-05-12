@@ -14,7 +14,7 @@ export function TopNav() {
         </div>
         <div>
           <p className="text-white font-extrabold text-sm leading-none">
-            WeLend
+            Mpola
           </p>
           <p className="text-[#2BB5A0] text-[9px] font-bold uppercase tracking-widest">
             Borrower
