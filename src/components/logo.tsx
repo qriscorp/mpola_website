@@ -18,8 +18,18 @@ export function Logo({
   const width = variant === "icon" ? 40 : variant === "wordmark" ? 100 : 120;
   const height = variant === "icon" ? 40 : 40;
 
+  // "light" = logo sits on a dark background → render white via CSS filter
+  const imgClass = variant === "light" ? "brightness-0 invert" : undefined;
+
   const content = (
-    <Image src={src} alt="Mpola" width={width} height={height} priority />
+    <Image
+      src={src}
+      alt="Mpola"
+      width={width}
+      height={height}
+      priority
+      className={imgClass}
+    />
   );
 
   if (!asLink) {

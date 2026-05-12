@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Bell } from "lucide-react";
 import { MobileNav } from "@/components/mobile-nav";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export function TopNav() {
   return (
@@ -10,7 +11,7 @@ export function TopNav() {
       <MobileNav />
       <div className="flex items-center gap-2 ml-2">
         <div className="h-7 w-7 rounded-lg bg-[#2BB5A0] flex items-center justify-center font-extrabold text-white text-sm leading-none">
-          L
+          M
         </div>
         <div>
           <p className="text-white font-extrabold text-sm leading-none">
@@ -22,14 +23,17 @@ export function TopNav() {
         </div>
       </div>
       <div className="flex-1" />
-      <Link
-        href="/dashboard/notifications"
-        className="relative text-white/60 hover:text-white"
-        aria-label="Notifications"
-      >
-        <Bell className="w-5 h-5" />
-        <span className="absolute -top-1 -right-1 w-2 h-2 bg-[#2BB5A0] rounded-full" />
-      </Link>
+      <div className="flex items-center gap-1">
+        <ThemeToggle />
+        <Link
+          href="/dashboard/notifications"
+          className="relative text-white/60 hover:text-white"
+          aria-label="Notifications"
+        >
+          <Bell className="w-5 h-5" />
+          <span className="absolute -top-1 -right-1 w-2 h-2 bg-[#2BB5A0] rounded-full" />
+        </Link>
+      </div>
     </header>
   );
 }
@@ -41,6 +45,7 @@ export function BorrowerPageHeader({ title }: { title: string }) {
         {title}
       </h1>
       <div className="flex items-center gap-2">
+        <ThemeToggle />
         <Link
           href="/dashboard/notifications"
           className="relative p-2 rounded-lg text-gray-500 hover:text-[#2BB5A0] hover:bg-teal-50 transition-colors"

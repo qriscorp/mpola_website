@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Bell, Menu } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { LenderSidebarContent } from "@/components/lender-sidebar";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 /**
  * Slim top bar shown ONLY on mobile (lg+ uses the sidebar's own logo area).
@@ -31,21 +32,24 @@ export function LenderTopNav() {
         <div className="flex items-center gap-2">
           <div className="flex items-center justify-center w-7 h-7 rounded bg-[#C4A55A]">
             <span className="text-white font-black text-xs leading-none">
-              L
+              M
             </span>
           </div>
           <span className="text-white font-bold text-sm">Mpola</span>
         </div>
       </div>
 
-      {/* Right: bell */}
-      <Link
-        href="/lender/notifications"
-        className="relative p-1.5 text-gray-300 hover:text-white"
-      >
-        <Bell className="h-5 w-5" />
-        <span className="absolute top-0.5 right-0.5 h-2 w-2 bg-red-500 rounded-full" />
-      </Link>
+      {/* Right: theme toggle + bell */}
+      <div className="flex items-center gap-1">
+        <ThemeToggle />
+        <Link
+          href="/lender/notifications"
+          className="relative p-1.5 text-gray-300 hover:text-white"
+        >
+          <Bell className="h-5 w-5" />
+          <span className="absolute top-0.5 right-0.5 h-2 w-2 bg-red-500 rounded-full" />
+        </Link>
+      </div>
     </header>
   );
 }
@@ -61,6 +65,7 @@ export function LenderPageHeader({ title }: { title: string }) {
         {title}
       </h1>
       <div className="flex items-center gap-3">
+        <ThemeToggle />
         <Link
           href="/lender/notifications"
           className="relative p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"

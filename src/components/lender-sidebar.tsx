@@ -101,7 +101,7 @@ export function LenderSidebarContent({
       <div className="flex items-center gap-3 px-4 py-5 border-b border-white/10">
         <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-[#C4A55A] shrink-0">
           <span className="text-white font-black text-base leading-none">
-            L
+            M
           </span>
         </div>
         <div className="leading-tight">

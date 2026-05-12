@@ -54,7 +54,7 @@ export default function SignInPage() {
           {/* Logo */}
           <div className="flex items-center gap-3 mb-8">
             <div className="w-12 h-12 rounded-xl bg-[#2BB5A0] flex items-center justify-center font-extrabold text-white text-xl">
-              L
+              M
             </div>
             <div>
               <p className="text-xl font-extrabold text-[#1B2B3A]">Mpola</p>

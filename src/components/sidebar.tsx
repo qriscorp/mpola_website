@@ -123,7 +123,7 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       {/* Logo */}
       <div className="flex items-center gap-3 px-4 py-5 shrink-0">
         <div className="h-9 w-9 rounded-xl bg-[#2BB5A0] flex items-center justify-center font-extrabold text-white text-xl leading-none">
-          L
+          M
         </div>
         <div>
           <p className="text-white font-extrabold text-lg leading-none">

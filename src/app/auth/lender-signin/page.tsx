@@ -52,7 +52,7 @@ export default function LenderSignInPage() {
           {/* Logo */}
           <div className="flex items-center gap-3 mb-8">
             <div className="w-12 h-12 rounded-xl bg-[#C4A55A] flex items-center justify-center shrink-0">
-              <span className="text-white font-bold text-lg">L</span>
+              <span className="text-white font-bold text-lg">M</span>
             </div>
             <div>
               <p className="font-bold text-[#1B2B3A] text-xl leading-none">
