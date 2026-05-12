@@ -5,7 +5,7 @@ export function Logo({
   variant = "full",
   asLink = true,
 }: {
-  variant?: "full" | "icon" | "wordmark";
+  variant?: "full" | "icon" | "wordmark" | "light" | "dark";
   asLink?: boolean;
 }) {
   const src =
