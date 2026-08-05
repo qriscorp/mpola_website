@@ -78,8 +78,10 @@ function ChartTooltip({
 
 export default function AdminDashboardPage() {
   const { data: stats, isLoading } = useAdminStats();
-  const { data: loans } = useAdminLoans();
-  const { data: applications } = useAdminApplications();
+  const { data: overdueLoansData } = useAdminLoans(1, 10, { status: "overdue" });
+  const { data: recentApplicationsData } = useAdminApplications(1, 4);
+  const loans = overdueLoansData?.loans ?? [];
+  const applications = recentApplicationsData?.applications ?? [];
 
   const monthlyTrend = (stats?.monthly_trend ?? []).map((m) => ({
     ...m,
@@ -90,14 +92,7 @@ export default function AdminDashboardPage() {
     label: monthLabel(m.month),
   }));
   const loanTypeMix = stats?.loan_type_mix ?? [];
-
-  const applicationStatusBreakdown = [
-    { status: "Pending", count: applications?.filter((a) => a.status === "pending").length ?? 0 },
-    { status: "Funded", count: applications?.filter((a) => a.status === "funded").length ?? 0 },
-    { status: "Completed", count: applications?.filter((a) => a.status === "completed").length ?? 0 },
-    { status: "Rejected", count: applications?.filter((a) => a.status === "rejected").length ?? 0 },
-    { status: "Defaulted", count: applications?.filter((a) => a.status === "defaulted").length ?? 0 },
-  ];
+  const applicationStatusBreakdown = stats?.application_status_breakdown ?? [];
 
   const statCards = [
     {
@@ -204,6 +199,14 @@ export default function AdminDashboardPage() {
                 </p>
               </div>
               <div className="flex gap-6">
+                <Link href="/admin/revenue" className="text-right hover:opacity-80">
+                  <p className="text-xl font-bold text-[#C4A55A]">
+                    {formatCurrency(stats?.platform.total_platform_revenue ?? 0)}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground">
+                    Platform revenue
+                  </p>
+                </Link>
                 <div className="text-right">
                   <p className="text-xl font-bold text-[#2BB5A0]">
                     {formatCurrency(stats?.platform.total_interest_generated ?? 0)}
@@ -451,7 +454,7 @@ export default function AdminDashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {applications?.slice(0, 4).map((app) => (
+              {applications.map((app) => (
                 <div
                   key={app.id}
                   className="flex items-center justify-between py-2 border-b last:border-0 dark:border-gray-800"
@@ -480,7 +483,7 @@ export default function AdminDashboardPage() {
                   </Badge>
                 </div>
               ))}
-              {applications?.length === 0 && (
+              {applications.length === 0 && (
                 <p className="text-sm text-muted-foreground text-center py-4">
                   No applications yet
                 </p>
@@ -500,27 +503,25 @@ export default function AdminDashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {loans
-                ?.filter((l) => l.status === "overdue")
-                .map((loan) => (
-                  <div
-                    key={loan.id}
-                    className="flex items-center justify-between py-2 border-b last:border-0 dark:border-gray-800"
-                  >
-                    <div>
-                      <p className="text-sm font-medium text-[#1B2B3A] dark:text-white">
-                        {loan.borrower_name ?? "Unknown"}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        #{loan.reference} · {formatCurrency(loan.amount)}
-                      </p>
-                    </div>
-                    <Badge className="bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400 text-xs">
-                      Overdue
-                    </Badge>
+              {loans.map((loan) => (
+                <div
+                  key={loan.id}
+                  className="flex items-center justify-between py-2 border-b last:border-0 dark:border-gray-800"
+                >
+                  <div>
+                    <p className="text-sm font-medium text-[#1B2B3A] dark:text-white">
+                      {loan.borrower_name ?? "Unknown"}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      #{loan.reference} · {formatCurrency(loan.amount)}
+                    </p>
                   </div>
-                ))}
-              {loans?.filter((l) => l.status === "overdue").length === 0 && (
+                  <Badge className="bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400 text-xs">
+                    Overdue
+                  </Badge>
+                </div>
+              ))}
+              {loans.length === 0 && (
                 <p className="text-sm text-muted-foreground text-center py-4">
                   No loans requiring attention
                 </p>

@@ -9,6 +9,7 @@ import {
   FileText,
   CreditCard,
   Wallet,
+  TrendingUp,
   Settings,
   ShieldAlert,
   LogOut,
@@ -27,6 +28,7 @@ const adminNav = [
   { icon: FileText, label: "Applications", href: "/admin/applications" },
   { icon: CreditCard, label: "Loans", href: "/admin/loans" },
   { icon: Wallet, label: "Wallet & Payments", href: "/admin/payments" },
+  { icon: TrendingUp, label: "Revenue", href: "/admin/revenue" },
   { icon: ShieldAlert, label: "Audit Log", href: "/admin/audit-logs" },
   { icon: Settings, label: "Settings", href: "/admin/settings", badgeKey: "pendingOfferTemplates" as const },
 ];

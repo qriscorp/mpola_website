@@ -10,14 +10,18 @@ export function useAdminStats() {
   });
 }
 
-export function useAdminUsers(filters?: {
-  search?: string;
-  status?: string;
-  role?: string;
-}) {
+export function useAdminUsers(
+  page: number = 1,
+  pageSize: number = 20,
+  filters?: {
+    search?: string;
+    status?: string;
+    role?: string;
+  },
+) {
   return useQuery({
-    queryKey: ["admin", "users", filters],
-    queryFn: () => api.getAdminUsers(filters),
+    queryKey: ["admin", "users", page, pageSize, filters],
+    queryFn: () => api.getAdminUsers(page, pageSize, filters),
   });
 }
 
@@ -55,24 +59,36 @@ export function useAdminUserDetail(username: string) {
   });
 }
 
-export function useAdminAuditLogs(filters?: { action?: string; username?: string }) {
+export function useAdminAuditLogs(
+  page: number = 1,
+  pageSize: number = 20,
+  filters?: { action?: string; username?: string; search?: string },
+) {
   return useQuery({
-    queryKey: ["admin", "audit-logs", filters],
-    queryFn: () => api.getAdminAuditLogs(filters),
+    queryKey: ["admin", "audit-logs", page, pageSize, filters],
+    queryFn: () => api.getAdminAuditLogs(page, pageSize, filters),
   });
 }
 
-export function useAdminLoans(filters?: { status?: string }) {
+export function useAdminLoans(
+  page: number = 1,
+  pageSize: number = 20,
+  filters?: { status?: string; search?: string },
+) {
   return useQuery({
-    queryKey: ["admin", "loans", filters],
-    queryFn: () => api.getAdminLoans(filters),
+    queryKey: ["admin", "loans", page, pageSize, filters],
+    queryFn: () => api.getAdminLoans(page, pageSize, filters),
   });
 }
 
-export function useAdminApplications(filters?: { status?: string }) {
+export function useAdminApplications(
+  page: number = 1,
+  pageSize: number = 20,
+  filters?: { status?: string; search?: string },
+) {
   return useQuery({
-    queryKey: ["admin", "applications", filters],
-    queryFn: () => api.getAdminApplications(filters),
+    queryKey: ["admin", "applications", page, pageSize, filters],
+    queryFn: () => api.getAdminApplications(page, pageSize, filters),
   });
 }
 
@@ -93,10 +109,17 @@ export function useUpdateApplicationStatus() {
   });
 }
 
-export function useAdminPayments() {
+export function useAdminPayments(page: number = 1, pageSize: number = 20) {
   return useQuery({
-    queryKey: ["admin", "payments"],
-    queryFn: api.getAdminPayments,
+    queryKey: ["admin", "payments", page, pageSize],
+    queryFn: () => api.getAdminPayments(page, pageSize),
+  });
+}
+
+export function useAdminRevenue(page: number = 1, pageSize: number = 20, category?: string) {
+  return useQuery({
+    queryKey: ["admin", "revenue", page, pageSize, category],
+    queryFn: () => api.getAdminRevenue(page, pageSize, category),
   });
 }
 

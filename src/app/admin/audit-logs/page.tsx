@@ -15,6 +15,10 @@ import {
 import { Search, ShieldAlert } from "lucide-react";
 import { useAdminAuditLogs } from "@/hooks/use-admin";
 import { CardSkeleton, TableSkeleton } from "@/components/skeletons";
+import { PaginationControls } from "@/components/ui/pagination-controls";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
+
+const PAGE_SIZE = 20;
 
 const actionColor = (action: string) => {
   if (action.includes("failed") || action.includes("declined") || action.includes("rejected"))
@@ -27,15 +31,14 @@ const actionColor = (action: string) => {
 };
 
 export default function AdminAuditLogsPage() {
+  const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
-  const { data: logs = [], isLoading } = useAdminAuditLogs();
-
-  const filtered = logs.filter(
-    (l) =>
-      (l.username ?? "").toLowerCase().includes(search.toLowerCase()) ||
-      l.action.toLowerCase().includes(search.toLowerCase()) ||
-      (l.resource_type ?? "").toLowerCase().includes(search.toLowerCase()),
-  );
+  const debouncedSearch = useDebouncedValue(search, 400);
+  const { data, isLoading } = useAdminAuditLogs(page, PAGE_SIZE, {
+    search: debouncedSearch || undefined,
+  });
+  const logs = data?.logs ?? [];
+  const total = data?.total ?? 0;
 
   if (isLoading) {
     return (
@@ -67,7 +70,10 @@ export default function AdminAuditLogsPage() {
               placeholder="Search by user, action, or resource..."
               className="pl-9"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
             />
           </div>
         </CardHeader>
@@ -87,14 +93,14 @@ export default function AdminAuditLogsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filtered.length === 0 ? (
+              {logs.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
                     No matching audit entries.
                   </TableCell>
                 </TableRow>
               ) : (
-                filtered.map((log) => (
+                logs.map((log) => (
                   <TableRow key={log.id}>
                     <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
                       {new Date(log.created_at).toLocaleString()}
@@ -118,6 +124,12 @@ export default function AdminAuditLogsPage() {
               )}
             </TableBody>
           </Table>
+          <PaginationControls
+            page={page}
+            pageSize={PAGE_SIZE}
+            total={total}
+            onPageChange={setPage}
+          />
         </CardContent>
       </Card>
     </div>

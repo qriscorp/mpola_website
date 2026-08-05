@@ -21,10 +21,10 @@ export function useWallet() {
   });
 }
 
-export function useTransactions() {
+export function useTransactions(page: number = 1, pageSize: number = 20) {
   return useQuery({
-    queryKey: ["transactions"],
-    queryFn: api.getTransactions,
+    queryKey: ["transactions", page, pageSize],
+    queryFn: () => api.getTransactions(page, pageSize),
   });
 }
 
@@ -47,7 +47,11 @@ export function useSetupWallet() {
 
 function notifyTransferResult(result: TransferStatusResult, action: string) {
   if (result.status === "completed") {
-    toast.success(`${action} successful!`);
+    toast.success(
+      result.fee
+        ? `${action} successful! UGX ${result.fee.toLocaleString()} fee charged.`
+        : `${action} successful!`,
+    );
   } else if (result.status === "failed") {
     toast.error(`${action} failed.`);
   } else {
@@ -75,8 +79,10 @@ export function useWithdrawMobileMoney() {
   return useMutation({
     mutationFn: (data: { amount: number; phone: string; carrier?: string }) =>
       api.withdrawMobileMoney(data),
-    onSuccess: () => {
-      toast.success("Withdrawal successful!");
+    onSuccess: (result) => {
+      toast.success(
+        `Withdrawal successful! UGX ${result.fee.toLocaleString()} fee charged.`,
+      );
       WALLET_KEYS.forEach((key) => qc.invalidateQueries({ queryKey: key }));
     },
     onError: (err: Error) => toast.error(err.message || "Withdrawal failed."),

@@ -2,21 +2,18 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
 
-export function useLenderProfile() {
+export function useMarketplace(
+  page: number = 1,
+  pageSize: number = 20,
+  filters?: {
+    loan_type?: string;
+    min_amount?: number;
+    max_amount?: number;
+  },
+) {
   return useQuery({
-    queryKey: ["lender", "profile"],
-    queryFn: api.getLenderProfile,
-  });
-}
-
-export function useMarketplace(filters?: {
-  loan_type?: string;
-  min_amount?: number;
-  max_amount?: number;
-}) {
-  return useQuery({
-    queryKey: ["lender", "marketplace", filters],
-    queryFn: () => api.getMarketplace(filters),
+    queryKey: ["lender", "marketplace", page, pageSize, filters],
+    queryFn: () => api.getMarketplace(page, pageSize, filters),
   });
 }
 
@@ -88,10 +85,10 @@ export function useLenderWallet() {
   });
 }
 
-export function useLenderTransactions() {
+export function useLenderTransactions(page: number = 1, pageSize: number = 20) {
   return useQuery({
-    queryKey: ["lender", "transactions"],
-    queryFn: api.getLenderTransactions,
+    queryKey: ["lender", "transactions", page, pageSize],
+    queryFn: () => api.getLenderTransactions(page, pageSize),
   });
 }
 

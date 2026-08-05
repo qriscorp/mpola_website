@@ -13,9 +13,13 @@ import {
 import { Wallet, ArrowUpRight, ArrowDownRight, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/format";
+import { useState } from "react";
 import { useAdminPayments, useAdminStats } from "@/hooks/use-admin";
 import { downloadCsv } from "@/lib/csv";
 import { CardSkeleton, TableSkeleton } from "@/components/skeletons";
+import { PaginationControls } from "@/components/ui/pagination-controls";
+
+const PAGE_SIZE = 20;
 
 const inflowTypes = new Set(["deposit", "repayment", "top_up"]);
 
@@ -36,9 +40,11 @@ const typeColor: Record<string, string> = {
 };
 
 export default function AdminPaymentsPage() {
-  const { data, isLoading } = useAdminPayments();
+  const [page, setPage] = useState(1);
+  const { data, isLoading } = useAdminPayments(page, PAGE_SIZE);
   const { data: stats } = useAdminStats();
   const transactions = data?.transactions ?? [];
+  const total = data?.total ?? 0;
 
   const handleExport = () => {
     downloadCsv(
@@ -208,6 +214,12 @@ export default function AdminPaymentsPage() {
               )}
             </TableBody>
           </Table>
+          <PaginationControls
+            page={page}
+            pageSize={PAGE_SIZE}
+            total={total}
+            onPageChange={setPage}
+          />
         </CardContent>
       </Card>
     </div>

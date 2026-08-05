@@ -6,9 +6,17 @@ import { Search } from "lucide-react";
 import { LenderPageHeader } from "@/components/lender-top-nav";
 import { useMarketplace } from "@/hooks/use-lender";
 import { formatCurrency } from "@/lib/format";
+import { PaginationControls } from "@/components/ui/pagination-controls";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
 
-const tabs = ["All", "Business", "Personal", "Verified KYC"] as const;
+const PAGE_SIZE = 20;
+const tabs = ["All", "Business", "Personal"] as const;
 type MarketplaceTab = (typeof tabs)[number];
+const TAB_LOAN_TYPE: Record<MarketplaceTab, string | undefined> = {
+  All: undefined,
+  Business: "business",
+  Personal: "personal",
+};
 
 const avatarColors = [
   "bg-[#1B2B3A]",
@@ -30,42 +38,29 @@ function initials(name: string | null | undefined): string {
 }
 
 export default function MarketplacePage() {
-  const { data, isLoading } = useMarketplace();
-  const applications = data?.applications ?? [];
+  const [page, setPage] = useState(1);
   const [activeTab, setActiveTab] = useState<MarketplaceTab>("All");
   const [query, setQuery] = useState("");
+  const debouncedQuery = useDebouncedValue(query, 400);
+  const { data, isLoading } = useMarketplace(page, PAGE_SIZE, {
+    loan_type: TAB_LOAN_TYPE[activeTab],
+  });
+  const applications = data?.applications ?? [];
+  const total = data?.total ?? 0;
 
-  const counts = useMemo(
-    (): Record<MarketplaceTab, number> => ({
-      All: applications.length,
-      Business: applications.filter((a) => a.loan_type === "business").length,
-      Personal: applications.filter((a) => a.loan_type === "personal").length,
-      "Verified KYC": applications.filter(
-        (a) => a.borrower?.kyc_status === "verified",
-      ).length,
-    }),
-    [applications],
-  );
-
+  // Search is client-side over the current page only — the marketplace
+  // endpoint doesn't support a text search filter server-side.
   const filtered = useMemo(
     () =>
-      applications
-        .filter((a) => {
-          if (activeTab === "Business") return a.loan_type === "business";
-          if (activeTab === "Personal") return a.loan_type === "personal";
-          if (activeTab === "Verified KYC")
-            return a.borrower?.kyc_status === "verified";
-          return true;
-        })
-        .filter((a) => {
-          if (!query.trim()) return true;
-          const q = query.toLowerCase();
-          return (
-            (a.borrower?.full_name ?? "").toLowerCase().includes(q) ||
-            (a.purpose ?? "").toLowerCase().includes(q)
-          );
-        }),
-    [applications, activeTab, query],
+      applications.filter((a) => {
+        if (!debouncedQuery.trim()) return true;
+        const q = debouncedQuery.toLowerCase();
+        return (
+          (a.borrower?.full_name ?? "").toLowerCase().includes(q) ||
+          (a.purpose ?? "").toLowerCase().includes(q)
+        );
+      }),
+    [applications, debouncedQuery],
   );
 
   return (
@@ -73,9 +68,7 @@ export default function MarketplacePage() {
       <LenderPageHeader title="Borrower Marketplace" />
 
       <p className="text-sm text-gray-500">
-        {isLoading
-          ? "Loading…"
-          : `${applications.length} loan applications available for review.`}
+        {isLoading ? "Loading…" : `${total} loan applications available for review.`}
       </p>
 
       <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-5">
@@ -94,14 +87,17 @@ export default function MarketplacePage() {
         {tabs.map((tab) => (
           <button
             key={tab}
-            onClick={() => setActiveTab(tab)}
+            onClick={() => {
+              setActiveTab(tab);
+              setPage(1);
+            }}
             className={`rounded-full border px-4 py-1.5 text-sm font-medium transition-colors ${
               activeTab === tab
                 ? "border-[#C4A55A] bg-[#C4A55A] text-white"
                 : "border-gray-300 bg-white text-gray-700 hover:border-[#C4A55A]"
             }`}
           >
-            {tab} ({counts[tab] ?? 0})
+            {tab}
           </button>
         ))}
       </div>
@@ -171,6 +167,13 @@ export default function MarketplacePage() {
           );
         })}
       </div>
+
+      <PaginationControls
+        page={page}
+        pageSize={PAGE_SIZE}
+        total={total}
+        onPageChange={setPage}
+      />
     </div>
   );
 }

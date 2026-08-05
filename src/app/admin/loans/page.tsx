@@ -15,10 +15,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Search, Download } from "lucide-react";
-import { useAdminLoans } from "@/hooks/use-admin";
+import { useAdminLoans, useAdminStats } from "@/hooks/use-admin";
 import { formatCurrency, formatRate } from "@/lib/format";
 import { downloadCsv } from "@/lib/csv";
 import { CardSkeleton, TableSkeleton } from "@/components/skeletons";
+import { PaginationControls } from "@/components/ui/pagination-controls";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
 
 type StatusTab = "all" | "active" | "overdue" | "completed" | "defaulted";
 const TABS: { key: StatusTab; label: string }[] = [
@@ -29,19 +31,21 @@ const TABS: { key: StatusTab; label: string }[] = [
   { key: "defaulted", label: "Defaulted" },
 ];
 
+const PAGE_SIZE = 20;
+
 export default function AdminLoansPage() {
-  const { data: loans = [], isLoading } = useAdminLoans();
+  const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState<StatusTab>("all");
+  const debouncedSearch = useDebouncedValue(search, 400);
+  const { data, isLoading } = useAdminLoans(page, PAGE_SIZE, {
+    status: tab === "all" ? undefined : tab,
+    search: debouncedSearch || undefined,
+  });
+  const { data: stats } = useAdminStats();
 
-  const filtered = loans
-    .filter((l) => tab === "all" || l.status === tab)
-    .filter(
-      (l) =>
-        (l.borrower_name ?? "").toLowerCase().includes(search.toLowerCase()) ||
-        l.reference.toLowerCase().includes(search.toLowerCase()) ||
-        (l.lender_name ?? "").toLowerCase().includes(search.toLowerCase()),
-    );
+  const loans = data?.loans ?? [];
+  const total = data?.total ?? 0;
 
   const statusColor = (s: string) => {
     switch (s) {
@@ -58,18 +62,10 @@ export default function AdminLoansPage() {
     }
   };
 
-  const totalDisbursed = loans.reduce((sum, l) => sum + l.amount, 0);
-  const avgRate =
-    loans.length > 0
-      ? (
-          loans.reduce((sum, l) => sum + l.interest_rate, 0) / loans.length
-        ).toFixed(1)
-      : "0";
-
   const handleExport = () => {
     downloadCsv(
       "mpola-loans.csv",
-      filtered.map((l) => ({
+      loans.map((l) => ({
         reference: l.reference,
         borrower: l.borrower_name ?? "",
         lender: l.lender_name ?? "",
@@ -120,7 +116,7 @@ export default function AdminLoansPage() {
           <CardContent className="p-4">
             <p className="text-xs text-muted-foreground">Total Loans</p>
             <p className="text-2xl font-bold text-[#1B2B3A] dark:text-white">
-              {loans.length}
+              {total}
             </p>
           </CardContent>
         </Card>
@@ -128,7 +124,7 @@ export default function AdminLoansPage() {
           <CardContent className="p-4">
             <p className="text-xs text-muted-foreground">Active</p>
             <p className="text-2xl font-bold text-[#2BB5A0]">
-              {loans.filter((l) => l.status === "active").length}
+              {stats?.loans.active ?? 0}
             </p>
           </CardContent>
         </Card>
@@ -136,14 +132,16 @@ export default function AdminLoansPage() {
           <CardContent className="p-4">
             <p className="text-xs text-muted-foreground">Total Disbursed</p>
             <p className="text-lg font-bold text-[#1B2B3A] dark:text-white">
-              {formatCurrency(totalDisbursed)}
+              {formatCurrency(stats?.loans.total_volume ?? 0)}
             </p>
           </CardContent>
         </Card>
         <Card className="bg-white dark:bg-gray-900">
           <CardContent className="p-4">
             <p className="text-xs text-muted-foreground">Avg. Rate</p>
-            <p className="text-2xl font-bold text-[#C4A55A]">{avgRate}%</p>
+            <p className="text-2xl font-bold text-[#C4A55A]">
+              {formatRate(stats?.loans.avg_interest_rate ?? 0)}
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -152,7 +150,10 @@ export default function AdminLoansPage() {
         {TABS.map((t) => (
           <button
             key={t.key}
-            onClick={() => setTab(t.key)}
+            onClick={() => {
+              setTab(t.key);
+              setPage(1);
+            }}
             className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors ${
               tab === t.key
                 ? "bg-[#2BB5A0] border-[#2BB5A0] text-white"
@@ -172,7 +173,10 @@ export default function AdminLoansPage() {
               placeholder="Search loans..."
               className="pl-9"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
             />
           </div>
         </CardHeader>
@@ -204,14 +208,14 @@ export default function AdminLoansPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filtered.length === 0 ? (
+              {loans.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                     No loans match your search.
                   </TableCell>
                 </TableRow>
               ) : (
-                filtered.map((loan) => {
+                loans.map((loan) => {
                   const progress = loan.total_instalments
                     ? Math.round((loan.paid_instalments / loan.total_instalments) * 100)
                     : 0;
@@ -257,6 +261,12 @@ export default function AdminLoansPage() {
               )}
             </TableBody>
           </Table>
+          <PaginationControls
+            page={page}
+            pageSize={PAGE_SIZE}
+            total={total}
+            onPageChange={setPage}
+          />
         </CardContent>
       </Card>
     </div>

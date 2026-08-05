@@ -1,4 +1,3 @@
-import { lenderProfile } from "./dummy-data";
 import { API_BASE_URL } from "./constants";
 import type {
   User,
@@ -19,18 +18,15 @@ import type {
   AdminLoan,
   AdminApplication,
   AdminPaymentTx,
+  AdminRevenue,
   AdminSetting,
   AdminOfferTemplate,
   AdminAuditLog,
   AdminUserDetail,
-  LenderProfile,
   LenderWalletTransaction,
   LenderEarnings,
   LenderOfferTemplate,
 } from "./types";
-
-// Simulated API delay
-const delay = (ms: number = 500) => new Promise((r) => setTimeout(r, ms));
 
 // ─── Real API helpers ────────────────────────────────────
 
@@ -807,12 +803,15 @@ export const api = {
   getWallet: async (): Promise<Wallet> => {
     return apiAuthGet<Wallet>("/wallet/");
   },
-  getTransactions: async (): Promise<WalletTransaction[]> => {
-    const res = await apiAuthGet<{
-      total: number;
-      transactions: WalletTransaction[];
-    }>("/wallet/transactions");
-    return res.transactions;
+  getTransactions: async (
+    page: number = 1,
+    pageSize: number = 20,
+  ): Promise<{ transactions: WalletTransaction[]; total: number }> => {
+    const params = new URLSearchParams({
+      skip: String((page - 1) * pageSize),
+      limit: String(pageSize),
+    });
+    return apiAuthGet(`/wallet/transactions?${params.toString()}`);
   },
   setupWallet: async (pin: string): Promise<{ status: number; message: string }> => {
     return apiAuthPost("/wallet/setup", { pin });
@@ -830,7 +829,13 @@ export const api = {
     amount: number;
     phone: string;
     carrier?: string;
-  }): Promise<{ status: number; message: string; balance: number }> => {
+  }): Promise<{
+    status: number;
+    message: string;
+    balance: number;
+    fee: number;
+    total_debited: number;
+  }> => {
     return apiAuthPost("/wallet/withdraw", data);
   },
 
@@ -976,20 +981,22 @@ export const api = {
     return apiAuthGet("/admin/stats");
   },
 
-  getAdminUsers: async (filters?: {
-    search?: string;
-    status?: string;
-    role?: string;
-  }): Promise<AdminUser[]> => {
+  getAdminUsers: async (
+    page: number = 1,
+    pageSize: number = 20,
+    filters?: {
+      search?: string;
+      status?: string;
+      role?: string;
+    },
+  ): Promise<{ users: AdminUser[]; total: number }> => {
     const params = new URLSearchParams();
-    params.set("limit", "200");
+    params.set("skip", String((page - 1) * pageSize));
+    params.set("limit", String(pageSize));
     if (filters?.search) params.set("search", filters.search);
     if (filters?.status) params.set("status", filters.status);
     if (filters?.role) params.set("role", filters.role);
-    const res = await apiAuthGet<{ total: number; users: AdminUser[] }>(
-      `/admin/users?${params.toString()}`,
-    );
-    return res.users;
+    return apiAuthGet(`/admin/users?${params.toString()}`);
   },
 
   suspendUser: async (
@@ -1013,27 +1020,30 @@ export const api = {
     return apiAuthPost(`/admin/users/${username}/deactivate${qs}`, {});
   },
 
-  getAdminLoans: async (filters?: { status?: string }): Promise<AdminLoan[]> => {
+  getAdminLoans: async (
+    page: number = 1,
+    pageSize: number = 20,
+    filters?: { status?: string; search?: string },
+  ): Promise<{ loans: AdminLoan[]; total: number }> => {
     const params = new URLSearchParams();
-    params.set("limit", "200");
+    params.set("skip", String((page - 1) * pageSize));
+    params.set("limit", String(pageSize));
     if (filters?.status) params.set("status", filters.status);
-    const res = await apiAuthGet<{ total: number; loans: AdminLoan[] }>(
-      `/admin/loans?${params.toString()}`,
-    );
-    return res.loans;
+    if (filters?.search) params.set("search", filters.search);
+    return apiAuthGet(`/admin/loans?${params.toString()}`);
   },
 
-  getAdminApplications: async (filters?: {
-    status?: string;
-  }): Promise<AdminApplication[]> => {
+  getAdminApplications: async (
+    page: number = 1,
+    pageSize: number = 20,
+    filters?: { status?: string; search?: string },
+  ): Promise<{ applications: AdminApplication[]; total: number }> => {
     const params = new URLSearchParams();
-    params.set("limit", "200");
+    params.set("skip", String((page - 1) * pageSize));
+    params.set("limit", String(pageSize));
     if (filters?.status) params.set("status", filters.status);
-    const res = await apiAuthGet<{
-      total: number;
-      applications: AdminApplication[];
-    }>(`/admin/applications?${params.toString()}`);
-    return res.applications;
+    if (filters?.search) params.set("search", filters.search);
+    return apiAuthGet(`/admin/applications?${params.toString()}`);
   },
 
   updateApplicationStatus: async (
@@ -1043,16 +1053,32 @@ export const api = {
     return apiAuthPatch(`/admin/applications/${id}?action=${action}`, {});
   },
 
-  getAdminPayments: async (): Promise<{
+  getAdminPayments: async (
+    page: number = 1,
+    pageSize: number = 20,
+  ): Promise<{
     transactions: AdminPaymentTx[];
     totals: { in: number; out: number };
+    total: number;
   }> => {
-    const res = await apiAuthGet<{
-      total: number;
-      totals: { in: number; out: number };
-      transactions: AdminPaymentTx[];
-    }>("/admin/payments?limit=200");
-    return { transactions: res.transactions, totals: res.totals };
+    const params = new URLSearchParams({
+      skip: String((page - 1) * pageSize),
+      limit: String(pageSize),
+    });
+    return apiAuthGet(`/admin/payments?${params.toString()}`);
+  },
+
+  getAdminRevenue: async (
+    page: number = 1,
+    pageSize: number = 20,
+    category?: string,
+  ): Promise<AdminRevenue> => {
+    const params = new URLSearchParams({
+      skip: String((page - 1) * pageSize),
+      limit: String(pageSize),
+    });
+    if (category) params.set("category", category);
+    return apiAuthGet(`/admin/revenue?${params.toString()}`);
   },
 
   getAdminSettings: async (): Promise<Record<string, AdminSetting>> => {
@@ -1070,18 +1096,22 @@ export const api = {
     return apiAuthGet(`/admin/users/${username}`);
   },
 
-  getAdminAuditLogs: async (filters?: {
-    action?: string;
-    username?: string;
-  }): Promise<AdminAuditLog[]> => {
+  getAdminAuditLogs: async (
+    page: number = 1,
+    pageSize: number = 20,
+    filters?: {
+      action?: string;
+      username?: string;
+      search?: string;
+    },
+  ): Promise<{ logs: AdminAuditLog[]; total: number }> => {
     const params = new URLSearchParams();
-    params.set("limit", "200");
+    params.set("skip", String((page - 1) * pageSize));
+    params.set("limit", String(pageSize));
     if (filters?.action) params.set("action", filters.action);
     if (filters?.username) params.set("username", filters.username);
-    const res = await apiAuthGet<{ total: number; logs: AdminAuditLog[] }>(
-      `/admin/audit-logs?${params.toString()}`,
-    );
-    return res.logs;
+    if (filters?.search) params.set("search", filters.search);
+    return apiAuthGet(`/admin/audit-logs?${params.toString()}`);
   },
 
   getOfferTemplatesForReview: async (
@@ -1112,21 +1142,22 @@ export const api = {
   },
 
   // ─── Lender Portal APIs ───
-  getLenderProfile: async (): Promise<LenderProfile> => {
-    await delay(300);
-    return lenderProfile;
-  },
-  getMarketplace: async (filters?: {
-    loan_type?: string;
-    min_amount?: number;
-    max_amount?: number;
-  }): Promise<{ total: number; applications: MarketplaceApplication[] }> => {
+  getMarketplace: async (
+    page: number = 1,
+    pageSize: number = 20,
+    filters?: {
+      loan_type?: string;
+      min_amount?: number;
+      max_amount?: number;
+    },
+  ): Promise<{ total: number; applications: MarketplaceApplication[] }> => {
     const params = new URLSearchParams();
+    params.set("skip", String((page - 1) * pageSize));
+    params.set("limit", String(pageSize));
     if (filters?.loan_type) params.set("loan_type", filters.loan_type);
     if (filters?.min_amount) params.set("min_amount", String(filters.min_amount));
     if (filters?.max_amount) params.set("max_amount", String(filters.max_amount));
-    const qs = params.toString();
-    return apiAuthGet(`/loans/marketplace${qs ? `?${qs}` : ""}`);
+    return apiAuthGet(`/loans/marketplace?${params.toString()}`);
   },
   getMyOffers: async (): Promise<LoanOffer[]> => {
     const res = await apiAuthGet<{ total: number; offers: LoanOffer[] }>(
@@ -1165,8 +1196,11 @@ export const api = {
   getLenderWallet: async (): Promise<Wallet> => {
     return api.getWallet();
   },
-  getLenderTransactions: async (): Promise<LenderWalletTransaction[]> => {
-    return api.getTransactions();
+  getLenderTransactions: async (
+    page: number = 1,
+    pageSize: number = 20,
+  ): Promise<{ transactions: LenderWalletTransaction[]; total: number }> => {
+    return api.getTransactions(page, pageSize);
   },
   getLenderEarnings: async (): Promise<LenderEarnings> => {
     return apiAuthGet("/loans/earnings");

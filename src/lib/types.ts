@@ -149,6 +149,13 @@ export interface CardDepositInitiateResult {
 export interface TransferStatusResult {
   status: WalletTransactionStatus;
   balance: number;
+  fee?: number | null;
+}
+
+export interface WithdrawalCharges {
+  platform_fee: number;
+  provider_fee: number;
+  total_fee: number;
 }
 
 export interface DashboardStats {
@@ -188,17 +195,21 @@ export interface AdminStats {
     defaulted: number;
     total_volume: number;
     total_repaid: number;
+    avg_interest_rate: number;
   };
   platform: {
     total_wallet_balance: number;
     total_interest_generated: number;
+    total_platform_revenue: number;
+    total_platform_fee_only: number;
     repayment_rate: number;
     default_rate: number;
     kyc_completion_rate: number;
     pending_offer_templates: number;
   };
   loan_type_mix: { type: string; count: number; percentage: number }[];
-  monthly_trend: { month: string; disbursed: number; collected: number }[];
+  application_status_breakdown: { status: string; count: number }[];
+  monthly_trend: { month: string; disbursed: number; collected: number; revenue: number }[];
   user_growth: { month: string; borrowers: number; lenders: number }[];
 }
 
@@ -268,6 +279,24 @@ export interface AdminPaymentTx {
   description: string | null;
   reference: string | null;
   created_at: string;
+}
+
+export interface AdminRevenueTx {
+  id: string;
+  username: string | null;
+  category: "mobile_money_withdrawal" | "bank_withdrawal";
+  platform_fee: number;
+  provider_fee: number;
+  total_fee: number;
+  created_at: string;
+}
+
+export interface AdminRevenue {
+  total: number;
+  totals: { revenue: number; platform_fee: number; provider_fee: number };
+  by_category: { category: string; total_fee: number; count: number }[];
+  monthly_revenue: { month: string; revenue: number }[];
+  transactions: AdminRevenueTx[];
 }
 
 export interface AdminSetting {

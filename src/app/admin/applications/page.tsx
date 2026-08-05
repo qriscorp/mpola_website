@@ -28,11 +28,14 @@ import {
 } from "lucide-react";
 import {
   useAdminApplications,
+  useAdminStats,
   useUpdateApplicationStatus,
 } from "@/hooks/use-admin";
 import { formatCurrency } from "@/lib/format";
 import { downloadCsv } from "@/lib/csv";
 import { CardSkeleton, TableSkeleton } from "@/components/skeletons";
+import { PaginationControls } from "@/components/ui/pagination-controls";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { toast } from "sonner";
 
 type StatusTab = "all" | "pending" | "funded" | "completed" | "rejected" | "defaulted";
@@ -45,19 +48,22 @@ const TABS: { key: StatusTab; label: string }[] = [
   { key: "defaulted", label: "Defaulted" },
 ];
 
+const PAGE_SIZE = 20;
+
 export default function AdminApplicationsPage() {
-  const { data: applications = [], isLoading } = useAdminApplications();
-  const updateStatus = useUpdateApplicationStatus();
+  const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState<StatusTab>("all");
+  const debouncedSearch = useDebouncedValue(search, 400);
+  const { data, isLoading } = useAdminApplications(page, PAGE_SIZE, {
+    status: tab === "all" ? undefined : tab,
+    search: debouncedSearch || undefined,
+  });
+  const { data: stats } = useAdminStats();
 
-  const filtered = applications
-    .filter((a) => tab === "all" || a.status === tab)
-    .filter(
-      (a) =>
-        (a.borrower_name ?? "").toLowerCase().includes(search.toLowerCase()) ||
-        a.reference_number.toLowerCase().includes(search.toLowerCase()),
-    );
+  const updateStatus = useUpdateApplicationStatus();
+  const applications = data?.applications ?? [];
+  const total = data?.total ?? 0;
 
   const handleStatus = (id: string, action: "approve" | "reject") => {
     updateStatus.mutate(
@@ -69,10 +75,14 @@ export default function AdminApplicationsPage() {
     );
   };
 
+  const breakdown = stats?.application_status_breakdown ?? [];
+  const countFor = (status: string) =>
+    breakdown.find((b) => b.status.toLowerCase() === status)?.count ?? 0;
+
   const handleExport = () => {
     downloadCsv(
       "mpola-applications.csv",
-      filtered.map((a) => ({
+      applications.map((a) => ({
         reference: a.reference_number,
         borrower: a.borrower_name ?? "",
         amount: a.amount,
@@ -139,7 +149,7 @@ export default function AdminApplicationsPage() {
           <CardContent className="p-4">
             <p className="text-xs text-muted-foreground">Total</p>
             <p className="text-2xl font-bold text-[#1B2B3A] dark:text-white">
-              {applications.length}
+              {stats?.applications.total ?? total}
             </p>
           </CardContent>
         </Card>
@@ -147,7 +157,7 @@ export default function AdminApplicationsPage() {
           <CardContent className="p-4">
             <p className="text-xs text-muted-foreground">Pending</p>
             <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-              {applications.filter((a) => a.status === "pending").length}
+              {countFor("pending")}
             </p>
           </CardContent>
         </Card>
@@ -155,7 +165,7 @@ export default function AdminApplicationsPage() {
           <CardContent className="p-4">
             <p className="text-xs text-muted-foreground">Funded</p>
             <p className="text-2xl font-bold text-[#C4A55A]">
-              {applications.filter((a) => a.status === "funded").length}
+              {countFor("funded")}
             </p>
           </CardContent>
         </Card>
@@ -163,7 +173,7 @@ export default function AdminApplicationsPage() {
           <CardContent className="p-4">
             <p className="text-xs text-muted-foreground">Completed</p>
             <p className="text-2xl font-bold text-[#2BB5A0]">
-              {applications.filter((a) => a.status === "completed").length}
+              {countFor("completed")}
             </p>
           </CardContent>
         </Card>
@@ -173,7 +183,10 @@ export default function AdminApplicationsPage() {
         {TABS.map((t) => (
           <button
             key={t.key}
-            onClick={() => setTab(t.key)}
+            onClick={() => {
+              setTab(t.key);
+              setPage(1);
+            }}
             className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors ${
               tab === t.key
                 ? "bg-[#2BB5A0] border-[#2BB5A0] text-white"
@@ -193,7 +206,10 @@ export default function AdminApplicationsPage() {
               placeholder="Search by borrower name or reference..."
               className="pl-9"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
             />
           </div>
         </CardHeader>
@@ -223,14 +239,14 @@ export default function AdminApplicationsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filtered.length === 0 ? (
+              {applications.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                     No applications match your search.
                   </TableCell>
                 </TableRow>
               ) : (
-                filtered.map((app) => (
+                applications.map((app) => (
                   <TableRow key={app.id}>
                     <TableCell className="font-medium text-sm text-[#1B2B3A] dark:text-white">
                       {app.reference_number}
@@ -290,6 +306,12 @@ export default function AdminApplicationsPage() {
               )}
             </TableBody>
           </Table>
+          <PaginationControls
+            page={page}
+            pageSize={PAGE_SIZE}
+            total={total}
+            onPageChange={setPage}
+          />
         </CardContent>
       </Card>
     </div>

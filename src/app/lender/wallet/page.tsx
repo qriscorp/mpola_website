@@ -10,10 +10,14 @@ import { WalletTransactionList } from "@/components/wallet-transaction-list";
 import { WalletSetupModal } from "@/components/wallet-setup-modal";
 import { WalletDepositModal } from "@/components/wallet-deposit-modal";
 import { WalletWithdrawModal } from "@/components/wallet-withdraw-modal";
+import { PaginationControls } from "@/components/ui/pagination-controls";
+
+const PAGE_SIZE = 20;
 
 export default function LenderWalletPage() {
   const { data: wallet, isLoading: walletLoading } = useLenderWallet();
-  const { data: transactions, isLoading: txLoading } = useLenderTransactions();
+  const [txPage, setTxPage] = useState(1);
+  const { data: txData, isLoading: txLoading } = useLenderTransactions(txPage, PAGE_SIZE);
   const { mutate: setupWallet, isPending: isSettingUp } = useSetupWallet();
   const [showDeposit, setShowDeposit] = useState(false);
   const [showWithdraw, setShowWithdraw] = useState(false);
@@ -51,9 +55,17 @@ export default function LenderWalletPage() {
           Transaction History
         </h3>
         <WalletTransactionList
-          transactions={transactions}
+          transactions={txData?.transactions}
           isLoading={txLoading}
         />
+        {!txLoading && (
+          <PaginationControls
+            page={txPage}
+            pageSize={PAGE_SIZE}
+            total={txData?.total ?? 0}
+            onPageChange={setTxPage}
+          />
+        )}
       </div>
 
       <WalletDepositModal

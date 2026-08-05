@@ -8,10 +8,14 @@ import { WalletSetupModal } from "@/components/wallet-setup-modal";
 import { WalletDepositModal } from "@/components/wallet-deposit-modal";
 import { WalletWithdrawModal } from "@/components/wallet-withdraw-modal";
 import { useWallet, useTransactions, useSetupWallet } from "@/hooks/use-wallet";
+import { PaginationControls } from "@/components/ui/pagination-controls";
+
+const PAGE_SIZE = 20;
 
 export default function WalletPage() {
   const { data: wallet, isLoading: walletLoading } = useWallet();
-  const { data: transactions, isLoading: txLoading } = useTransactions();
+  const [txPage, setTxPage] = useState(1);
+  const { data: txData, isLoading: txLoading } = useTransactions(txPage, PAGE_SIZE);
   const { mutate: setupWallet, isPending: isSettingUp } = useSetupWallet();
 
   const [depositOpen, setDepositOpen] = useState(false);
@@ -41,7 +45,17 @@ export default function WalletPage() {
             Transaction History
           </h2>
         </div>
-        <WalletTransactionList transactions={transactions} isLoading={txLoading} />
+        <WalletTransactionList transactions={txData?.transactions} isLoading={txLoading} />
+        {!txLoading && (
+          <div className="px-5 pb-5">
+            <PaginationControls
+              page={txPage}
+              pageSize={PAGE_SIZE}
+              total={txData?.total ?? 0}
+              onPageChange={setTxPage}
+            />
+          </div>
+        )}
       </div>
 
       <WalletDepositModal

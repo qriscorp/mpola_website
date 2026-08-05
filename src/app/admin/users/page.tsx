@@ -32,27 +32,33 @@ import {
 } from "lucide-react";
 import {
   useAdminUsers,
+  useAdminStats,
   useSuspendUser,
   useDeactivateUser,
 } from "@/hooks/use-admin";
 import { formatCurrency } from "@/lib/format";
 import { downloadCsv } from "@/lib/csv";
 import { CardSkeleton, TableSkeleton } from "@/components/skeletons";
+import { PaginationControls } from "@/components/ui/pagination-controls";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { toast } from "sonner";
+
+const PAGE_SIZE = 20;
 
 export default function AdminUsersPage() {
   const router = useRouter();
-  const { data: users = [], isLoading } = useAdminUsers();
+  const [page, setPage] = useState(1);
+  const [search, setSearch] = useState("");
+  const debouncedSearch = useDebouncedValue(search, 400);
+  const { data, isLoading } = useAdminUsers(page, PAGE_SIZE, {
+    search: debouncedSearch || undefined,
+  });
+  const { data: stats } = useAdminStats();
   const suspend = useSuspendUser();
   const deactivate = useDeactivateUser();
-  const [search, setSearch] = useState("");
 
-  const filtered = users.filter(
-    (u) =>
-      (u.full_name ?? "").toLowerCase().includes(search.toLowerCase()) ||
-      u.email.toLowerCase().includes(search.toLowerCase()) ||
-      (u.phone_number ?? "").includes(search),
-  );
+  const users = data?.users ?? [];
+  const total = data?.total ?? 0;
 
   const handleSuspend = (username: string) => {
     suspend.mutate(username, {
@@ -77,7 +83,7 @@ export default function AdminUsersPage() {
   const handleExport = () => {
     downloadCsv(
       "mpola-users.csv",
-      filtered.map((u) => ({
+      users.map((u) => ({
         username: u.username,
         full_name: u.full_name ?? "",
         email: u.email,
@@ -129,7 +135,7 @@ export default function AdminUsersPage() {
           <CardContent className="p-4">
             <p className="text-xs text-muted-foreground">Total Users</p>
             <p className="text-2xl font-bold text-[#1B2B3A] dark:text-white">
-              {users.length}
+              {stats?.users.total ?? total}
             </p>
           </CardContent>
         </Card>
@@ -137,15 +143,15 @@ export default function AdminUsersPage() {
           <CardContent className="p-4">
             <p className="text-xs text-muted-foreground">Verified</p>
             <p className="text-2xl font-bold text-[#2BB5A0]">
-              {users.filter((u) => u.kyc_status === "verified").length}
+              {stats?.users.verified ?? 0}
             </p>
           </CardContent>
         </Card>
         <Card className="bg-white dark:bg-gray-900">
           <CardContent className="p-4">
-            <p className="text-xs text-muted-foreground">Pending KYC</p>
+            <p className="text-xs text-muted-foreground">Active</p>
             <p className="text-2xl font-bold text-[#C4A55A]">
-              {users.filter((u) => u.kyc_status === "pending").length}
+              {stats?.users.active ?? 0}
             </p>
           </CardContent>
         </Card>
@@ -153,7 +159,7 @@ export default function AdminUsersPage() {
           <CardContent className="p-4">
             <p className="text-xs text-muted-foreground">Suspended</p>
             <p className="text-2xl font-bold text-red-500">
-              {users.filter((u) => !u.is_active).length}
+              {stats?.users.suspended ?? 0}
             </p>
           </CardContent>
         </Card>
@@ -168,7 +174,10 @@ export default function AdminUsersPage() {
               placeholder="Search by name, email, or phone..."
               className="pl-9"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
             />
           </div>
         </CardHeader>
@@ -200,14 +209,14 @@ export default function AdminUsersPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filtered.length === 0 ? (
+              {users.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                     No users match your search.
                   </TableCell>
                 </TableRow>
               ) : (
-                filtered.map((user) => (
+                users.map((user) => (
                   <TableRow key={user.id}>
                     <TableCell>
                       <Link href={`/admin/users/${user.username}`} className="block hover:underline">
@@ -303,6 +312,12 @@ export default function AdminUsersPage() {
               )}
             </TableBody>
           </Table>
+          <PaginationControls
+            page={page}
+            pageSize={PAGE_SIZE}
+            total={total}
+            onPageChange={setPage}
+          />
         </CardContent>
       </Card>
     </div>

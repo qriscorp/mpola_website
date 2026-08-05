@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -8,6 +8,11 @@ import {
   useBankWithdraw,
   useBanks,
 } from "@/hooks/use-wallet";
+import {
+  calcMobileMoneyWithdrawalCharges,
+  calcBankWithdrawalCharges,
+  detectCarrier,
+} from "@/lib/fees";
 
 interface WalletWithdrawModalProps {
   open: boolean;
@@ -38,12 +43,19 @@ export function WalletWithdrawModal({
   const bankWithdraw = useBankWithdraw();
   const { data: bankList, isLoading: banksLoading } = useBanks("UG");
 
+  const numericAmount = Number(amount) || 0;
+  const charges = useMemo(() => {
+    if (numericAmount <= 0) return null;
+    return method === "mobile_money"
+      ? calcMobileMoneyWithdrawalCharges(numericAmount, phone || "MTN")
+      : calcBankWithdrawalCharges(numericAmount);
+  }, [method, numericAmount, phone]);
+
   if (!open) return null;
 
   const isPending = mobileMoney.isPending || bankWithdraw.isPending;
 
   const handleConfirm = () => {
-    const numericAmount = Number(amount);
     if (method === "mobile_money") {
       mobileMoney.mutate(
         { amount: numericAmount, phone },
@@ -150,6 +162,33 @@ export function WalletWithdrawModal({
               />
             </div>
           </>
+        )}
+
+        {charges && (
+          <div className="rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 p-3 space-y-1 text-xs">
+            <div className="flex justify-between text-gray-600 dark:text-gray-400">
+              <span>Recipient receives</span>
+              <span className="font-medium text-[#1B2B3A] dark:text-white">
+                UGX {numericAmount.toLocaleString()}
+              </span>
+            </div>
+            <div className="flex justify-between text-gray-600 dark:text-gray-400">
+              <span>Platform fee (0.5%)</span>
+              <span>UGX {charges.platform_fee.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between text-gray-600 dark:text-gray-400">
+              <span>
+                {method === "mobile_money" ? "Network fee" : "Flutterwave fee (3%)"}
+              </span>
+              <span>UGX {charges.provider_fee.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between font-semibold text-[#1B2B3A] dark:text-white pt-1 border-t border-gray-200 dark:border-gray-700">
+              <span>Total debited from wallet</span>
+              <span>
+                UGX {(numericAmount + charges.total_fee).toLocaleString()}
+              </span>
+            </div>
+          </div>
         )}
 
         {bankWithdraw.isPending && (
