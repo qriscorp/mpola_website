@@ -55,10 +55,10 @@ export function useMakeOffer() {
   });
 }
 
-export function useLenderWalletBalance() {
+export function useLenderWallet() {
   return useQuery({
-    queryKey: ["lender", "walletBalance"],
-    queryFn: api.getLenderWalletBalance,
+    queryKey: ["lender", "wallet"],
+    queryFn: api.getLenderWallet,
   });
 }
 
@@ -76,7 +76,7 @@ export function useLenderDeposit() {
       api.lenderDeposit(data),
     onSuccess: () => {
       toast.success("Deposit successful!");
-      qc.invalidateQueries({ queryKey: ["lender", "walletBalance"] });
+      qc.invalidateQueries({ queryKey: ["lender", "wallet"] });
       qc.invalidateQueries({ queryKey: ["lender", "transactions"] });
     },
     onError: () => toast.error("Deposit failed"),
@@ -90,7 +90,7 @@ export function useLenderWithdraw() {
       api.lenderWithdraw(data),
     onSuccess: () => {
       toast.success("Withdrawal initiated!");
-      qc.invalidateQueries({ queryKey: ["lender", "walletBalance"] });
+      qc.invalidateQueries({ queryKey: ["lender", "wallet"] });
     },
     onError: () => toast.error("Withdrawal failed"),
   });

@@ -6,7 +6,6 @@ import {
   Instalment,
   Guarantor,
   Lender,
-  WalletTransaction,
   DashboardStats,
 } from "./types";
 
@@ -256,33 +255,6 @@ export const instalments: Instalment[] = [
   { number: 12, dueDate: "1 Dec 2026", amount: 458200, status: "upcoming" },
 ];
 
-export const walletTransactions: WalletTransaction[] = [
-  {
-    id: "txn_001",
-    date: "1 Apr 2026",
-    description: "Loan disbursement",
-    method: "Escrow",
-    amount: 5000000,
-    type: "credit",
-  },
-  {
-    id: "txn_002",
-    date: "1 Apr 2026",
-    description: "Instalment #4 · Kampala Capital",
-    method: "Wallet",
-    amount: 458200,
-    type: "debit",
-  },
-  {
-    id: "txn_003",
-    date: "14 Apr 2026",
-    description: "Top-up",
-    method: "MTN MoMo",
-    amount: 500000,
-    type: "credit",
-  },
-];
-
 // ─── Notifications ───
 
 import type {
@@ -296,7 +268,6 @@ import type {
   BorrowerActivity,
   MarketplaceBorrower,
   BorrowerProfile,
-  LenderWalletTransaction,
   LenderEarnings,
 } from "./types";
 
@@ -739,41 +710,6 @@ export const borrowerProfileData: BorrowerProfile = {
   riskDescription:
     "Strong repayment history, low DTI, stable income, 2 confirmed guarantors.",
 };
-
-export const lenderWalletTransactions: LenderWalletTransaction[] = [
-  {
-    id: "lwt_001",
-    date: "15 Apr 2026",
-    description: "Repayment from Sarah N.",
-    method: "Auto-debit",
-    amount: 498814,
-    type: "credit",
-  },
-  {
-    id: "lwt_002",
-    date: "12 Apr 2026",
-    description: "Offer funded to Brenda A.",
-    method: "Escrow",
-    amount: 12000000,
-    type: "debit",
-  },
-  {
-    id: "lwt_003",
-    date: "10 Apr 2026",
-    description: "Deposit from Stanbic Bank",
-    method: "Bank transfer",
-    amount: 20000000,
-    type: "credit",
-  },
-  {
-    id: "lwt_004",
-    date: "1 Apr 2026",
-    description: "Repayment from James O.",
-    method: "MTN MoMo",
-    amount: 318450,
-    type: "credit",
-  },
-];
 
 export const lenderEarnings: LenderEarnings = {
   totalEarnings: 8420000,

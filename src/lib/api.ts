@@ -7,7 +7,6 @@ import {
   lenders,
   guarantors,
   instalments,
-  walletTransactions,
   notifications,
   adminStats,
   adminUsers,
@@ -18,7 +17,6 @@ import {
   borrowerActivities,
   marketplaceBorrowers,
   borrowerProfileData,
-  lenderWalletTransactions,
   lenderEarnings,
 } from "./dummy-data";
 import { API_BASE_URL } from "./constants";
@@ -31,6 +29,7 @@ import type {
   Lender,
   Guarantor,
   Instalment,
+  Wallet,
   WalletTransaction,
   Notification,
   AdminStats,
@@ -117,6 +116,70 @@ async function apiGet<T>(path: string): Promise<T> {
     method: "GET",
     headers: { "Content-Type": "application/json" },
   });
+  if (!res.ok) {
+    const err = await res
+      .json()
+      .catch(() => ({ detail: "Request failed", message: "Request failed" }));
+    throw new Error(err.detail || err.message || `HTTP ${res.status}`);
+  }
+  return res.json();
+}
+
+/** Read a cookie by name (client-side only). */
+function getCookie(name: string): string | undefined {
+  return document.cookie
+    .split("; ")
+    .find((c) => c.startsWith(`${name}=`))
+    ?.split("=")[1];
+}
+
+/** Send the signed-in user back to the right sign-in page for their portal. */
+function redirectToSignIn() {
+  if (typeof window === "undefined") return;
+  const signInPath = window.location.pathname.startsWith("/lender")
+    ? "/auth/lender-signin"
+    : "/auth/signin";
+  window.location.href = signInPath;
+}
+
+/** GET with the JWT from the lf_token cookie attached — for endpoints that require auth. */
+async function apiAuthGet<T>(path: string): Promise<T> {
+  const token = getCookie("lf_token");
+  const res = await fetch(`${API_BASE_URL}${path}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+  });
+  if (res.status === 401) {
+    redirectToSignIn();
+    throw new Error("Session expired");
+  }
+  if (!res.ok) {
+    const err = await res
+      .json()
+      .catch(() => ({ detail: "Request failed", message: "Request failed" }));
+    throw new Error(err.detail || err.message || `HTTP ${res.status}`);
+  }
+  return res.json();
+}
+
+/** POST with the JWT from the lf_token cookie attached — for endpoints that require auth. */
+async function apiAuthPost<T>(path: string, body: unknown): Promise<T> {
+  const token = getCookie("lf_token");
+  const res = await fetch(`${API_BASE_URL}${path}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify(body),
+  });
+  if (res.status === 401) {
+    redirectToSignIn();
+    throw new Error("Session expired");
+  }
   if (!res.ok) {
     const err = await res
       .json()
@@ -570,14 +633,16 @@ export const api = {
     return instalments;
   },
 
-  // Wallet
-  getWalletBalance: async (): Promise<number> => {
-    await delay(200);
-    return dashboardStats.walletBalance;
+  // Wallet — one wallet per user; borrower and lender portals hit the same endpoints.
+  getWallet: async (): Promise<Wallet> => {
+    return apiAuthGet<Wallet>("/wallet/");
   },
   getTransactions: async (): Promise<WalletTransaction[]> => {
-    await delay(300);
-    return walletTransactions;
+    const res = await apiAuthGet<{
+      total: number;
+      transactions: WalletTransaction[];
+    }>("/wallet/transactions");
+    return res.transactions;
   },
   topUp: async (_data: {
     amount: number;
@@ -683,13 +748,11 @@ export const api = {
   ): Promise<void> => {
     await delay(800);
   },
-  getLenderWalletBalance: async (): Promise<number> => {
-    await delay(200);
-    return 12480000;
+  getLenderWallet: async (): Promise<Wallet> => {
+    return api.getWallet();
   },
   getLenderTransactions: async (): Promise<LenderWalletTransaction[]> => {
-    await delay(300);
-    return lenderWalletTransactions;
+    return api.getTransactions();
   },
   lenderDeposit: async (_data: {
     amount: number;

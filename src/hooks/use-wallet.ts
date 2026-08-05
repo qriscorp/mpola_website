@@ -4,10 +4,10 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
 
-export function useWalletBalance() {
+export function useWallet() {
   return useQuery({
-    queryKey: ["wallet-balance"],
-    queryFn: api.getWalletBalance,
+    queryKey: ["wallet"],
+    queryFn: api.getWallet,
   });
 }
 
@@ -25,7 +25,7 @@ export function useTopUp() {
       api.topUp(data),
     onSuccess: () => {
       toast.success("Top-up successful!");
-      queryClient.invalidateQueries({ queryKey: ["wallet-balance"] });
+      queryClient.invalidateQueries({ queryKey: ["wallet"] });
       queryClient.invalidateQueries({ queryKey: ["transactions"] });
     },
     onError: () => {

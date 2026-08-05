@@ -107,13 +107,32 @@ export interface Lender {
   isBestRate?: boolean;
 }
 
+export type WalletTransactionType =
+  | "deposit"
+  | "withdrawal"
+  | "repayment"
+  | "disbursement"
+  | "top_up";
+
+export type WalletTransactionStatus = "pending" | "completed" | "failed";
+
 export interface WalletTransaction {
   id: string;
-  date: string;
-  description: string;
-  method: string;
   amount: number;
-  type: "credit" | "debit";
+  type: WalletTransactionType;
+  status: WalletTransactionStatus;
+  description: string | null;
+  reference: string | null;
+  counterparty: string | null;
+  created_at: string;
+}
+
+export interface Wallet {
+  id?: string;
+  balance: number;
+  currency: string;
+  is_wallet_setup: boolean;
+  created_at?: string;
 }
 
 export interface DashboardStats {
@@ -265,14 +284,8 @@ export interface BorrowerProfile {
   riskDescription: string;
 }
 
-export interface LenderWalletTransaction {
-  id: string;
-  date: string;
-  description: string;
-  method: string;
-  amount: number;
-  type: "credit" | "debit";
-}
+/** Lenders and borrowers share the same wallet model on the backend. */
+export type LenderWalletTransaction = WalletTransaction;
 
 export interface LenderEarnings {
   totalEarnings: number;

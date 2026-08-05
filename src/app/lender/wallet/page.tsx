@@ -1,158 +1,66 @@
 ﻿"use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useLenderWalletBalance, useLenderDeposit } from "@/hooks/use-lender";
+import {
+  useLenderWallet,
+  useLenderDeposit,
+  useLenderTransactions,
+} from "@/hooks/use-lender";
 import { LenderPageHeader } from "@/components/lender-top-nav";
-
-type TxnType = "Received" | "Disbursed" | "Deposit" | "Withdrawal";
-
-function typeBadge(type: TxnType) {
-  if (type === "Received")
-    return (
-      <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-200">
-        Received
-      </span>
-    );
-  if (type === "Disbursed")
-    return (
-      <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-600 border border-amber-200">
-        Disbursed
-      </span>
-    );
-  if (type === "Deposit")
-    return (
-      <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-500 border border-gray-200">
-        Deposit
-      </span>
-    );
-  return (
-    <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-50 text-red-500 border border-red-200">
-      Withdrawal
-    </span>
-  );
-}
-
-const mockTransactions: Array<{
-  id: number;
-  date: string;
-  description: string;
-  type: TxnType;
-  amount: string;
-  positive: boolean;
-}> = [
-  {
-    id: 1,
-    date: "07 May 2024",
-    description: "Repayment received — Agnes K. #LN-031",
-    type: "Received",
-    amount: "UGX 2,400,000",
-    positive: true,
-  },
-  {
-    id: 2,
-    date: "04 May 2024",
-    description: "Loan disbursed — Patience Nakato #LN-035",
-    type: "Disbursed",
-    amount: "UGX 5,000,000",
-    positive: false,
-  },
-  {
-    id: 3,
-    date: "01 May 2024",
-    description: "MTN MoMo Deposit",
-    type: "Deposit",
-    amount: "UGX 20,000,000",
-    positive: true,
-  },
-];
+import { WalletBalanceCard } from "@/components/wallet-balance-card";
+import { WalletTransactionList } from "@/components/wallet-transaction-list";
 
 export default function LenderWalletPage() {
-  const { data: balance } = useLenderWalletBalance();
+  const { data: wallet, isLoading: walletLoading } = useLenderWallet();
+  const { data: transactions, isLoading: txLoading } = useLenderTransactions();
   const { mutate: deposit, isPending } = useLenderDeposit();
   const [amount, setAmount] = useState("500000");
   const [method, setMethod] = useState("MTN MoMo");
   const [phone, setPhone] = useState("+256772 843 901");
   const [showDeposit, setShowDeposit] = useState(false);
 
+  const isWalletSetup = wallet?.is_wallet_setup ?? false;
+
   return (
     <div className="space-y-6 max-w-5xl">
       <LenderPageHeader title="Wallet" />
 
-      {/* Hero balance card */}
-      <div className="rounded-2xl bg-[#1B2B3A] p-6 sm:p-8 text-white">
-        <p className="text-xs font-semibold uppercase tracking-wider text-white/50">
-          Available Balance
-        </p>
-        <p className="text-4xl sm:text-5xl font-extrabold mt-2">
-          UGX {(balance ?? 14800000).toLocaleString()}
-        </p>
-        <p className="text-sm text-white/60 mt-1">
-          Deployed: UGX 48M &nbsp;Â·&nbsp; Pending: UGX 6M
-        </p>
-        <div className="flex gap-3 mt-6 flex-wrap">
+      <WalletBalanceCard
+        balance={wallet?.balance ?? 0}
+        isWalletSetup={isWalletSetup}
+        isLoading={walletLoading}
+        accent="gold"
+        onDeposit={() => setShowDeposit(true)}
+        onWithdraw={() =>
+          toast.info("Withdrawals are coming in the next update.")
+        }
+        onSetup={() =>
+          toast.info("Wallet setup is coming in the next update.")
+        }
+        extraActions={
           <button
-            onClick={() => setShowDeposit(true)}
-            className="px-5 py-2 rounded-lg bg-[#C4A55A] text-white font-semibold text-sm hover:bg-[#b3944a] transition-colors"
+            onClick={() =>
+              toast.info("Fund Loan is coming in the next update.")
+            }
+            className="px-5 py-2 rounded-lg border border-white/30 text-white font-semibold text-sm hover:bg-white/10 transition-colors"
           >
-            + Deposit
-          </button>
-          <button className="px-5 py-2 rounded-lg border border-white/30 text-white font-semibold text-sm hover:bg-white/10 transition-colors">
-            Withdraw
-          </button>
-          <button className="px-5 py-2 rounded-lg border border-white/30 text-white font-semibold text-sm hover:bg-white/10 transition-colors">
             Fund Loan
           </button>
-        </div>
-      </div>
+        }
+      />
 
       {/* Transaction history */}
       <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 sm:p-6">
         <h3 className="font-semibold text-[#1B2B3A] dark:text-white mb-4">
           Transaction History
         </h3>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-gray-100">
-                <th className="text-left pb-2 text-xs text-gray-400 font-semibold uppercase tracking-wider">
-                  Date
-                </th>
-                <th className="text-left pb-2 text-xs text-gray-400 font-semibold uppercase tracking-wider">
-                  Description
-                </th>
-                <th className="text-left pb-2 text-xs text-gray-400 font-semibold uppercase tracking-wider hidden sm:table-cell">
-                  Type
-                </th>
-                <th className="text-right pb-2 text-xs text-gray-400 font-semibold uppercase tracking-wider">
-                  Amount
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
-              {mockTransactions.map((txn) => (
-                <tr key={txn.id}>
-                  <td className="py-3 text-gray-400 text-xs whitespace-nowrap">
-                    {txn.date}
-                  </td>
-                  <td className="py-3 text-[#1B2B3A] dark:text-white font-medium">
-                    {txn.description}
-                  </td>
-                  <td className="py-3 hidden sm:table-cell">
-                    {typeBadge(txn.type)}
-                  </td>
-                  <td
-                    className={`py-3 text-right font-semibold ${txn.positive ? "text-emerald-600" : "text-orange-500"}`}
-                  >
-                    {txn.positive ? "+" : "-"}
-                    {txn.amount}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <WalletTransactionList
+          transactions={transactions}
+          isLoading={txLoading}
+        />
       </div>
 
       {/* Deposit modal */}
