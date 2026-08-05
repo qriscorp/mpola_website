@@ -1,8 +1,44 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { BorrowerPageHeader } from "@/components/top-nav";
+import { useUser, useUpdateProfile } from "@/hooks/use-dashboard";
+import { getInitials } from "@/lib/format";
+import { CardSkeleton } from "@/components/skeletons";
+
+const kycBadge: Record<string, { label: string; className: string }> = {
+  verified: { label: "Verified", className: "bg-teal-50 text-[#2BB5A0]" },
+  pending: { label: "Pending", className: "bg-amber-50 text-amber-600" },
+  rejected: { label: "Rejected", className: "bg-red-50 text-red-600" },
+};
 
 export default function ProfilePage() {
+  const { data: user, isLoading } = useUser();
+  const { mutate: updateProfile, isPending } = useUpdateProfile();
+  const [editing, setEditing] = useState(false);
+  const [form, setForm] = useState({ fullName: "", phone: "", nin: "" });
+
+  useEffect(() => {
+    if (user) {
+      setForm({ fullName: user.fullName, phone: user.phone, nin: user.nin });
+    }
+  }, [user]);
+
+  if (isLoading || !user) {
+    return (
+      <div className="space-y-6">
+        <BorrowerPageHeader title="Profile & KYC" />
+        <CardSkeleton count={2} />
+      </div>
+    );
+  }
+
+  const badge = kycBadge[user.kycStatus] ?? kycBadge.pending;
+
+  function handleSave() {
+    updateProfile(form, { onSuccess: () => setEditing(false) });
+  }
+
   return (
     <div className="space-y-6">
       <BorrowerPageHeader title="Profile & KYC" />
@@ -17,42 +53,77 @@ export default function ProfilePage() {
           {/* Avatar row */}
           <div className="flex items-center gap-4 mb-6">
             <div className="w-16 h-16 rounded-full bg-[#2BB5A0] flex items-center justify-center font-bold text-white text-xl">
-              AK
+              {getInitials(user.fullName)}
             </div>
             <div>
               <p className="text-xl sm:text-2xl leading-tight font-black text-[#1B2B3A]">
-                Agnes Kyomuhendo
+                {user.fullName}
               </p>
-              <p className="text-sm text-gray-400">Borrower since Feb 2024</p>
+              <p className="text-sm text-gray-400">{user.email}</p>
             </div>
-            <button className="ml-auto px-4 py-1.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:border-[#2BB5A0] hover:text-[#2BB5A0] transition-colors">
-              Edit
+            <button
+              onClick={() => setEditing((v) => !v)}
+              className="ml-auto px-4 py-1.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:border-[#2BB5A0] hover:text-[#2BB5A0] transition-colors"
+            >
+              {editing ? "Cancel" : "Edit"}
             </button>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            {[
-              { label: "Full Name", value: "Agnes Kyomuhendo" },
-              { label: "Phone", value: "+256 700 123 456" },
-              { label: "Email", value: "agnes@example.com" },
-              { label: "NIN", value: "CF12345678" },
-            ].map((field) => (
-              <div key={field.label}>
-                <label className="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">
-                  {field.label}
-                </label>
-                <input
-                  defaultValue={field.value}
-                  readOnly
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white text-[#1B2B3A] outline-none"
-                />
-              </div>
-            ))}
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">
+                Full Name
+              </label>
+              <input
+                value={form.fullName}
+                onChange={(e) => setForm({ ...form, fullName: e.target.value })}
+                readOnly={!editing}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white text-[#1B2B3A] outline-none disabled:bg-gray-50"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">
+                Phone
+              </label>
+              <input
+                value={form.phone}
+                onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                readOnly={!editing}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white text-[#1B2B3A] outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">
+                Email
+              </label>
+              <input
+                value={user.email}
+                readOnly
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-gray-50 text-[#1B2B3A] outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">
+                NIN
+              </label>
+              <input
+                value={form.nin}
+                onChange={(e) => setForm({ ...form, nin: e.target.value })}
+                readOnly={!editing}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white text-[#1B2B3A] outline-none"
+              />
+            </div>
           </div>
 
-          <button className="mt-5 px-5 py-2.5 rounded-xl bg-[#2BB5A0] text-white text-sm font-semibold hover:bg-[#239E8C] transition-colors">
-            Save Changes
-          </button>
+          {editing && (
+            <button
+              onClick={handleSave}
+              disabled={isPending}
+              className="mt-5 px-5 py-2.5 rounded-xl bg-[#2BB5A0] text-white text-sm font-semibold hover:bg-[#239E8C] transition-colors disabled:opacity-50"
+            >
+              {isPending ? "Saving…" : "Save Changes"}
+            </button>
+          )}
         </div>
 
         {/* KYC Status */}
@@ -60,29 +131,20 @@ export default function ProfilePage() {
           <h2 className="text-xl sm:text-2xl leading-tight font-black text-[#1B2B3A] mb-5">
             KYC Status
           </h2>
-          <div className="space-y-4">
-            {[
-              { label: "National ID", status: "Verified" },
-              { label: "Phone Number", status: "Verified" },
-              { label: "Bank Statement", status: "Pending" },
-            ].map((item) => (
-              <div
-                key={item.label}
-                className="flex items-center justify-between"
-              >
-                <span className="text-sm text-[#1B2B3A]">{item.label}</span>
-                <span
-                  className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                    item.status === "Verified"
-                      ? "bg-teal-50 text-[#2BB5A0]"
-                      : "bg-amber-50 text-amber-600"
-                  }`}
-                >
-                  {item.status}
-                </span>
-              </div>
-            ))}
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-[#1B2B3A]">Identity Verification</span>
+            <span
+              className={`px-3 py-1 rounded-full text-xs font-semibold ${badge.className}`}
+            >
+              {badge.label}
+            </span>
           </div>
+          {user.kycStatus !== "verified" && (
+            <p className="mt-3 text-xs text-gray-400">
+              Your account will be reviewed for verification. Contact support
+              if this is taking longer than expected.
+            </p>
+          )}
         </div>
       </div>
     </div>

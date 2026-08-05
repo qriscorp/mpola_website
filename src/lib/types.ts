@@ -12,6 +12,7 @@ export interface User {
   profilePic?: string;
   kycStatus: "pending" | "verified" | "rejected";
   location?: string;
+  twoFactorEnabled?: boolean;
   createdAt: string;
 }
 
@@ -259,6 +260,22 @@ export type MarketplaceApplication = LoanApplication;
 
 /** Lenders and borrowers share the same wallet model on the backend. */
 export type LenderWalletTransaction = WalletTransaction;
+
+export interface LenderOfferTemplate {
+  id: string;
+  lender_id: string;
+  max_amount: number;
+  min_amount: number;
+  interest_rate: number;
+  max_duration: number;
+  accepted_loan_types: string[];
+  required_documents: string[];
+  description: string | null;
+  valid_until: string | null;
+  max_concurrent_loans: number | null;
+  status: "pending_review" | "draft" | "approved" | "rejected";
+  created_at: string;
+}
 
 export interface LenderEarnings {
   total_deployed: number;

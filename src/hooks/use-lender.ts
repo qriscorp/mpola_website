@@ -28,6 +28,14 @@ export function useApplicationDetail(id: string) {
   });
 }
 
+export function useApplicationDocuments(id: string) {
+  return useQuery({
+    queryKey: ["application", id, "documents"],
+    queryFn: () => api.getApplicationDocuments(id),
+    enabled: !!id,
+  });
+}
+
 export function useMyOffers() {
   return useQuery({
     queryKey: ["lender", "offers"],
@@ -53,6 +61,14 @@ export function useMakeOffer() {
       qc.invalidateQueries({ queryKey: ["lender", "offers"] });
     },
     onError: (err: Error) => toast.error(err.message || "Failed to send offer"),
+  });
+}
+
+export function useCreateOfferTemplate() {
+  return useMutation({
+    mutationFn: api.createOfferTemplate,
+    onError: (err: Error) =>
+      toast.error(err.message || "Failed to save offer"),
   });
 }
 

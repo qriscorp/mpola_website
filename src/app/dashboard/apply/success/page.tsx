@@ -1,39 +1,93 @@
 "use client";
 
+import { Suspense } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { CheckCircle2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { CardSkeleton } from "@/components/skeletons";
+import { useApplicationDetail } from "@/hooks/use-lender";
 
-const timeline = [
-  {
-    title: "Application submitted",
-    desc: "17 Apr 2026 · 14:32 EAT · Encrypted and sent to 4 lenders",
-    status: "done",
-  },
-  {
-    title: "Lenders reviewing your application",
-    desc: "You'll typically see first offers within 24 hours. We'll ping you.",
-    status: "current",
-  },
-  {
-    title: "Receive offers",
-    desc: "Compare rates, monthly payments, and terms side-by-side",
-    status: "pending",
-  },
-  {
-    title: "Accept one offer",
-    desc: "Review final terms, sign digitally, and confirm",
-    status: "pending",
-  },
-  {
-    title: "Funds disbursed",
-    desc: "Money lands in your Mpola wallet within 24 hours of acceptance",
-    status: "pending",
-  },
-];
+type StepStatus = "done" | "current" | "pending";
 
-export default function ApplicationSuccessPage() {
+function buildTimeline(status: string, offersCount: number) {
+  const reviewing: StepStatus = status === "pending" ? "current" : "done";
+  const gotOffers: StepStatus =
+    offersCount > 0 ? "done" : status === "pending" ? "pending" : "done";
+  const accepted: StepStatus = ["funded", "completed", "defaulted"].includes(
+    status,
+  )
+    ? "done"
+    : offersCount > 0
+      ? "current"
+      : "pending";
+  const disbursed: StepStatus = ["funded", "completed", "defaulted"].includes(
+    status,
+  )
+    ? "done"
+    : "pending";
+
+  return [
+    {
+      title: "Application submitted",
+      desc: "Encrypted and made visible to lenders on the marketplace",
+      status: "done" as StepStatus,
+    },
+    {
+      title: "Lenders reviewing your application",
+      desc: "You'll typically see first offers within 24 hours. We'll notify you.",
+      status: reviewing,
+    },
+    {
+      title: "Receive offers",
+      desc:
+        offersCount > 0
+          ? `${offersCount} offer${offersCount > 1 ? "s" : ""} received so far`
+          : "Compare rates, monthly payments, and terms side-by-side",
+      status: gotOffers,
+    },
+    {
+      title: "Accept one offer",
+      desc: "Review final terms and confirm",
+      status: accepted,
+    },
+    {
+      title: "Funds disbursed",
+      desc: "Money lands in your mobile money account once you accept",
+      status: disbursed,
+    },
+  ];
+}
+
+function SuccessContent() {
+  const searchParams = useSearchParams();
+  const applicationId = searchParams.get("applicationId");
+  const { data: application, isLoading } = useApplicationDetail(
+    applicationId ?? "",
+  );
+
+  if (!applicationId) {
+    return (
+      <div className="max-w-2xl mx-auto text-center py-8">
+        <p className="text-gray-500">
+          No application selected. View your submitted requests in{" "}
+          <Link href="/dashboard/my-requests" className="text-[#2BB5A0] underline">
+            My Requests
+          </Link>
+          .
+        </p>
+      </div>
+    );
+  }
+
+  if (isLoading || !application) {
+    return <CardSkeleton count={2} />;
+  }
+
+  const offersCount = application.offers?.length ?? 0;
+  const timeline = buildTimeline(application.status, offersCount);
+
   return (
     <div className="max-w-2xl mx-auto text-center py-8">
       <div className="w-16 h-16 rounded-full bg-[#2BB5A0] flex items-center justify-center mx-auto mb-6">
@@ -44,15 +98,18 @@ export default function ApplicationSuccessPage() {
         Application submitted!
       </h1>
       <p className="text-gray-500 mt-3">
-        Your application is now with 4 lenders. You&apos;ll be notified by SMS
-        and email as offers come in.
+        {offersCount > 0
+          ? `You've received ${offersCount} offer${offersCount > 1 ? "s" : ""} so far.`
+          : "Your application is now visible to lenders. You'll be notified as offers come in."}
       </p>
 
       <div className="inline-flex items-center gap-2 mt-6 border border-gray-200 rounded-lg px-4 py-2">
         <span className="text-xs text-gray-400 uppercase tracking-wider font-semibold">
           Reference
         </span>
-        <span className="text-lg font-bold text-[#1B2B3A]">LF-2026-00847</span>
+        <span className="text-lg font-bold text-[#1B2B3A]">
+          {application.reference_number}
+        </span>
       </div>
 
       <Card className="bg-white mt-8 text-left">
@@ -111,5 +168,13 @@ export default function ApplicationSuccessPage() {
         </Link>
       </div>
     </div>
+  );
+}
+
+export default function ApplicationSuccessPage() {
+  return (
+    <Suspense fallback={<CardSkeleton count={2} />}>
+      <SuccessContent />
+    </Suspense>
   );
 }

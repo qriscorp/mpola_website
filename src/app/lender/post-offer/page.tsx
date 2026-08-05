@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LenderPageHeader } from "@/components/lender-top-nav";
+import { useCreateOfferTemplate } from "@/hooks/use-lender";
 
 const LOAN_TYPES = [
   "Business",
@@ -47,8 +48,14 @@ export default function PostOfferPage() {
     "Payslip / Business Proof",
   ]);
   const [duration, setDuration] = useState("6 months");
-  const [saving, setSaving] = useState(false);
-  const [posting, setPosting] = useState(false);
+  const [maxAmount, setMaxAmount] = useState("50000000");
+  const [minAmount, setMinAmount] = useState("1000000");
+  const [rate, setRate] = useState("5");
+  const [description, setDescription] = useState("");
+  const [validUntil, setValidUntil] = useState("");
+  const [maxConcurrent, setMaxConcurrent] = useState("10");
+
+  const createTemplate = useCreateOfferTemplate();
 
   function toggle(arr: string[], setArr: (v: string[]) => void, val: string) {
     setArr(arr.includes(val) ? arr.filter((x) => x !== val) : [...arr, val]);
@@ -71,13 +78,32 @@ export default function PostOfferPage() {
     );
   }
 
-  async function handlePost(draft: boolean) {
-    draft ? setSaving(true) : setPosting(true);
-    await new Promise((r) => setTimeout(r, 800));
-    toast.success(
-      draft ? "Offer saved as draft." : "Offer posted successfully!",
+  function handlePost(draft: boolean) {
+    const monthsMatch = duration.match(/\d+/);
+    createTemplate.mutate(
+      {
+        max_amount: Number(maxAmount),
+        min_amount: Number(minAmount),
+        interest_rate: Number(rate),
+        max_duration: monthsMatch ? Number(monthsMatch[0]) : 6,
+        accepted_loan_types: selectedTypes.map((t) => t.toLowerCase()),
+        required_documents: selectedDocs,
+        description: description || undefined,
+        valid_until: validUntil || undefined,
+        max_concurrent_loans: maxConcurrent ? Number(maxConcurrent) : undefined,
+        is_draft: draft,
+      },
+      {
+        onSuccess: () => {
+          toast.success(
+            draft
+              ? "Offer saved as draft."
+              : "Offer submitted for review. It'll go live once approved.",
+          );
+          router.push("/lender/offers");
+        },
+      },
     );
-    router.push("/lender/offers");
   }
 
   return (
@@ -109,7 +135,8 @@ export default function PostOfferPage() {
                 <Input
                   className="rounded-l-none"
                   placeholder="50000000"
-                  defaultValue="50000000"
+                  value={maxAmount}
+                  onChange={(e) => setMaxAmount(e.target.value)}
                 />
               </div>
             </div>
@@ -124,7 +151,8 @@ export default function PostOfferPage() {
                 <Input
                   className="rounded-l-none"
                   placeholder="1000000"
-                  defaultValue="1000000"
+                  value={minAmount}
+                  onChange={(e) => setMinAmount(e.target.value)}
                 />
               </div>
             </div>
@@ -134,9 +162,13 @@ export default function PostOfferPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div className="space-y-1.5">
               <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                Interest Rate (%/Month)
+                Interest Rate (% p.a.)
               </Label>
-              <Input placeholder="5" defaultValue="5" />
+              <Input
+                placeholder="5"
+                value={rate}
+                onChange={(e) => setRate(e.target.value)}
+              />
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
@@ -191,6 +223,8 @@ export default function PostOfferPage() {
             </Label>
             <textarea
               rows={3}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
               placeholder="Describe your preferences, sectors, or special conditions..."
               className="flex w-full rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"
             />
@@ -202,31 +236,44 @@ export default function PostOfferPage() {
               <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
                 Valid Until
               </Label>
-              <Input type="date" />
+              <Input
+                type="date"
+                value={validUntil}
+                onChange={(e) => setValidUntil(e.target.value)}
+              />
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
                 Max Concurrent Loans
               </Label>
-              <Input placeholder="10" defaultValue="10" />
+              <Input
+                placeholder="10"
+                value={maxConcurrent}
+                onChange={(e) => setMaxConcurrent(e.target.value)}
+              />
             </div>
           </div>
+
+          <p className="text-xs text-gray-400">
+            Submitted offers are reviewed before going live on the
+            marketplace.
+          </p>
 
           {/* Actions */}
           <div className="flex justify-end gap-3 pt-2 border-t border-gray-100">
             <button
               onClick={() => handlePost(true)}
-              disabled={saving}
+              disabled={createTemplate.isPending}
               className="px-5 py-2 rounded-lg border border-gray-300 text-sm font-semibold text-gray-700 hover:border-gray-400 transition-colors disabled:opacity-50"
             >
-              {saving ? "Saving…" : "Save Draft"}
+              {createTemplate.isPending ? "Saving…" : "Save Draft"}
             </button>
             <button
               onClick={() => handlePost(false)}
-              disabled={posting}
+              disabled={createTemplate.isPending}
               className="px-5 py-2 rounded-lg bg-[#C4A55A] text-white text-sm font-semibold hover:bg-[#b3944a] transition-colors disabled:opacity-50"
             >
-              {posting ? "Posting…" : "Post Offer"}
+              {createTemplate.isPending ? "Posting…" : "Post Offer"}
             </button>
           </div>
         </CardContent>

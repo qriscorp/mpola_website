@@ -1,7 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import { BorrowerPageHeader } from "@/components/top-nav";
+import { useUser, useUpdateProfile } from "@/hooks/use-dashboard";
+import { CardSkeleton } from "@/components/skeletons";
 
 function Toggle({ on, onChange }: { on: boolean; onChange: () => void }) {
   return (
@@ -40,25 +43,13 @@ const notificationItems = [
   { id: "marketing", label: "Marketing Emails", desc: "", defaultOn: false },
 ];
 
-const securityItems = [
-  {
-    id: "2fa",
-    label: "Two-Factor Authentication",
-    desc: "SMS code on login",
-    defaultOn: true,
-  },
-  {
-    id: "login_notif",
-    label: "Login Notifications",
-    desc: "Alert on new device login",
-    defaultOn: true,
-  },
-];
-
 export default function SettingsPage() {
+  const { data: user, isLoading } = useUser();
+  const { mutate: updateProfile } = useUpdateProfile();
+
   const [toggles, setToggles] = useState<Record<string, boolean>>(() => {
-    const init: Record<string, boolean> = {};
-    [...notificationItems, ...securityItems].forEach((i) => {
+    const init: Record<string, boolean> = { login_notif: true };
+    notificationItems.forEach((i) => {
       init[i.id] = i.defaultOn;
     });
     return init;
@@ -67,15 +58,27 @@ export default function SettingsPage() {
   const toggle = (id: string) =>
     setToggles((prev) => ({ ...prev, [id]: !prev[id] }));
 
+  if (isLoading || !user) {
+    return (
+      <div className="space-y-6">
+        <BorrowerPageHeader title="Settings" />
+        <CardSkeleton count={3} />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <BorrowerPageHeader title="Settings" />
 
       {/* Notifications */}
       <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-6">
-        <h2 className="text-lg font-bold text-[#1B2B3A] dark:text-white mb-5">
+        <h2 className="text-lg font-bold text-[#1B2B3A] dark:text-white mb-1">
           Notifications
         </h2>
+        <p className="text-xs text-gray-400 mb-5">
+          Saved to this device only for now.
+        </p>
         <div className="space-y-5 divide-y divide-gray-100 dark:divide-gray-800">
           {notificationItems.map((item) => (
             <div
@@ -102,22 +105,32 @@ export default function SettingsPage() {
           Security
         </h2>
         <div className="space-y-5 divide-y divide-gray-100 dark:divide-gray-800">
-          {securityItems.map((item) => (
-            <div
-              key={item.id}
-              className="flex items-center justify-between pt-5 first:pt-0"
-            >
-              <div>
-                <p className="text-sm font-semibold text-[#1B2B3A] dark:text-white">
-                  {item.label}
-                </p>
-                {item.desc && (
-                  <p className="text-xs text-gray-400">{item.desc}</p>
-                )}
-              </div>
-              <Toggle on={toggles[item.id]} onChange={() => toggle(item.id)} />
+          <div className="flex items-center justify-between pt-0">
+            <div>
+              <p className="text-sm font-semibold text-[#1B2B3A] dark:text-white">
+                Two-Factor Authentication
+              </p>
+              <p className="text-xs text-gray-400">SMS code on login</p>
             </div>
-          ))}
+            <Toggle
+              on={!!user.twoFactorEnabled}
+              onChange={() =>
+                updateProfile({ twoFactorEnabled: !user.twoFactorEnabled })
+              }
+            />
+          </div>
+          <div className="flex items-center justify-between pt-5">
+            <div>
+              <p className="text-sm font-semibold text-[#1B2B3A] dark:text-white">
+                Login Notifications
+              </p>
+              <p className="text-xs text-gray-400">Alert on new device login</p>
+            </div>
+            <Toggle
+              on={toggles.login_notif}
+              onChange={() => toggle("login_notif")}
+            />
+          </div>
         </div>
       </div>
 
@@ -125,10 +138,16 @@ export default function SettingsPage() {
       <div className="bg-white dark:bg-gray-900 rounded-2xl border-2 border-red-200 dark:border-red-900 p-6">
         <h2 className="text-lg font-bold text-red-500 mb-4">Danger Zone</h2>
         <div className="flex flex-wrap gap-3">
-          <button className="px-5 py-2.5 rounded-xl border border-red-300 text-red-500 text-sm font-semibold hover:bg-red-50 transition-colors">
+          <button
+            onClick={() => toast.info("Account deactivation isn't available yet — contact support.")}
+            className="px-5 py-2.5 rounded-xl border border-red-300 text-red-500 text-sm font-semibold hover:bg-red-50 transition-colors"
+          >
             Deactivate Account
           </button>
-          <button className="px-5 py-2.5 rounded-xl border border-gray-300 text-gray-600 text-sm font-semibold hover:border-gray-400 transition-colors">
+          <button
+            onClick={() => toast.info("Data export isn't available yet — contact support.")}
+            className="px-5 py-2.5 rounded-xl border border-gray-300 text-gray-600 text-sm font-semibold hover:border-gray-400 transition-colors"
+          >
             Export My Data
           </button>
         </div>

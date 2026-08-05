@@ -220,6 +220,29 @@ async function apiAuthPatch<T>(path: string, body: unknown): Promise<T> {
   return res.json();
 }
 
+async function apiAuthPut<T>(path: string, body: unknown): Promise<T> {
+  const token = getCookie("lf_token");
+  const res = await fetch(`${API_BASE_URL}${path}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify(body),
+  });
+  if (res.status === 401) {
+    redirectToSignIn();
+    throw new Error("Session expired");
+  }
+  if (!res.ok) {
+    const err = await res
+      .json()
+      .catch(() => ({ detail: "Request failed", message: "Request failed" }));
+    throw new Error(err.detail || err.message || `HTTP ${res.status}`);
+  }
+  return res.json();
+}
+
 function mapAuthUser(data: AuthResponse): User {
   return {
     id: data.user.id,
@@ -229,8 +252,35 @@ function mapAuthUser(data: AuthResponse): User {
     nin: "",
     accountType: "individual",
     kycStatus: (data.user.kyc_status as User["kycStatus"]) || "pending",
-    location: "Uganda",
     createdAt: new Date().toISOString(),
+  };
+}
+
+interface RawUserProfile {
+  id: string;
+  email: string;
+  full_name: string;
+  phone_number: string;
+  nin: string | null;
+  account_type: string;
+  profile_pic: string | null;
+  kyc_status: string;
+  two_factor_enabled?: boolean;
+  created_at: string;
+}
+
+function mapUserProfile(u: RawUserProfile): User {
+  return {
+    id: u.id,
+    fullName: u.full_name,
+    email: u.email,
+    phone: u.phone_number,
+    nin: u.nin ?? "",
+    accountType: u.account_type as User["accountType"],
+    twoFactorEnabled: u.two_factor_enabled ?? false,
+    profilePic: u.profile_pic ?? undefined,
+    kycStatus: u.kyc_status as User["kycStatus"],
+    createdAt: u.created_at,
   };
 }
 
@@ -618,28 +668,22 @@ export const api = {
 
   // Dashboard
   getUser: async (): Promise<User> => {
-    const u = await apiAuthGet<{
-      id: string;
-      email: string;
-      full_name: string;
-      phone_number: string;
-      nin: string | null;
-      account_type: string;
-      profile_pic: string | null;
-      kyc_status: string;
-      created_at: string;
-    }>("/users/me");
-    return {
-      id: u.id,
-      fullName: u.full_name,
-      email: u.email,
-      phone: u.phone_number,
-      nin: u.nin ?? "",
-      accountType: u.account_type as User["accountType"],
-      profilePic: u.profile_pic ?? undefined,
-      kycStatus: u.kyc_status as User["kycStatus"],
-      createdAt: u.created_at,
-    };
+    const u = await apiAuthGet<RawUserProfile>("/users/me");
+    return mapUserProfile(u);
+  },
+  updateProfile: async (data: {
+    fullName?: string;
+    phone?: string;
+    nin?: string;
+    twoFactorEnabled?: boolean;
+  }): Promise<User> => {
+    const u = await apiAuthPut<RawUserProfile>("/users/me", {
+      full_name: data.fullName,
+      phone_number: data.phone,
+      nin: data.nin,
+      two_factor_enabled: data.twoFactorEnabled,
+    });
+    return mapUserProfile(u);
   },
   getDashboardStats: async (): Promise<DashboardStats> => {
     const [applications, loans, wallet] = await Promise.all([
@@ -838,6 +882,30 @@ export const api = {
     return apiAuthPost("/loans/applications", data);
   },
 
+  // Lender/borrower — list documents on an application
+  getApplicationDocuments: async (
+    applicationId: string,
+  ): Promise<
+    {
+      id: string;
+      document_type: string;
+      file_url: string;
+      file_name: string | null;
+      verified: boolean;
+    }[]
+  > => {
+    const res = await apiAuthGet<{
+      documents: {
+        id: string;
+        document_type: string;
+        file_url: string;
+        file_name: string | null;
+        verified: boolean;
+      }[];
+    }>(`/loans/applications/${applicationId}/documents`);
+    return res.documents;
+  },
+
   // Upload
   uploadDocument: async (
     applicationId: string,
@@ -861,6 +929,14 @@ export const api = {
       `/loans/applications/${applicationId}/documents`,
       formData,
     );
+  },
+
+  // Borrower — offers received across all of my applications
+  getOffersReceived: async (): Promise<LoanOffer[]> => {
+    const res = await apiAuthGet<{ total: number; offers: LoanOffer[] }>(
+      "/loans/offers/received?limit=100",
+    );
+    return res.offers;
   },
 
   // Notifications
@@ -960,6 +1036,20 @@ export const api = {
     duration: number;
   }): Promise<{ status: number; message: string; offer: LoanOffer }> => {
     return apiAuthPost("/loans/offers", data);
+  },
+  createOfferTemplate: async (data: {
+    max_amount: number;
+    min_amount: number;
+    interest_rate: number;
+    max_duration: number;
+    accepted_loan_types: string[];
+    required_documents: string[];
+    description?: string;
+    valid_until?: string;
+    max_concurrent_loans?: number;
+    is_draft?: boolean;
+  }): Promise<{ status: number; message: string }> => {
+    return apiAuthPost("/loans/offer-templates", data);
   },
   getLenderWallet: async (): Promise<Wallet> => {
     return api.getWallet();

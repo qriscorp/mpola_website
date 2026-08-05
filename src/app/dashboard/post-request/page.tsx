@@ -2,7 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { toast } from "sonner";
 import { BorrowerPageHeader } from "@/components/top-nav";
+import { useSubmitApplication } from "@/hooks/use-application";
+import { formatCurrency } from "@/lib/format";
 
 const loanTypes = [
   "Business",
@@ -22,7 +25,41 @@ const durations = [
 
 export default function PostRequestPage() {
   const [selectedType, setSelectedType] = useState("Business");
-  const [posted, setPosted] = useState(false);
+  const [amount, setAmount] = useState("8000000");
+  const [duration, setDuration] = useState(durations[2]);
+  const [description, setDescription] = useState("");
+  const [maxRate, setMaxRate] = useState("8");
+  const [validUntil, setValidUntil] = useState("");
+
+  const submitApplication = useSubmitApplication();
+  const [posted, setPosted] = useState<{
+    referenceNumber: string;
+    amount: number;
+  } | null>(null);
+
+  function handlePost() {
+    const months = parseInt(duration, 10) || 3;
+    const purposeParts = [description.trim()].filter(Boolean);
+    if (maxRate) purposeParts.push(`Max acceptable rate: ${maxRate}%/mo`);
+    if (validUntil) purposeParts.push(`Request valid until: ${validUntil}`);
+
+    submitApplication.mutate(
+      {
+        amount: Number(amount),
+        duration: months,
+        loan_type: selectedType.toLowerCase(),
+        purpose: purposeParts.join(". ") || undefined,
+      },
+      {
+        onSuccess: (res) => {
+          setPosted({
+            referenceNumber: res.application.reference_number,
+            amount: res.application.amount,
+          });
+        },
+      },
+    );
+  }
 
   if (posted) {
     return (
@@ -55,19 +92,13 @@ export default function PostRequestPage() {
             <div className="flex justify-between text-sm">
               <span className="text-gray-500">Request ID</span>
               <span className="font-semibold text-[#1B2B3A] dark:text-white">
-                #REQ-2024-047
+                #{posted.referenceNumber}
               </span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-gray-500">Amount</span>
               <span className="font-semibold text-[#1B2B3A] dark:text-white">
-                UGX 8,000,000
-              </span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-500">Max Rate</span>
-              <span className="font-semibold text-[#1B2B3A] dark:text-white">
-                8%/mo
+                {formatCurrency(posted.amount)}
               </span>
             </div>
           </div>
@@ -115,7 +146,8 @@ export default function PostRequestPage() {
               </span>
               <input
                 type="number"
-                defaultValue="8000000"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
                 className="flex-1 px-3 py-2.5 text-sm bg-white dark:bg-gray-900 text-[#1B2B3A] dark:text-white outline-none"
               />
             </div>
@@ -125,7 +157,11 @@ export default function PostRequestPage() {
             <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1.5">
               Duration Needed
             </label>
-            <select className="w-full border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2.5 text-sm bg-white dark:bg-gray-900 text-[#1B2B3A] dark:text-white outline-none focus:ring-2 focus:ring-[#2BB5A0] focus:border-[#2BB5A0]">
+            <select
+              value={duration}
+              onChange={(e) => setDuration(e.target.value)}
+              className="w-full border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2.5 text-sm bg-white dark:bg-gray-900 text-[#1B2B3A] dark:text-white outline-none focus:ring-2 focus:ring-[#2BB5A0] focus:border-[#2BB5A0]"
+            >
               {durations.map((d) => (
                 <option key={d}>{d}</option>
               ))}
@@ -162,6 +198,8 @@ export default function PostRequestPage() {
           </label>
           <textarea
             rows={4}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
             placeholder="Describe your business, what the loan is for, and your repayment plan..."
             className="w-full border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2.5 text-sm bg-white dark:bg-gray-900 text-[#1B2B3A] dark:text-white outline-none focus:ring-2 focus:ring-[#2BB5A0] focus:border-[#2BB5A0] resize-none"
           />
@@ -175,7 +213,8 @@ export default function PostRequestPage() {
             </label>
             <input
               type="number"
-              defaultValue="8"
+              value={maxRate}
+              onChange={(e) => setMaxRate(e.target.value)}
               className="w-full border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2.5 text-sm bg-white dark:bg-gray-900 text-[#1B2B3A] dark:text-white outline-none focus:ring-2 focus:ring-[#2BB5A0] focus:border-[#2BB5A0]"
             />
           </div>
@@ -186,20 +225,26 @@ export default function PostRequestPage() {
             </label>
             <input
               type="date"
+              value={validUntil}
+              onChange={(e) => setValidUntil(e.target.value)}
               className="w-full border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2.5 text-sm bg-white dark:bg-gray-900 text-[#1B2B3A] dark:text-white outline-none focus:ring-2 focus:ring-[#2BB5A0] focus:border-[#2BB5A0]"
             />
           </div>
         </div>
 
         <div className="flex justify-end gap-3 mt-7">
-          <button className="px-5 py-2.5 rounded-xl border border-gray-300 text-sm font-semibold text-gray-700 hover:border-gray-400 transition-colors">
+          <button
+            onClick={() => toast.info("Saving drafts isn't available yet")}
+            className="px-5 py-2.5 rounded-xl border border-gray-300 text-sm font-semibold text-gray-700 hover:border-gray-400 transition-colors"
+          >
             Save Draft
           </button>
           <button
-            onClick={() => setPosted(true)}
-            className="px-6 py-2.5 rounded-xl bg-[#2BB5A0] text-white text-sm font-semibold hover:bg-[#239E8C] transition-colors"
+            onClick={handlePost}
+            disabled={submitApplication.isPending}
+            className="px-6 py-2.5 rounded-xl bg-[#2BB5A0] text-white text-sm font-semibold hover:bg-[#239E8C] transition-colors disabled:opacity-50"
           >
-            Post Request
+            {submitApplication.isPending ? "Posting…" : "Post Request"}
           </button>
         </div>
       </div>

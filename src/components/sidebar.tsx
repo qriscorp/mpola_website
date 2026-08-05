@@ -20,6 +20,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SignOutModal } from "@/components/sign-out-modal";
+import { useUser, useDashboardStats } from "@/hooks/use-dashboard";
+import { getInitials } from "@/lib/format";
 
 const navGroups = [
   {
@@ -44,13 +46,13 @@ const navGroups = [
         href: "/dashboard/my-requests",
         label: "My Requests",
         icon: ListOrdered,
-        badge: 2,
+        badgeKey: "applicationsPending" as const,
       },
       {
         href: "/dashboard/offers-received",
         label: "Offers Received",
         icon: Activity,
-        badge: 3,
+        badgeKey: "newOffers" as const,
       },
     ],
   },
@@ -86,13 +88,16 @@ const navGroups = [
 export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const [signOutOpen, setSignOutOpen] = useState(false);
+  const { data: user } = useUser();
+  const { data: stats } = useDashboardStats();
 
   const navLink = (item: {
     href: string;
     label: string;
     icon: React.ElementType;
-    badge?: number;
+    badgeKey?: "applicationsPending" | "newOffers";
   }) => {
+    const badge = item.badgeKey ? stats?.[item.badgeKey] : undefined;
     const isActive =
       pathname === item.href || pathname.startsWith(item.href + "/");
     return (
@@ -109,9 +114,9 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       >
         <item.icon className="w-4 h-4 shrink-0" />
         <span className="flex-1">{item.label}</span>
-        {item.badge && (
+        {!!badge && (
           <span className="inline-flex items-center justify-center h-5 min-w-5 px-1.5 rounded-full bg-[#2BB5A0] text-white text-[10px] font-bold">
-            {item.badge}
+            {badge}
           </span>
         )}
       </Link>
@@ -151,11 +156,11 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       <div className="p-3 border-t border-white/10 shrink-0">
         <div className="flex items-center gap-3 px-2 py-2">
           <div className="h-9 w-9 rounded-full bg-[#2BB5A0] flex items-center justify-center font-bold text-white text-sm shrink-0">
-            AK
+            {user?.fullName ? getInitials(user.fullName) : "?"}
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-white font-semibold text-sm truncate">
-              Agnes Kyomuhendo
+              {user?.fullName ?? "Loading…"}
             </p>
             <p className="text-[#2BB5A0] text-[11px] font-medium">Borrower</p>
           </div>

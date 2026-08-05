@@ -18,6 +18,9 @@ import {
   LogOut,
 } from "lucide-react";
 import { SignOutModal } from "@/components/sign-out-modal";
+import { useUser } from "@/hooks/use-dashboard";
+import { useMyOffers, useMarketplace } from "@/hooks/use-lender";
+import { getInitials } from "@/lib/format";
 
 // ─── Nav structure matching new design ───────────────────
 const overviewNav = [
@@ -26,12 +29,12 @@ const overviewNav = [
 
 const lendingNav = [
   { href: "/lender/post-offer", label: "Post an Offer", icon: PlusCircle },
-  { href: "/lender/offers", label: "My Offers", icon: FileText, badge: 3 },
+  { href: "/lender/offers", label: "My Offers", icon: FileText, badgeKey: "pendingOffers" as const },
   {
     href: "/lender/applications",
     label: "Applications",
     icon: Activity,
-    badge: 7,
+    badgeKey: "openApplications" as const,
   },
   { href: "/lender/applicant", label: "Applicant Profile", icon: User },
   { href: "/lender/portfolio", label: "Portfolio", icon: Briefcase },
@@ -52,7 +55,7 @@ type NavItem = {
   href: string;
   label: string;
   icon: React.ElementType;
-  badge?: number;
+  badgeKey?: "pendingOffers" | "openApplications";
 };
 
 export function LenderSidebarContent({
@@ -62,8 +65,19 @@ export function LenderSidebarContent({
 }) {
   const pathname = usePathname();
   const [signOutOpen, setSignOutOpen] = useState(false);
+  const { data: user } = useUser();
+  const { data: offers } = useMyOffers();
+  const { data: marketplace } = useMarketplace();
+  const pendingOffers = (offers ?? []).filter((o) => o.status === "pending").length;
+  const openApplications = marketplace?.total ?? 0;
 
   const navLink = (item: NavItem) => {
+    const badge =
+      item.badgeKey === "pendingOffers"
+        ? pendingOffers
+        : item.badgeKey === "openApplications"
+          ? openApplications
+          : undefined;
     const isActive =
       pathname === item.href ||
       (item.href !== "/lender" && pathname.startsWith(item.href));
@@ -80,9 +94,9 @@ export function LenderSidebarContent({
       >
         <item.icon className="w-4 h-4 shrink-0" />
         <span className="flex-1 truncate">{item.label}</span>
-        {item.badge !== undefined && (
+        {!!badge && (
           <span className="inline-flex items-center justify-center h-5 min-w-5 px-1.5 rounded-full bg-[#C4A55A] text-white text-[10px] font-bold leading-none">
-            {item.badge}
+            {badge}
           </span>
         )}
       </Link>
@@ -131,15 +145,15 @@ export function LenderSidebarContent({
       <div className="p-3 border-t border-white/10">
         <div className="flex items-center gap-3 px-2 py-2 rounded-lg">
           <div className="flex items-center justify-center w-8 h-8 rounded-full bg-[#C4A55A] shrink-0">
-            <span className="text-white text-xs font-bold">JM</span>
+            <span className="text-white text-xs font-bold">
+              {user?.fullName ? getInitials(user.fullName) : "?"}
+            </span>
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-white text-sm font-medium leading-tight truncate">
-              James Mugisha
+              {user?.fullName ?? "Loading…"}
             </p>
-            <p className="text-[#C4A55A] text-[11px] leading-tight">
-              Licensed Lender
-            </p>
+            <p className="text-[#C4A55A] text-[11px] leading-tight">Lender</p>
           </div>
           <button
             onClick={() => setSignOutOpen(true)}

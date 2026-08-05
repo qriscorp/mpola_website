@@ -1,12 +1,25 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { api } from "@/lib/api";
 
 export function useUser() {
   return useQuery({
     queryKey: ["user"],
     queryFn: api.getUser,
+  });
+}
+
+export function useUpdateProfile() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: api.updateProfile,
+    onSuccess: () => {
+      toast.success("Profile updated");
+      qc.invalidateQueries({ queryKey: ["user"] });
+    },
+    onError: (err: Error) => toast.error(err.message || "Failed to update profile"),
   });
 }
 

@@ -65,7 +65,7 @@ export function LenderTopNav() {
 
 /**
  * Per-page header row used inside the main content area on desktop.
- * Renders the page title + notification bell + "Browse Marketplace" CTA.
+ * Renders the page title + notification bell + "+ Post an Offer" CTA.
  */
 export function LenderPageHeader({ title }: { title: string }) {
   const hasUnread = useHasUnreadNotifications();
@@ -87,10 +87,10 @@ export function LenderPageHeader({ title }: { title: string }) {
           )}
         </Link>
         <Link
-          href="/lender/marketplace"
+          href="/lender/post-offer"
           className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#C4A55A] hover:bg-[#b3944a] text-white text-sm font-semibold transition-colors"
         >
-          Browse Marketplace
+          + Post an Offer
         </Link>
       </div>
     </div>
