@@ -13,62 +13,44 @@ import {
 import { Wallet, ArrowUpRight, ArrowDownRight, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/format";
+import { useAdminPayments, useAdminStats } from "@/hooks/use-admin";
+import { downloadCsv } from "@/lib/csv";
 
-const transactions = [
-  {
-    id: "pt_001",
-    date: "20 Apr 2026",
-    user: "Sarah Nakato",
-    type: "Repayment",
-    method: "MTN MoMo",
-    amount: 350000,
-    direction: "credit" as const,
-  },
-  {
-    id: "pt_002",
-    date: "19 Apr 2026",
-    user: "James Okello",
-    type: "Repayment",
-    method: "Airtel Money",
-    amount: 580000,
-    direction: "credit" as const,
-  },
-  {
-    id: "pt_003",
-    date: "18 Apr 2026",
-    user: "Grace Achieng",
-    type: "Disbursement",
-    method: "Bank Transfer",
-    amount: 25000000,
-    direction: "debit" as const,
-  },
-  {
-    id: "pt_004",
-    date: "17 Apr 2026",
-    user: "Daniel Mugisha",
-    type: "Top-up",
-    method: "MTN MoMo",
-    amount: 500000,
-    direction: "credit" as const,
-  },
-  {
-    id: "pt_005",
-    date: "15 Apr 2026",
-    user: "Sarah Nakato",
-    type: "Disbursement",
-    method: "Wallet",
-    amount: 5000000,
-    direction: "debit" as const,
-  },
-];
+const inflowTypes = new Set(["deposit", "repayment", "top_up"]);
+
+const typeLabel: Record<string, string> = {
+  deposit: "Deposit",
+  repayment: "Repayment",
+  withdrawal: "Withdrawal",
+  disbursement: "Disbursement",
+  top_up: "Top-up",
+};
+
+const typeColor: Record<string, string> = {
+  repayment: "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400",
+  deposit: "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400",
+  top_up: "bg-[#F5F0E0] text-[#C4A55A] dark:bg-[#C4A55A]/10",
+  disbursement: "bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400",
+  withdrawal: "bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400",
+};
 
 export default function AdminPaymentsPage() {
-  const totalIn = transactions
-    .filter((t) => t.direction === "credit")
-    .reduce((s, t) => s + t.amount, 0);
-  const totalOut = transactions
-    .filter((t) => t.direction === "debit")
-    .reduce((s, t) => s + t.amount, 0);
+  const { data, isLoading } = useAdminPayments();
+  const { data: stats } = useAdminStats();
+  const transactions = data?.transactions ?? [];
+
+  const handleExport = () => {
+    downloadCsv(
+      "mpola-payments.csv",
+      transactions.map((t) => ({
+        date: t.created_at,
+        user: t.username ?? "",
+        type: t.type,
+        status: t.status,
+        amount: t.amount,
+      })),
+    );
+  };
 
   return (
     <div className="space-y-6">
@@ -81,7 +63,11 @@ export default function AdminPaymentsPage() {
             Platform-wide payment and wallet activity
           </p>
         </div>
-        <Button variant="outline" className="gap-2 w-full sm:w-auto">
+        <Button
+          variant="outline"
+          className="gap-2 w-full sm:w-auto"
+          onClick={handleExport}
+        >
           <Download className="h-4 w-4" />
           Export
         </Button>
@@ -100,7 +86,7 @@ export default function AdminPaymentsPage() {
                   Total Platform Wallet
                 </p>
                 <p className="text-xl font-bold text-[#1B2B3A] dark:text-white">
-                  {formatCurrency(245000000)}
+                  {formatCurrency(stats?.platform.total_wallet_balance ?? 0)}
                 </p>
               </div>
             </div>
@@ -115,7 +101,7 @@ export default function AdminPaymentsPage() {
               <div>
                 <p className="text-xs text-muted-foreground">Total Inflows</p>
                 <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
-                  {formatCurrency(totalIn)}
+                  {formatCurrency(data?.totals.in ?? 0)}
                 </p>
               </div>
             </div>
@@ -129,10 +115,10 @@ export default function AdminPaymentsPage() {
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">
-                  Total Disbursements
+                  Total Outflows
                 </p>
                 <p className="text-xl font-bold text-red-600 dark:text-red-400">
-                  {formatCurrency(totalOut)}
+                  {formatCurrency(data?.totals.out ?? 0)}
                 </p>
               </div>
             </div>
@@ -161,7 +147,7 @@ export default function AdminPaymentsPage() {
                   Type
                 </TableHead>
                 <TableHead className="text-xs uppercase text-muted-foreground hidden md:table-cell">
-                  Method
+                  Status
                 </TableHead>
                 <TableHead className="text-xs uppercase text-muted-foreground text-right">
                   Amount
@@ -169,41 +155,54 @@ export default function AdminPaymentsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {transactions.map((txn) => (
-                <TableRow key={txn.id}>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {txn.date}
-                  </TableCell>
-                  <TableCell className="text-sm font-medium text-[#1B2B3A] dark:text-white">
-                    {txn.user}
-                  </TableCell>
-                  <TableCell className="hidden sm:table-cell">
-                    <Badge
-                      variant="outline"
-                      className={`text-xs ${
-                        txn.type === "Repayment"
-                          ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400"
-                          : txn.type === "Disbursement"
-                            ? "bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400"
-                            : "bg-[#F5F0E0] text-[#C4A55A] dark:bg-[#C4A55A]/10"
-                      }`}
-                    >
-                      {txn.type}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-sm hidden md:table-cell text-muted-foreground">
-                    {txn.method}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <span
-                      className={`text-sm font-semibold ${txn.direction === "credit" ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}
-                    >
-                      {txn.direction === "credit" ? "+" : "-"}
-                      {formatCurrency(txn.amount)}
-                    </span>
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-8">
+                    <div className="animate-pulse text-muted-foreground">
+                      Loading...
+                    </div>
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : transactions.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                    No transactions yet.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                transactions.map((txn) => {
+                  const isInflow = inflowTypes.has(txn.type);
+                  return (
+                    <TableRow key={txn.id}>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {new Date(txn.created_at).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell className="text-sm font-medium text-[#1B2B3A] dark:text-white">
+                        {txn.username ?? "Unknown"}
+                      </TableCell>
+                      <TableCell className="hidden sm:table-cell">
+                        <Badge
+                          variant="outline"
+                          className={`text-xs ${typeColor[txn.type] ?? ""}`}
+                        >
+                          {typeLabel[txn.type] ?? txn.type}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-sm hidden md:table-cell text-muted-foreground capitalize">
+                        {txn.status}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <span
+                          className={`text-sm font-semibold ${isInflow ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}
+                        >
+                          {isInflow ? "+" : "-"}
+                          {formatCurrency(txn.amount)}
+                        </span>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              )}
             </TableBody>
           </Table>
         </CardContent>

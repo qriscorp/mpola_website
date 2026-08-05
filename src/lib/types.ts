@@ -170,50 +170,190 @@ export interface Notification {
 // ─── Admin Types ───
 
 export interface AdminStats {
-  totalUsers: number;
-  activeLoans: number;
-  pendingApplications: number;
-  totalDisbursed: number;
-  monthlyRevenue: number;
-  defaultRate: number;
+  users: {
+    total: number;
+    borrowers: number;
+    lenders: number;
+    active: number;
+    suspended: number;
+    verified: number;
+  };
+  applications: {
+    total: number;
+    pending: number;
+  };
+  loans: {
+    active: number;
+    completed: number;
+    defaulted: number;
+    total_volume: number;
+    total_repaid: number;
+  };
+  platform: {
+    total_wallet_balance: number;
+    repayment_rate: number;
+    default_rate: number;
+    kyc_completion_rate: number;
+    pending_offer_templates: number;
+  };
+  loan_type_mix: { type: string; count: number; percentage: number }[];
+  monthly_trend: { month: string; disbursed: number; collected: number }[];
+  user_growth: { month: string; borrowers: number; lenders: number }[];
 }
 
 export interface AdminUser {
   id: string;
-  fullName: string;
+  username: string;
   email: string;
-  phone: string;
-  accountType: "individual" | "business";
-  kycStatus: "pending" | "verified" | "rejected";
-  activeLoans: number;
-  totalBorrowed: number;
-  joinedAt: string;
-  status: "active" | "suspended" | "banned";
+  full_name: string | null;
+  phone_number: string | null;
+  role: string;
+  is_active: boolean;
+  is_verified: boolean;
+  is_kyc_verified: boolean;
+  kyc_status: string;
+  credit_score: number;
+  active_loans: number;
+  total_borrowed: number;
+  created_at: string;
 }
 
 export interface AdminLoan {
   id: string;
   reference: string;
-  borrowerName: string;
-  lenderName: string;
+  borrower_id: string;
+  borrower_name: string | null;
+  lender_id: string;
+  lender_name: string | null;
   amount: number;
-  interestRate: number;
+  interest_rate: number;
+  total_repayable: number;
+  total_paid: number;
+  paid_instalments: number;
+  total_instalments: number;
+  disbursed_at: string | null;
+  next_payment_date: string | null;
   status: "active" | "overdue" | "completed" | "defaulted";
-  disbursedAt: string;
-  nextPaymentDate: string;
-  paidInstalments: number;
-  totalInstalments: number;
+  created_at: string;
 }
 
 export interface AdminApplication {
   id: string;
-  reference: string;
-  borrowerName: string;
+  reference_number: string;
+  borrower_id: string;
+  borrower_name: string | null;
   amount: number;
-  loanType: "personal" | "business";
-  status: "submitted" | "reviewing_offers" | "approved" | "rejected";
-  offersCount: number;
-  createdAt: string;
+  duration: number;
+  loan_type: string;
+  status:
+    | "pending"
+    | "approved"
+    | "rejected"
+    | "funded"
+    | "completed"
+    | "defaulted";
+  interest_rate: number | null;
+  offer_count: number;
+  created_at: string;
+}
+
+export interface AdminPaymentTx {
+  id: string;
+  wallet_id: string;
+  username: string | null;
+  amount: number;
+  type: string;
+  status: "pending" | "completed" | "failed";
+  description: string | null;
+  reference: string | null;
+  created_at: string;
+}
+
+export interface AdminSetting {
+  value: string;
+  description: string | null;
+}
+
+export interface AdminOfferTemplate {
+  id: string;
+  lender_id: string;
+  lender_name: string | null;
+  max_amount: number;
+  min_amount: number;
+  interest_rate: number;
+  max_duration: number;
+  accepted_loan_types: string[];
+  required_documents: string[];
+  description: string | null;
+  valid_until: string | null;
+  max_concurrent_loans: number | null;
+  status: "pending_review" | "draft" | "approved" | "rejected";
+  created_at: string;
+}
+
+export interface AdminAuditLog {
+  id: string;
+  username: string | null;
+  action: string;
+  resource_type: string | null;
+  resource_id: string | null;
+  ip_address: string | null;
+  details: Record<string, unknown> | null;
+  created_at: string;
+}
+
+export interface AdminUserLoanSummary {
+  id: string;
+  other_party: string | null;
+  amount: number;
+  interest_rate: number;
+  total_repayable: number;
+  total_paid: number;
+  status: string;
+  disbursed_at: string | null;
+  created_at: string;
+}
+
+export interface AdminUserApplicationSummary {
+  id: string;
+  reference_number: string;
+  amount: number;
+  loan_type: string;
+  status: string;
+  created_at: string;
+}
+
+export interface AdminUserTransactionSummary {
+  id: string;
+  amount: number;
+  type: string;
+  status: string;
+  description: string | null;
+  created_at: string;
+}
+
+export interface AdminUserDetail {
+  profile: {
+    id: string;
+    username: string;
+    email: string;
+    full_name: string | null;
+    phone_number: string | null;
+    role: string;
+    is_active: boolean;
+    is_verified: boolean;
+    is_kyc_verified: boolean;
+    kyc_status: string;
+    credit_score: number;
+    bio: string | null;
+    nin: string | null;
+    created_at: string;
+  };
+  loans_as_borrower: AdminUserLoanSummary[];
+  loans_as_lender: AdminUserLoanSummary[];
+  applications: AdminUserApplicationSummary[];
+  wallet: { balance: number; is_wallet_setup: boolean };
+  transactions: AdminUserTransactionSummary[];
 }
 
 // ─── Lender Portal Types ───

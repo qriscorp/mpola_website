@@ -2,15 +2,18 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Bell, Menu, Search, Shield, X } from "lucide-react";
+import { Bell, Menu, Search, Shield } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { AdminSidebarContent } from "@/components/admin-sidebar";
+import { useNotifications } from "@/hooks/use-notifications";
 
 export function AdminTopNav() {
   const [open, setOpen] = useState(false);
+  const { data: notifications } = useNotifications();
+  const unreadCount = (notifications ?? []).filter((n) => !n.read).length;
 
   return (
     <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b bg-white dark:bg-gray-950 px-4 sm:px-6 lg:px-8">
@@ -46,9 +49,11 @@ export function AdminTopNav() {
           aria-label="Notifications"
         >
           <Bell className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-          <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-red-500 text-[10px] text-white flex items-center justify-center">
-            5
-          </span>
+          {unreadCount > 0 && (
+            <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-red-500 text-[10px] text-white flex items-center justify-center">
+              {unreadCount > 9 ? "9+" : unreadCount}
+            </span>
+          )}
         </Link>
         <Badge className="bg-[#C4A55A]/10 text-[#C4A55A] border border-[#C4A55A]/30 hidden sm:inline-flex">
           <Shield className="h-3 w-3 mr-1" />

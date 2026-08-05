@@ -24,7 +24,6 @@ import {
   MoreVertical,
   CheckCircle,
   XCircle,
-  Eye,
   Download,
 } from "lucide-react";
 import {
@@ -32,6 +31,7 @@ import {
   useUpdateApplicationStatus,
 } from "@/hooks/use-admin";
 import { formatCurrency } from "@/lib/format";
+import { downloadCsv } from "@/lib/csv";
 import { toast } from "sonner";
 
 export default function AdminApplicationsPage() {
@@ -41,28 +41,47 @@ export default function AdminApplicationsPage() {
 
   const filtered = applications.filter(
     (a) =>
-      a.borrowerName.toLowerCase().includes(search.toLowerCase()) ||
-      a.reference.toLowerCase().includes(search.toLowerCase()),
+      (a.borrower_name ?? "").toLowerCase().includes(search.toLowerCase()) ||
+      a.reference_number.toLowerCase().includes(search.toLowerCase()),
   );
 
-  const handleStatus = (id: string, status: "approved" | "rejected") => {
+  const handleStatus = (id: string, action: "approve" | "reject") => {
     updateStatus.mutate(
-      { id, status },
+      { id, status: action },
       {
-        onSuccess: () => toast.success(`Application ${status}`),
+        onSuccess: () =>
+          toast.success(`Application ${action === "approve" ? "approved" : "rejected"}`),
       },
+    );
+  };
+
+  const handleExport = () => {
+    downloadCsv(
+      "mpola-applications.csv",
+      filtered.map((a) => ({
+        reference: a.reference_number,
+        borrower: a.borrower_name ?? "",
+        amount: a.amount,
+        loan_type: a.loan_type,
+        status: a.status,
+        offers: a.offer_count,
+        created_at: a.created_at,
+      })),
     );
   };
 
   const statusColor = (s: string) => {
     switch (s) {
-      case "submitted":
+      case "pending":
         return "bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400";
-      case "reviewing_offers":
+      case "funded":
         return "bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400";
       case "approved":
         return "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400";
+      case "completed":
+        return "bg-[#E8F8F5] text-[#2BB5A0] dark:bg-[#2BB5A0]/10";
       case "rejected":
+      case "defaulted":
         return "bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400";
       default:
         return "";
@@ -77,10 +96,14 @@ export default function AdminApplicationsPage() {
             Applications
           </h1>
           <p className="text-sm text-muted-foreground">
-            Review and manage loan applications
+            Review and moderate loan applications
           </p>
         </div>
-        <Button variant="outline" className="gap-2 w-full sm:w-auto">
+        <Button
+          variant="outline"
+          className="gap-2 w-full sm:w-auto"
+          onClick={handleExport}
+        >
           <Download className="h-4 w-4" />
           Export
         </Button>
@@ -98,28 +121,25 @@ export default function AdminApplicationsPage() {
         </Card>
         <Card className="bg-white dark:bg-gray-900">
           <CardContent className="p-4">
-            <p className="text-xs text-muted-foreground">Submitted</p>
+            <p className="text-xs text-muted-foreground">Pending</p>
             <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-              {applications.filter((a) => a.status === "submitted").length}
+              {applications.filter((a) => a.status === "pending").length}
             </p>
           </CardContent>
         </Card>
         <Card className="bg-white dark:bg-gray-900">
           <CardContent className="p-4">
-            <p className="text-xs text-muted-foreground">Reviewing</p>
+            <p className="text-xs text-muted-foreground">Funded</p>
             <p className="text-2xl font-bold text-[#C4A55A]">
-              {
-                applications.filter((a) => a.status === "reviewing_offers")
-                  .length
-              }
+              {applications.filter((a) => a.status === "funded").length}
             </p>
           </CardContent>
         </Card>
         <Card className="bg-white dark:bg-gray-900">
           <CardContent className="p-4">
-            <p className="text-xs text-muted-foreground">Approved</p>
+            <p className="text-xs text-muted-foreground">Completed</p>
             <p className="text-2xl font-bold text-[#2BB5A0]">
-              {applications.filter((a) => a.status === "approved").length}
+              {applications.filter((a) => a.status === "completed").length}
             </p>
           </CardContent>
         </Card>
@@ -171,14 +191,20 @@ export default function AdminApplicationsPage() {
                     </div>
                   </TableCell>
                 </TableRow>
+              ) : filtered.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                    No applications match your search.
+                  </TableCell>
+                </TableRow>
               ) : (
                 filtered.map((app) => (
                   <TableRow key={app.id}>
                     <TableCell className="font-medium text-sm text-[#1B2B3A] dark:text-white">
-                      {app.reference}
+                      {app.reference_number}
                     </TableCell>
                     <TableCell className="text-sm">
-                      {app.borrowerName}
+                      {app.borrower_name ?? "Unknown"}
                     </TableCell>
                     <TableCell className="text-sm hidden sm:table-cell">
                       {formatCurrency(app.amount)}
@@ -186,52 +212,46 @@ export default function AdminApplicationsPage() {
                     <TableCell className="hidden md:table-cell">
                       <Badge
                         variant="outline"
-                        className={`text-xs ${app.loanType === "business" ? "bg-[#E8F8F5] text-[#2BB5A0] dark:bg-[#2BB5A0]/10" : "bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400"}`}
+                        className={`text-xs capitalize ${app.loan_type === "business" ? "bg-[#E8F8F5] text-[#2BB5A0] dark:bg-[#2BB5A0]/10" : "bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400"}`}
                       >
-                        {app.loanType}
+                        {app.loan_type}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-sm hidden md:table-cell">
-                      {app.offersCount}
+                      {app.offer_count}
                     </TableCell>
                     <TableCell>
                       <Badge
                         variant="outline"
                         className={`text-xs ${statusColor(app.status)}`}
                       >
-                        {app.status.replace("_", " ")}
+                        {app.status}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger className="inline-flex size-8 items-center justify-center rounded-lg border border-transparent hover:bg-muted transition-colors [&_svg]:pointer-events-none [&_svg]:shrink-0">
-                          <MoreVertical className="h-4 w-4" />
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem className="gap-2">
-                            <Eye className="h-4 w-4" />
-                            View Details
-                          </DropdownMenuItem>
-                          {app.status !== "approved" && (
+                      {app.status === "pending" && (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger className="inline-flex size-8 items-center justify-center rounded-lg border border-transparent hover:bg-muted transition-colors [&_svg]:pointer-events-none [&_svg]:shrink-0">
+                            <MoreVertical className="h-4 w-4" />
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
                             <DropdownMenuItem
                               className="gap-2 text-emerald-600"
-                              onClick={() => handleStatus(app.id, "approved")}
+                              onClick={() => handleStatus(app.id, "approve")}
                             >
                               <CheckCircle className="h-4 w-4" />
                               Approve
                             </DropdownMenuItem>
-                          )}
-                          {app.status !== "rejected" && (
                             <DropdownMenuItem
                               className="gap-2 text-red-600"
-                              onClick={() => handleStatus(app.id, "rejected")}
+                              onClick={() => handleStatus(app.id, "reject")}
                             >
                               <XCircle className="h-4 w-4" />
                               Reject
                             </DropdownMenuItem>
-                          )}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))

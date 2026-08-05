@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,9 +15,111 @@ import {
   Database,
   Key,
   AlertTriangle,
+  ClipboardCheck,
 } from "lucide-react";
+import {
+  useAdminSettings,
+  useUpdateAdminSetting,
+  useOfferTemplatesForReview,
+  useReviewOfferTemplate,
+} from "@/hooks/use-admin";
+import { useUser, useUpdateProfile } from "@/hooks/use-dashboard";
+import { api } from "@/lib/api";
+import { formatCurrency, formatRate } from "@/lib/format";
+
+function Toggle({ on, onToggle }: { on: boolean; onToggle: () => void }) {
+  return (
+    <button
+      role="switch"
+      aria-checked={on}
+      onClick={onToggle}
+      className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${on ? "bg-[#2BB5A0]" : "bg-gray-300 dark:bg-gray-700"}`}
+    >
+      <span
+        className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${on ? "translate-x-4.5" : "translate-x-1"}`}
+      />
+    </button>
+  );
+}
+
+const NOTIFICATION_ITEMS = [
+  { key: "notif_new_applications", label: "Email notifications for new applications" },
+  { key: "notif_overdue_sms", label: "SMS alerts for overdue payments" },
+  { key: "notif_weekly_digest", label: "Weekly performance digest" },
+  { key: "notif_default_alerts", label: "Real-time alerts for defaults" },
+];
+
+const DEFAULTS: Record<string, string> = {
+  platform_name: "Mpola Uganda",
+  support_email: "support@mpola.ug",
+  licence_number: "",
+  min_loan_amount: "500000",
+  max_loan_amount: "100000000",
+  max_interest_rate: "25",
+  late_payment_penalty: "2",
+};
 
 export default function AdminSettingsPage() {
+  const { data: settings, isLoading } = useAdminSettings();
+  const updateSetting = useUpdateAdminSetting();
+  const { data: user } = useUser();
+  const { mutate: updateProfile } = useUpdateProfile();
+  const { data: pendingTemplates } = useOfferTemplatesForReview("pending_review");
+  const reviewTemplate = useReviewOfferTemplate();
+
+  const [form, setForm] = useState<Record<string, string>>(DEFAULTS);
+  const [saving, setSaving] = useState(false);
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [changingPassword, setChangingPassword] = useState(false);
+
+  useEffect(() => {
+    if (settings) {
+      const next = { ...DEFAULTS };
+      for (const key of Object.keys(DEFAULTS)) {
+        if (settings[key]) next[key] = settings[key].value;
+      }
+      setForm(next);
+    }
+  }, [settings]);
+
+  const isNotifOn = (key: string) => (settings?.[key]?.value ?? "true") === "true";
+  const isMaintenanceOn = (settings?.maintenance_mode?.value ?? "false") === "true";
+
+  async function handleSaveAll() {
+    setSaving(true);
+    try {
+      await Promise.all(
+        Object.entries(form).map(([key, value]) =>
+          api.updateAdminSetting(key, value),
+        ),
+      );
+      toast.success("Settings saved");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to save settings");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleChangePassword() {
+    if (newPassword.length < 8) {
+      toast.error("New password must be at least 8 characters");
+      return;
+    }
+    setChangingPassword(true);
+    try {
+      await api.changePassword(oldPassword, newPassword);
+      toast.success("Password changed");
+      setOldPassword("");
+      setNewPassword("");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to change password");
+    } finally {
+      setChangingPassword(false);
+    }
+  }
+
   return (
     <div className="space-y-6 max-w-3xl">
       <div>
@@ -41,11 +145,19 @@ export default function AdminSettingsPage() {
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label>Platform Name</Label>
-              <Input defaultValue="Mpola Uganda" />
+              <Input
+                value={form.platform_name}
+                onChange={(e) => setForm({ ...form, platform_name: e.target.value })}
+                disabled={isLoading}
+              />
             </div>
             <div className="space-y-2">
               <Label>Support Email</Label>
-              <Input defaultValue="support@mpola.ug" />
+              <Input
+                value={form.support_email}
+                onChange={(e) => setForm({ ...form, support_email: e.target.value })}
+                disabled={isLoading}
+              />
             </div>
             <div className="space-y-2">
               <Label>Currency</Label>
@@ -53,7 +165,12 @@ export default function AdminSettingsPage() {
             </div>
             <div className="space-y-2">
               <Label>Licence Number</Label>
-              <Input defaultValue="TCI-2024-0418" disabled />
+              <Input
+                value={form.licence_number}
+                onChange={(e) => setForm({ ...form, licence_number: e.target.value })}
+                placeholder="Not yet issued"
+                disabled={isLoading}
+              />
             </div>
           </div>
         </CardContent>
@@ -68,24 +185,47 @@ export default function AdminSettingsPage() {
               Loan Configuration
             </h2>
           </div>
+          <p className="text-xs text-muted-foreground">
+            Tightens what borrowers and lenders can submit platform-wide.
+          </p>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label>Minimum Loan Amount (UGX)</Label>
-              <Input type="number" defaultValue="500000" />
+              <Input
+                type="number"
+                value={form.min_loan_amount}
+                onChange={(e) => setForm({ ...form, min_loan_amount: e.target.value })}
+                disabled={isLoading}
+              />
             </div>
             <div className="space-y-2">
               <Label>Maximum Loan Amount (UGX)</Label>
-              <Input type="number" defaultValue="100000000" />
+              <Input
+                type="number"
+                value={form.max_loan_amount}
+                onChange={(e) => setForm({ ...form, max_loan_amount: e.target.value })}
+                disabled={isLoading}
+              />
             </div>
             <div className="space-y-2">
-              <Label>Max Interest Rate (%)</Label>
-              <Input type="number" defaultValue="25" />
+              <Label>Max Interest Rate (% p.a.)</Label>
+              <Input
+                type="number"
+                value={form.max_interest_rate}
+                onChange={(e) => setForm({ ...form, max_interest_rate: e.target.value })}
+                disabled={isLoading}
+              />
             </div>
             <div className="space-y-2">
               <Label>Late Payment Penalty (%)</Label>
-              <Input type="number" defaultValue="2" />
+              <Input
+                type="number"
+                value={form.late_payment_penalty}
+                onChange={(e) => setForm({ ...form, late_payment_penalty: e.target.value })}
+                disabled={isLoading}
+              />
             </div>
           </div>
         </CardContent>
@@ -101,21 +241,22 @@ export default function AdminSettingsPage() {
             </h2>
           </div>
         </CardHeader>
-        <CardContent className="space-y-3">
-          {[
-            "Email notifications for new applications",
-            "SMS alerts for overdue payments",
-            "Weekly performance digest",
-            "Real-time alerts for defaults",
-          ].map((item) => (
+        <CardContent className="space-y-1">
+          {NOTIFICATION_ITEMS.map((item) => (
             <div
-              key={item}
+              key={item.key}
               className="flex items-center justify-between py-2 border-b last:border-0 dark:border-gray-800"
             >
-              <span className="text-sm">{item}</span>
-              <Badge className="bg-[#E8F8F5] text-[#2BB5A0] dark:bg-[#2BB5A0]/10">
-                Enabled
-              </Badge>
+              <span className="text-sm">{item.label}</span>
+              <Toggle
+                on={isNotifOn(item.key)}
+                onToggle={() =>
+                  updateSetting.mutate({
+                    key: item.key,
+                    value: isNotifOn(item.key) ? "false" : "true",
+                  })
+                }
+              />
             </div>
           ))}
         </CardContent>
@@ -134,19 +275,120 @@ export default function AdminSettingsPage() {
         <CardContent className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label>Admin Password</Label>
-              <Input type="password" defaultValue="••••••••" />
+              <Label>Current Password</Label>
+              <Input
+                type="password"
+                value={oldPassword}
+                onChange={(e) => setOldPassword(e.target.value)}
+              />
             </div>
             <div className="space-y-2">
-              <Label>2FA Status</Label>
-              <div className="flex items-center gap-2 pt-2">
-                <Badge className="bg-[#E8F8F5] text-[#2BB5A0] dark:bg-[#2BB5A0]/10">
-                  <Key className="h-3 w-3 mr-1" />
-                  Enabled
-                </Badge>
-              </div>
+              <Label>New Password</Label>
+              <Input
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+              />
             </div>
           </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleChangePassword}
+            disabled={changingPassword || !oldPassword || !newPassword}
+          >
+            {changingPassword ? "Changing…" : "Change Password"}
+          </Button>
+
+          <Separator />
+
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-[#1B2B3A] dark:text-white">
+                Two-Factor Authentication
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Require OTP on each admin sign-in
+              </p>
+            </div>
+            {user && (
+              <Toggle
+                on={!!user.twoFactorEnabled}
+                onToggle={() =>
+                  updateProfile({ twoFactorEnabled: !user.twoFactorEnabled })
+                }
+              />
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Standing Offers Review */}
+      <Card className="bg-white dark:bg-gray-900">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <ClipboardCheck className="h-4 w-4 text-[#C4A55A]" />
+            <h2 className="font-semibold text-[#1B2B3A] dark:text-white">
+              Standing Offers Awaiting Review
+            </h2>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Lenders submit these from &quot;Post an Offer&quot; — approve before they
+            go live.
+          </p>
+        </CardHeader>
+        <CardContent>
+          {!pendingTemplates || pendingTemplates.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-4 text-center">
+              Nothing waiting for review.
+            </p>
+          ) : (
+            <div className="space-y-3">
+              {pendingTemplates.map((t) => (
+                <div
+                  key={t.id}
+                  className="flex flex-col sm:flex-row sm:items-center gap-3 p-3 rounded-lg border border-gray-100 dark:border-gray-800"
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-[#1B2B3A] dark:text-white">
+                      {t.lender_name ?? "Unknown lender"}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {formatCurrency(t.min_amount)} – {formatCurrency(t.max_amount)} ·{" "}
+                      {formatRate(t.interest_rate)} · Max {t.max_duration} months
+                    </p>
+                  </div>
+                  <div className="flex gap-2 shrink-0">
+                    <Button
+                      size="sm"
+                      className="bg-emerald-500 hover:bg-emerald-600 text-white"
+                      onClick={() =>
+                        reviewTemplate.mutate(
+                          { id: t.id, action: "approve" },
+                          { onSuccess: () => toast.success("Offer approved") },
+                        )
+                      }
+                    >
+                      Approve
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="text-red-600 hover:text-red-700"
+                      onClick={() =>
+                        reviewTemplate.mutate(
+                          { id: t.id, action: "reject" },
+                          { onSuccess: () => toast.success("Offer rejected") },
+                        )
+                      }
+                    >
+                      Reject
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -170,7 +412,11 @@ export default function AdminSettingsPage() {
                 Download complete platform data as CSV
               </p>
             </div>
-            <Button variant="outline" size="sm">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => toast.info("Full data export isn't available yet")}
+            >
               Export
             </Button>
           </div>
@@ -178,22 +424,48 @@ export default function AdminSettingsPage() {
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-sm font-medium text-[#1B2B3A] dark:text-white">
-                Platform Maintenance Mode
+                Maintenance Mode
               </p>
               <p className="text-xs text-muted-foreground">
-                Temporarily disable user access
+                Blocks borrower and lender sign-ins until you turn it off
               </p>
             </div>
-            <Button variant="destructive" size="sm">
-              Enable
+            <Button
+              variant={isMaintenanceOn ? "outline" : "destructive"}
+              size="sm"
+              onClick={() => {
+                const next = !isMaintenanceOn;
+                if (next && !confirm("Block all borrower and lender sign-ins now?")) {
+                  return;
+                }
+                updateSetting.mutate(
+                  { key: "maintenance_mode", value: next ? "true" : "false" },
+                  {
+                    onSuccess: () =>
+                      toast.success(next ? "Maintenance mode enabled" : "Maintenance mode disabled"),
+                  },
+                );
+              }}
+            >
+              {isMaintenanceOn ? "Disable" : "Enable"}
             </Button>
           </div>
+          {isMaintenanceOn && (
+            <Badge className="bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
+              <Key className="h-3 w-3 mr-1" />
+              Maintenance mode is currently active
+            </Badge>
+          )}
         </CardContent>
       </Card>
 
       <div className="flex justify-end">
-        <Button className="bg-[#2BB5A0] hover:bg-[#239E8C] text-white">
-          Save All Settings
+        <Button
+          className="bg-[#2BB5A0] hover:bg-[#239E8C] text-white"
+          onClick={handleSaveAll}
+          disabled={saving || isLoading}
+        >
+          {saving ? "Saving…" : "Save All Settings"}
         </Button>
       </div>
     </div>

@@ -1,10 +1,4 @@
-import {
-  adminStats,
-  adminUsers,
-  adminLoans,
-  adminApplications,
-  lenderProfile,
-} from "./dummy-data";
+import { lenderProfile } from "./dummy-data";
 import { API_BASE_URL } from "./constants";
 import type {
   User,
@@ -24,6 +18,11 @@ import type {
   AdminUser,
   AdminLoan,
   AdminApplication,
+  AdminPaymentTx,
+  AdminSetting,
+  AdminOfferTemplate,
+  AdminAuditLog,
+  AdminUserDetail,
   LenderProfile,
   LenderWalletTransaction,
   LenderEarnings,
@@ -974,37 +973,142 @@ export const api = {
 
   // Admin APIs
   getAdminStats: async (): Promise<AdminStats> => {
-    await delay();
-    return adminStats;
+    return apiAuthGet("/admin/stats");
   },
 
-  getAdminUsers: async (): Promise<AdminUser[]> => {
-    await delay();
-    return adminUsers;
+  getAdminUsers: async (filters?: {
+    search?: string;
+    status?: string;
+    role?: string;
+  }): Promise<AdminUser[]> => {
+    const params = new URLSearchParams();
+    params.set("limit", "200");
+    if (filters?.search) params.set("search", filters.search);
+    if (filters?.status) params.set("status", filters.status);
+    if (filters?.role) params.set("role", filters.role);
+    const res = await apiAuthGet<{ total: number; users: AdminUser[] }>(
+      `/admin/users?${params.toString()}`,
+    );
+    return res.users;
   },
 
-  updateUserStatus: async (
-    _id: string,
-    _status: "active" | "suspended" | "banned",
-  ): Promise<void> => {
-    await delay(300);
+  suspendUser: async (
+    username: string,
+  ): Promise<{ success: boolean; is_active: boolean; action: string }> => {
+    return apiAuthPatch(`/admin/users/${username}/suspend`, {});
   },
 
-  getAdminLoans: async (): Promise<AdminLoan[]> => {
-    await delay();
-    return adminLoans;
+  changeUserRole: async (
+    username: string,
+    role: string,
+  ): Promise<{ success: boolean; new_role: string }> => {
+    return apiAuthPatch(`/admin/users/${username}/role`, { role });
   },
 
-  getAdminApplications: async (): Promise<AdminApplication[]> => {
-    await delay();
-    return adminApplications;
+  deactivateUser: async (
+    username: string,
+    reason?: string,
+  ): Promise<{ success: boolean; message: string }> => {
+    const qs = reason ? `?reason=${encodeURIComponent(reason)}` : "";
+    return apiAuthPost(`/admin/users/${username}/deactivate${qs}`, {});
+  },
+
+  getAdminLoans: async (filters?: { status?: string }): Promise<AdminLoan[]> => {
+    const params = new URLSearchParams();
+    params.set("limit", "200");
+    if (filters?.status) params.set("status", filters.status);
+    const res = await apiAuthGet<{ total: number; loans: AdminLoan[] }>(
+      `/admin/loans?${params.toString()}`,
+    );
+    return res.loans;
+  },
+
+  getAdminApplications: async (filters?: {
+    status?: string;
+  }): Promise<AdminApplication[]> => {
+    const params = new URLSearchParams();
+    params.set("limit", "200");
+    if (filters?.status) params.set("status", filters.status);
+    const res = await apiAuthGet<{
+      total: number;
+      applications: AdminApplication[];
+    }>(`/admin/applications?${params.toString()}`);
+    return res.applications;
   },
 
   updateApplicationStatus: async (
-    _id: string,
-    _status: "approved" | "rejected",
-  ): Promise<void> => {
-    await delay(300);
+    id: string,
+    action: "approve" | "reject",
+  ): Promise<{ success: boolean; status: string }> => {
+    return apiAuthPatch(`/admin/applications/${id}?action=${action}`, {});
+  },
+
+  getAdminPayments: async (): Promise<{
+    transactions: AdminPaymentTx[];
+    totals: { in: number; out: number };
+  }> => {
+    const res = await apiAuthGet<{
+      total: number;
+      totals: { in: number; out: number };
+      transactions: AdminPaymentTx[];
+    }>("/admin/payments?limit=200");
+    return { transactions: res.transactions, totals: res.totals };
+  },
+
+  getAdminSettings: async (): Promise<Record<string, AdminSetting>> => {
+    return apiAuthGet("/admin/settings");
+  },
+
+  updateAdminSetting: async (
+    key: string,
+    value: string,
+  ): Promise<{ success: boolean }> => {
+    return apiAuthPut(`/admin/settings/${key}`, { value });
+  },
+
+  getAdminUserDetail: async (username: string): Promise<AdminUserDetail> => {
+    return apiAuthGet(`/admin/users/${username}`);
+  },
+
+  getAdminAuditLogs: async (filters?: {
+    action?: string;
+    username?: string;
+  }): Promise<AdminAuditLog[]> => {
+    const params = new URLSearchParams();
+    params.set("limit", "200");
+    if (filters?.action) params.set("action", filters.action);
+    if (filters?.username) params.set("username", filters.username);
+    const res = await apiAuthGet<{ total: number; logs: AdminAuditLog[] }>(
+      `/admin/audit-logs?${params.toString()}`,
+    );
+    return res.logs;
+  },
+
+  getOfferTemplatesForReview: async (
+    status?: string,
+  ): Promise<AdminOfferTemplate[]> => {
+    const qs = status ? `?status=${status}&limit=100` : "?limit=100";
+    const res = await apiAuthGet<{ total: number; templates: AdminOfferTemplate[] }>(
+      `/admin/offer-templates${qs}`,
+    );
+    return res.templates;
+  },
+
+  reviewOfferTemplate: async (
+    id: string,
+    action: "approve" | "reject",
+  ): Promise<{ success: boolean; status: string }> => {
+    return apiAuthPatch(`/admin/offer-templates/${id}?action=${action}`, {});
+  },
+
+  changePassword: async (
+    oldPassword: string,
+    newPassword: string,
+  ): Promise<{ status: number; message: string }> => {
+    return apiAuthPost("/auth/change_password", {
+      old_password: oldPassword,
+      new_password: newPassword,
+    });
   },
 
   // ─── Lender Portal APIs ───

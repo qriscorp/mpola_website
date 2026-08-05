@@ -14,9 +14,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Search, Download, Eye } from "lucide-react";
+import { Search, Download } from "lucide-react";
 import { useAdminLoans } from "@/hooks/use-admin";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, formatRate } from "@/lib/format";
+import { downloadCsv } from "@/lib/csv";
 
 export default function AdminLoansPage() {
   const { data: loans = [], isLoading } = useAdminLoans();
@@ -24,9 +25,9 @@ export default function AdminLoansPage() {
 
   const filtered = loans.filter(
     (l) =>
-      l.borrowerName.toLowerCase().includes(search.toLowerCase()) ||
+      (l.borrower_name ?? "").toLowerCase().includes(search.toLowerCase()) ||
       l.reference.toLowerCase().includes(search.toLowerCase()) ||
-      l.lenderName.toLowerCase().includes(search.toLowerCase()),
+      (l.lender_name ?? "").toLowerCase().includes(search.toLowerCase()),
   );
 
   const statusColor = (s: string) => {
@@ -48,9 +49,26 @@ export default function AdminLoansPage() {
   const avgRate =
     loans.length > 0
       ? (
-          loans.reduce((sum, l) => sum + l.interestRate, 0) / loans.length
+          loans.reduce((sum, l) => sum + l.interest_rate, 0) / loans.length
         ).toFixed(1)
       : "0";
+
+  const handleExport = () => {
+    downloadCsv(
+      "mpola-loans.csv",
+      filtered.map((l) => ({
+        reference: l.reference,
+        borrower: l.borrower_name ?? "",
+        lender: l.lender_name ?? "",
+        amount: l.amount,
+        interest_rate: l.interest_rate,
+        total_paid: l.total_paid,
+        total_repayable: l.total_repayable,
+        status: l.status,
+        disbursed_at: l.disbursed_at ?? "",
+      })),
+    );
+  };
 
   return (
     <div className="space-y-6">
@@ -63,7 +81,11 @@ export default function AdminLoansPage() {
             Monitor all active and past loans
           </p>
         </div>
-        <Button variant="outline" className="gap-2 w-full sm:w-auto">
+        <Button
+          variant="outline"
+          className="gap-2 w-full sm:w-auto"
+          onClick={handleExport}
+        >
           <Download className="h-4 w-4" />
           Export
         </Button>
@@ -140,39 +162,44 @@ export default function AdminLoansPage() {
                 <TableHead className="text-xs uppercase text-muted-foreground">
                   Status
                 </TableHead>
-                <TableHead className="w-12" />
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center py-8">
+                  <TableCell colSpan={7} className="text-center py-8">
                     <div className="animate-pulse text-muted-foreground">
                       Loading...
                     </div>
                   </TableCell>
                 </TableRow>
+              ) : filtered.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                    No loans match your search.
+                  </TableCell>
+                </TableRow>
               ) : (
                 filtered.map((loan) => {
-                  const progress = Math.round(
-                    (loan.paidInstalments / loan.totalInstalments) * 100,
-                  );
+                  const progress = loan.total_instalments
+                    ? Math.round((loan.paid_instalments / loan.total_instalments) * 100)
+                    : 0;
                   return (
                     <TableRow key={loan.id}>
                       <TableCell className="font-medium text-sm text-[#1B2B3A] dark:text-white">
-                        {loan.reference}
+                        #{loan.reference}
                       </TableCell>
                       <TableCell className="text-sm">
-                        {loan.borrowerName}
+                        {loan.borrower_name ?? "Unknown"}
                       </TableCell>
                       <TableCell className="text-sm hidden sm:table-cell">
-                        {loan.lenderName}
+                        {loan.lender_name ?? "Unknown"}
                       </TableCell>
                       <TableCell className="text-sm hidden md:table-cell">
                         {formatCurrency(loan.amount)}
                       </TableCell>
                       <TableCell className="text-sm hidden md:table-cell">
-                        {loan.interestRate}%
+                        {formatRate(loan.interest_rate)}
                       </TableCell>
                       <TableCell className="hidden lg:table-cell">
                         <div className="flex items-center gap-2">
@@ -181,7 +208,7 @@ export default function AdminLoansPage() {
                             className="w-20 h-2 [&>div]:bg-[#2BB5A0]"
                           />
                           <span className="text-xs text-muted-foreground">
-                            {loan.paidInstalments}/{loan.totalInstalments}
+                            {loan.paid_instalments}/{loan.total_instalments}
                           </span>
                         </div>
                       </TableCell>
@@ -192,11 +219,6 @@ export default function AdminLoansPage() {
                         >
                           {loan.status}
                         </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <Eye className="h-4 w-4" />
-                        </Button>
                       </TableCell>
                     </TableRow>
                   );

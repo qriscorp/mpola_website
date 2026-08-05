@@ -16,6 +16,9 @@ import {
 import { Logo } from "@/components/logo";
 import { Badge } from "@/components/ui/badge";
 import { SignOutModal } from "@/components/sign-out-modal";
+import { useUser } from "@/hooks/use-dashboard";
+import { useAdminStats } from "@/hooks/use-admin";
+import { getInitials } from "@/lib/format";
 
 const adminNav = [
   { icon: LayoutDashboard, label: "Overview", href: "/admin" },
@@ -23,7 +26,7 @@ const adminNav = [
   { icon: FileText, label: "Applications", href: "/admin/applications" },
   { icon: CreditCard, label: "Loans", href: "/admin/loans" },
   { icon: Wallet, label: "Wallet & Payments", href: "/admin/payments" },
-  { icon: Settings, label: "Settings", href: "/admin/settings" },
+  { icon: Settings, label: "Settings", href: "/admin/settings", badgeKey: "pendingOfferTemplates" as const },
 ];
 
 export function AdminSidebarContent({
@@ -33,6 +36,9 @@ export function AdminSidebarContent({
 }) {
   const pathname = usePathname();
   const [signOutOpen, setSignOutOpen] = useState(false);
+  const { data: user } = useUser();
+  const { data: stats } = useAdminStats();
+  const pendingOfferTemplates = stats?.platform.pending_offer_templates ?? 0;
 
   return (
     <div className="flex flex-col h-full bg-[#1B2B3A] text-white">
@@ -52,6 +58,8 @@ export function AdminSidebarContent({
           const isActive =
             pathname === item.href ||
             (item.href !== "/admin" && pathname.startsWith(item.href));
+          const badge =
+            item.badgeKey === "pendingOfferTemplates" ? pendingOfferTemplates : 0;
           return (
             <Link
               key={item.href}
@@ -64,7 +72,12 @@ export function AdminSidebarContent({
               }`}
             >
               <item.icon className="h-4 w-4" />
-              {item.label}
+              <span className="flex-1">{item.label}</span>
+              {badge > 0 && (
+                <span className="inline-flex items-center justify-center h-5 min-w-5 px-1.5 rounded-full bg-[#C4A55A] text-white text-[10px] font-bold">
+                  {badge}
+                </span>
+              )}
             </Link>
           );
         })}
@@ -74,11 +87,11 @@ export function AdminSidebarContent({
       <div className="p-4 border-t border-white/10 space-y-2">
         <div className="flex items-center gap-3 px-3 py-2">
           <div className="h-8 w-8 rounded-full bg-[#2BB5A0] flex items-center justify-center text-xs font-bold">
-            AD
+            {user?.fullName ? getInitials(user.fullName) : "AD"}
           </div>
           <div>
-            <p className="text-sm font-medium">System Admin</p>
-            <p className="text-[10px] text-gray-400">admin@mpola.ug</p>
+            <p className="text-sm font-medium">{user?.fullName ?? "Admin"}</p>
+            <p className="text-[10px] text-gray-400">{user?.email ?? ""}</p>
           </div>
         </div>
         <Link
