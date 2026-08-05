@@ -5,7 +5,13 @@ import { toast } from "sonner";
 import { BorrowerPageHeader } from "@/components/top-nav";
 import { WalletBalanceCard } from "@/components/wallet-balance-card";
 import { WalletTransactionList } from "@/components/wallet-transaction-list";
-import { useWallet, useTransactions, useTopUp } from "@/hooks/use-wallet";
+import { WalletSetupModal } from "@/components/wallet-setup-modal";
+import {
+  useWallet,
+  useTransactions,
+  useTopUp,
+  useSetupWallet,
+} from "@/hooks/use-wallet";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -13,8 +19,10 @@ export default function WalletPage() {
   const { data: wallet, isLoading: walletLoading } = useWallet();
   const { data: transactions, isLoading: txLoading } = useTransactions();
   const { mutate: topUp, isPending } = useTopUp();
+  const { mutate: setupWallet, isPending: isSettingUp } = useSetupWallet();
 
   const [depositOpen, setDepositOpen] = useState(false);
+  const [setupOpen, setSetupOpen] = useState(false);
   const [amount, setAmount] = useState("500000");
   const [phone, setPhone] = useState("");
 
@@ -31,7 +39,7 @@ export default function WalletPage() {
         accent="teal"
         onDeposit={() => setDepositOpen(true)}
         onWithdraw={() => toast.info("Withdrawals are coming in the next update.")}
-        onSetup={() => toast.info("Wallet setup is coming in the next update.")}
+        onSetup={() => setSetupOpen(true)}
       />
 
       {/* Transaction history */}
@@ -93,6 +101,16 @@ export default function WalletPage() {
           </div>
         </div>
       )}
+
+      <WalletSetupModal
+        open={setupOpen}
+        onClose={() => setSetupOpen(false)}
+        onSubmit={(pin) => {
+          setupWallet(pin, { onSuccess: () => setSetupOpen(false) });
+        }}
+        isPending={isSettingUp}
+        accent="teal"
+      />
     </div>
   );
 }

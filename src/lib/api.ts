@@ -644,6 +644,9 @@ export const api = {
     }>("/wallet/transactions");
     return res.transactions;
   },
+  setupWallet: async (pin: string): Promise<{ status: number; message: string }> => {
+    return apiAuthPost("/wallet/setup", { pin });
+  },
   topUp: async (_data: {
     amount: number;
     method: string;

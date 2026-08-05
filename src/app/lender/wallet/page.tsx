@@ -9,18 +9,22 @@ import {
   useLenderDeposit,
   useLenderTransactions,
 } from "@/hooks/use-lender";
+import { useSetupWallet } from "@/hooks/use-wallet";
 import { LenderPageHeader } from "@/components/lender-top-nav";
 import { WalletBalanceCard } from "@/components/wallet-balance-card";
 import { WalletTransactionList } from "@/components/wallet-transaction-list";
+import { WalletSetupModal } from "@/components/wallet-setup-modal";
 
 export default function LenderWalletPage() {
   const { data: wallet, isLoading: walletLoading } = useLenderWallet();
   const { data: transactions, isLoading: txLoading } = useLenderTransactions();
   const { mutate: deposit, isPending } = useLenderDeposit();
+  const { mutate: setupWallet, isPending: isSettingUp } = useSetupWallet();
   const [amount, setAmount] = useState("500000");
   const [method, setMethod] = useState("MTN MoMo");
   const [phone, setPhone] = useState("+256772 843 901");
   const [showDeposit, setShowDeposit] = useState(false);
+  const [showSetup, setShowSetup] = useState(false);
 
   const isWalletSetup = wallet?.is_wallet_setup ?? false;
 
@@ -37,9 +41,7 @@ export default function LenderWalletPage() {
         onWithdraw={() =>
           toast.info("Withdrawals are coming in the next update.")
         }
-        onSetup={() =>
-          toast.info("Wallet setup is coming in the next update.")
-        }
+        onSetup={() => setShowSetup(true)}
         extraActions={
           <button
             onClick={() =>
@@ -122,6 +124,16 @@ export default function LenderWalletPage() {
           </div>
         </div>
       )}
+
+      <WalletSetupModal
+        open={showSetup}
+        onClose={() => setShowSetup(false)}
+        onSubmit={(pin) => {
+          setupWallet(pin, { onSuccess: () => setShowSetup(false) });
+        }}
+        isPending={isSettingUp}
+        accent="gold"
+      />
     </div>
   );
 }

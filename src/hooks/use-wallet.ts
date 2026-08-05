@@ -18,6 +18,22 @@ export function useTransactions() {
   });
 }
 
+/** Shared by both portals — wallet setup isn't role-specific. */
+export function useSetupWallet() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (pin: string) => api.setupWallet(pin),
+    onSuccess: () => {
+      toast.success("Wallet set up successfully!");
+      queryClient.invalidateQueries({ queryKey: ["wallet"] });
+      queryClient.invalidateQueries({ queryKey: ["lender", "wallet"] });
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || "Wallet setup failed. Please try again.");
+    },
+  });
+}
+
 export function useTopUp() {
   const queryClient = useQueryClient();
   return useMutation({
