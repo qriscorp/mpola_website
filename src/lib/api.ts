@@ -31,6 +31,9 @@ import type {
   Instalment,
   Wallet,
   WalletTransaction,
+  BankOption,
+  CardDepositInitiateResult,
+  TransferStatusResult,
   Notification,
   AdminStats,
   AdminUser,
@@ -647,12 +650,55 @@ export const api = {
   setupWallet: async (pin: string): Promise<{ status: number; message: string }> => {
     return apiAuthPost("/wallet/setup", { pin });
   },
-  topUp: async (_data: {
+
+  // Mobile money — synchronous, backed by UPG collect/disburse.
+  depositMobileMoney: async (data: {
     amount: number;
-    method: string;
     phone: string;
-  }): Promise<void> => {
-    await delay();
+    carrier?: string;
+  }): Promise<{ status: number; message: string; balance: number }> => {
+    return apiAuthPost("/wallet/deposit", data);
+  },
+  withdrawMobileMoney: async (data: {
+    amount: number;
+    phone: string;
+    carrier?: string;
+  }): Promise<{ status: number; message: string; balance: number }> => {
+    return apiAuthPost("/wallet/withdraw", data);
+  },
+
+  // Card — Flutterwave hosted checkout, async: initiate then poll status.
+  initiateCardDeposit: async (data: {
+    amount: number;
+    redirect_url: string;
+  }): Promise<CardDepositInitiateResult> => {
+    return apiAuthPost("/wallet/deposit/card/initiate", data);
+  },
+  getCardDepositStatus: async (
+    reference: string,
+  ): Promise<TransferStatusResult> => {
+    return apiAuthGet(`/wallet/deposit/card/status/${reference}`);
+  },
+
+  // Bank transfer — Flutterwave payout, async: initiate then poll status.
+  getBanks: async (
+    countryCode: string = "UG",
+  ): Promise<{ country_code: string; banks: BankOption[] }> => {
+    return apiAuthGet(`/wallet/banks/${countryCode}`);
+  },
+  initiateBankWithdraw: async (data: {
+    amount: number;
+    account_bank: string;
+    account_number: string;
+    beneficiary_name: string;
+    narration?: string;
+  }): Promise<{ reference: string; status: string }> => {
+    return apiAuthPost("/wallet/withdraw/bank/initiate", data);
+  },
+  getBankWithdrawStatus: async (
+    reference: string,
+  ): Promise<TransferStatusResult> => {
+    return apiAuthGet(`/wallet/withdraw/bank/status/${reference}`);
   },
 
   // Application submission
@@ -756,19 +802,6 @@ export const api = {
   },
   getLenderTransactions: async (): Promise<LenderWalletTransaction[]> => {
     return api.getTransactions();
-  },
-  lenderDeposit: async (_data: {
-    amount: number;
-    method: string;
-    phone: string;
-  }): Promise<void> => {
-    await delay(800);
-  },
-  lenderWithdraw: async (_data: {
-    amount: number;
-    method: string;
-  }): Promise<void> => {
-    await delay(800);
   },
   getLenderEarnings: async (): Promise<LenderEarnings> => {
     await delay(300);

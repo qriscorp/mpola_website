@@ -135,6 +135,21 @@ export interface Wallet {
   created_at?: string;
 }
 
+export interface BankOption {
+  code: string;
+  name: string;
+}
+
+export interface CardDepositInitiateResult {
+  checkout_url: string;
+  reference: string;
+}
+
+export interface TransferStatusResult {
+  status: WalletTransactionStatus;
+  balance: number;
+}
+
 export interface DashboardStats {
   activeLoans: number;
   applicationsPending: number;

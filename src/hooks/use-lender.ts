@@ -69,33 +69,6 @@ export function useLenderTransactions() {
   });
 }
 
-export function useLenderDeposit() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (data: { amount: number; method: string; phone: string }) =>
-      api.lenderDeposit(data),
-    onSuccess: () => {
-      toast.success("Deposit successful!");
-      qc.invalidateQueries({ queryKey: ["lender", "wallet"] });
-      qc.invalidateQueries({ queryKey: ["lender", "transactions"] });
-    },
-    onError: () => toast.error("Deposit failed"),
-  });
-}
-
-export function useLenderWithdraw() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (data: { amount: number; method: string }) =>
-      api.lenderWithdraw(data),
-    onSuccess: () => {
-      toast.success("Withdrawal initiated!");
-      qc.invalidateQueries({ queryKey: ["lender", "wallet"] });
-    },
-    onError: () => toast.error("Withdrawal failed"),
-  });
-}
-
 export function useLenderEarnings() {
   return useQuery({
     queryKey: ["lender", "earnings"],
