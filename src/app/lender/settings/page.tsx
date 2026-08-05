@@ -51,8 +51,19 @@ function Toggle({
 }
 
 export default function LenderSettingsPage() {
-  const { data: user, isLoading } = useUser();
+  const { data: user, isLoading, error } = useUser();
   const { mutate: updateProfile } = useUpdateProfile();
+
+  if (error) {
+    return (
+      <div className="space-y-6 max-w-3xl">
+        <LenderPageHeader title="Settings" />
+        <p className="text-sm text-gray-500">
+          Couldn&apos;t load your settings. Please try again.
+        </p>
+      </div>
+    );
+  }
 
   if (isLoading || !user) {
     return (

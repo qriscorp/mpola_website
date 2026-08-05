@@ -13,7 +13,7 @@ const kycBadge: Record<string, { label: string; className: string }> = {
 };
 
 export default function ProfilePage() {
-  const { data: user, isLoading } = useUser();
+  const { data: user, isLoading, error } = useUser();
   const { mutate: updateProfile, isPending } = useUpdateProfile();
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({ fullName: "", phone: "", nin: "" });
@@ -23,6 +23,17 @@ export default function ProfilePage() {
       setForm({ fullName: user.fullName, phone: user.phone, nin: user.nin });
     }
   }, [user]);
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <BorrowerPageHeader title="Profile & KYC" />
+        <p className="text-sm text-gray-500">
+          Couldn&apos;t load your profile. Please try again.
+        </p>
+      </div>
+    );
+  }
 
   if (isLoading || !user) {
     return (

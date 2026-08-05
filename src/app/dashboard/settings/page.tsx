@@ -44,7 +44,7 @@ const notificationItems = [
 ];
 
 export default function SettingsPage() {
-  const { data: user, isLoading } = useUser();
+  const { data: user, isLoading, error } = useUser();
   const { mutate: updateProfile } = useUpdateProfile();
 
   const [toggles, setToggles] = useState<Record<string, boolean>>(() => {
@@ -57,6 +57,17 @@ export default function SettingsPage() {
 
   const toggle = (id: string) =>
     setToggles((prev) => ({ ...prev, [id]: !prev[id] }));
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <BorrowerPageHeader title="Settings" />
+        <p className="text-sm text-gray-500">
+          Couldn&apos;t load your settings. Please try again.
+        </p>
+      </div>
+    );
+  }
 
   if (isLoading || !user) {
     return (

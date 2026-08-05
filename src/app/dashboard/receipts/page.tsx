@@ -48,8 +48,16 @@ function ReceiptContent() {
     enabled: !!loanId,
   });
 
-  if (loadingDefault || loadingLoan || !loan) {
+  if (loadingDefault || loadingLoan) {
     return <CardSkeleton count={1} height="h-96" />;
+  }
+
+  if (!loan) {
+    return (
+      <div className="max-w-md mx-auto bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 p-8 text-center text-gray-500">
+        You don&apos;t have any loans yet.
+      </div>
+    );
   }
 
   const repayments = loan.repayments ?? [];

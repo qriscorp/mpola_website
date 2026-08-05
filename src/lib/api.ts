@@ -27,6 +27,7 @@ import type {
   LenderProfile,
   LenderWalletTransaction,
   LenderEarnings,
+  LenderOfferTemplate,
 } from "./types";
 
 // Simulated API delay
@@ -1050,6 +1051,12 @@ export const api = {
     is_draft?: boolean;
   }): Promise<{ status: number; message: string }> => {
     return apiAuthPost("/loans/offer-templates", data);
+  },
+  getOfferTemplates: async (): Promise<LenderOfferTemplate[]> => {
+    const res = await apiAuthGet<{ templates: LenderOfferTemplate[] }>(
+      "/loans/offer-templates/mine",
+    );
+    return res.templates;
   },
   getLenderWallet: async (): Promise<Wallet> => {
     return api.getWallet();

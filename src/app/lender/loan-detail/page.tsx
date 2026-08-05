@@ -31,12 +31,12 @@ const repaymentStatusClass: Record<string, string> = {
 function LoanDetailContent() {
   const searchParams = useSearchParams();
   const loanId = searchParams.get("loanId") ?? "";
-  const { data: loan, isLoading } = useLenderLoanDetail(loanId);
+  const { data: loan, isLoading, error } = useLenderLoanDetail(loanId);
 
-  if (!loanId) {
+  if (!loanId || error) {
     return (
       <p className="py-10 text-center text-sm text-gray-400">
-        No loan selected.
+        {error ? "This loan couldn't be found." : "No loan selected."}
       </p>
     );
   }

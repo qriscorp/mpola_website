@@ -5,9 +5,23 @@ import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { LenderPageHeader } from "@/components/lender-top-nav";
 import { CardSkeleton } from "@/components/skeletons";
-import { useMyOffers } from "@/hooks/use-lender";
+import { useMyOffers, useOfferTemplates } from "@/hooks/use-lender";
 import { formatCurrency, formatRate } from "@/lib/format";
 import type { LoanOffer } from "@/lib/types";
+
+const templateStatusLabel: Record<string, string> = {
+  pending_review: "Pending Review",
+  draft: "Draft",
+  approved: "Approved",
+  rejected: "Rejected",
+};
+
+const templateStatusClass: Record<string, string> = {
+  pending_review: "bg-amber-50 text-amber-600 border-amber-200",
+  draft: "bg-gray-100 text-gray-500 border-gray-200",
+  approved: "bg-emerald-50 text-emerald-600 border-emerald-200",
+  rejected: "bg-red-50 text-red-600 border-red-200",
+};
 
 type OfferStatus = LoanOffer["status"];
 
@@ -50,6 +64,7 @@ function statusBadge(s: OfferStatus) {
 export default function MyOffersPage() {
   const [tab, setTab] = useState<"All" | OfferStatus>("All");
   const { data: offers, isLoading } = useMyOffers();
+  const { data: templates } = useOfferTemplates();
 
   const allOffers = offers ?? [];
   const filtered =
@@ -145,6 +160,42 @@ export default function MyOffersPage() {
                       View Application
                     </Link>
                   </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {templates && templates.length > 0 && (
+        <div className="space-y-4">
+          <h2 className="text-lg font-bold text-[#1B2B3A] dark:text-white">
+            Submitted Standing Offers
+          </h2>
+          <p className="text-xs text-gray-400 -mt-3">
+            Your general lending criteria from Post an Offer — reviewed before
+            going live on the marketplace.
+          </p>
+          {templates.map((t) => (
+            <Card key={t.id} className="bg-white dark:bg-gray-900">
+              <CardContent className="p-5 sm:p-6">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-lg font-bold text-[#1B2B3A] dark:text-white">
+                      {formatCurrency(t.min_amount)} – {formatCurrency(t.max_amount)}
+                    </p>
+                    <p className="text-[#C4A55A] font-semibold text-sm mt-0.5">
+                      {formatRate(t.interest_rate)} · Max {t.max_duration} months
+                    </p>
+                    <p className="text-xs text-gray-400 mt-1 capitalize">
+                      {t.accepted_loan_types.join(", ") || "Any loan type"}
+                    </p>
+                  </div>
+                  <span
+                    className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border shrink-0 ${templateStatusClass[t.status] ?? templateStatusClass.pending_review}`}
+                  >
+                    {templateStatusLabel[t.status] ?? t.status}
+                  </span>
                 </div>
               </CardContent>
             </Card>

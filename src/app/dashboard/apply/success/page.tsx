@@ -63,15 +63,18 @@ function buildTimeline(status: string, offersCount: number) {
 function SuccessContent() {
   const searchParams = useSearchParams();
   const applicationId = searchParams.get("applicationId");
-  const { data: application, isLoading } = useApplicationDetail(
+  const { data: application, isLoading, error } = useApplicationDetail(
     applicationId ?? "",
   );
 
-  if (!applicationId) {
+  if (!applicationId || error) {
     return (
       <div className="max-w-2xl mx-auto text-center py-8">
         <p className="text-gray-500">
-          No application selected. View your submitted requests in{" "}
+          {error
+            ? "This application couldn't be found."
+            : "No application selected."}{" "}
+          View your submitted requests in{" "}
           <Link href="/dashboard/my-requests" className="text-[#2BB5A0] underline">
             My Requests
           </Link>

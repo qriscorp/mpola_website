@@ -31,12 +31,15 @@ function ApplicantContent() {
   const searchParams = useSearchParams();
   const applicationId = searchParams.get("applicationId") ?? "";
 
-  const { data: application, isLoading } = useApplicationDetail(applicationId);
+  const { data: application, isLoading, error } = useApplicationDetail(applicationId);
   const { data: documents } = useApplicationDocuments(applicationId);
 
-  if (!applicationId) {
+  if (!applicationId || error) {
     return (
       <p className="text-sm text-gray-500">
+        {error
+          ? "This application couldn't be found. "
+          : ""}
         Pick an application from{" "}
         <a href="/lender/applications" className="text-[#C4A55A] underline">
           Applications

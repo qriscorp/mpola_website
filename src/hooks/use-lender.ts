@@ -65,10 +65,19 @@ export function useMakeOffer() {
 }
 
 export function useCreateOfferTemplate() {
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: api.createOfferTemplate,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["lender", "offer-templates"] }),
     onError: (err: Error) =>
       toast.error(err.message || "Failed to save offer"),
+  });
+}
+
+export function useOfferTemplates() {
+  return useQuery({
+    queryKey: ["lender", "offer-templates"],
+    queryFn: api.getOfferTemplates,
   });
 }
 

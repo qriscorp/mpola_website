@@ -40,7 +40,7 @@ export default function PostRequestPage() {
   function handlePost() {
     const months = parseInt(duration, 10) || 3;
     const purposeParts = [description.trim()].filter(Boolean);
-    if (maxRate) purposeParts.push(`Max acceptable rate: ${maxRate}%/mo`);
+    if (maxRate) purposeParts.push(`Max acceptable rate: ${maxRate}% p.a.`);
     if (validUntil) purposeParts.push(`Request valid until: ${validUntil}`);
 
     submitApplication.mutate(
@@ -209,7 +209,7 @@ export default function PostRequestPage() {
           {/* Max Rate */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1.5">
-              Max Interest Rate (%/Mo)
+              Max Interest Rate (% p.a.)
             </label>
             <input
               type="number"
