@@ -20,8 +20,11 @@ export function getInitials(name: string): string {
 export function getStatusColor(status: string): string {
   switch (status) {
     case "active":
+    case "funded":
+    case "approved":
     case "paid":
     case "confirmed":
+    case "accepted":
     case "verified":
       return "text-emerald-600 bg-emerald-50";
     case "reviewing_offers":
@@ -33,6 +36,7 @@ export function getStatusColor(status: string): string {
     case "rejected":
     case "overdue":
     case "declined":
+    case "defaulted":
       return "text-red-600 bg-red-50";
     case "upcoming":
       return "text-gray-500 bg-gray-50";

@@ -1,32 +1,80 @@
 "use client";
 
-import { use } from "react";
+import { use, useState } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, MapPin, ShieldCheck, Bookmark } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { useBorrowerProfile, useMakeOffer } from "@/hooks/use-lender";
+import { useApplicationDetail, useMakeOffer } from "@/hooks/use-lender";
 import { formatCurrency } from "@/lib/format";
 
-export default function BorrowerProfilePage({
+function initials(name: string | null | undefined): string {
+  if (!name) return "?";
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+}
+
+export default function ApplicationDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const { data: profile } = useBorrowerProfile(id);
+  const { data: application, isLoading } = useApplicationDetail(id);
   const { mutate: makeOffer, isPending } = useMakeOffer();
 
-  if (!profile) return null;
+  const [showOfferForm, setShowOfferForm] = useState(false);
+  const [amount, setAmount] = useState("");
+  const [interestRate, setInterestRate] = useState("15");
+  const [duration, setDuration] = useState("");
 
-  const creditScorePercent = (profile.creditScore / 850) * 100;
+  if (isLoading) return null;
+  if (!application) {
+    return (
+      <div className="space-y-6">
+        <Link
+          href="/lender/marketplace"
+          className="text-sm text-muted-foreground inline-flex items-center gap-1"
+        >
+          <ArrowLeft className="h-4 w-4" /> Back to Marketplace
+        </Link>
+        <p className="text-sm text-gray-500">Application not found.</p>
+      </div>
+    );
+  }
+
+  const verified = application.borrower?.kyc_status === "verified";
+
+  const numAmount = Number(amount) || 0;
+  const numRate = Number(interestRate) || 0;
+  const numDuration = Number(duration) || 0;
+  const totalInterest = numAmount * (numRate / 100) * (numDuration / 12);
+  const totalRepayable = numAmount + totalInterest;
+  const monthlyPayment = numDuration > 0 ? totalRepayable / numDuration : 0;
+
+  const handleSubmitOffer = () => {
+    makeOffer(
+      {
+        application_id: application.id,
+        amount: numAmount,
+        interest_rate: numRate,
+        duration: numDuration,
+      },
+      { onSuccess: () => setShowOfferForm(false) },
+    );
+  };
 
   return (
     <div className="space-y-6">
-      {/* Back */}
       <Link
         href="/lender/marketplace"
         className="text-sm text-muted-foreground hover:text-[#1B2B3A] dark:hover:text-white inline-flex items-center gap-1"
@@ -41,18 +89,17 @@ export default function BorrowerProfilePage({
             <div className="flex items-center gap-4">
               <Avatar className="h-14 w-14">
                 <AvatarFallback className="bg-[#C4A55A] text-white text-xl font-bold">
-                  {profile.initials}
+                  {initials(application.borrower?.full_name)}
                 </AvatarFallback>
               </Avatar>
               <div>
                 <h1 className="text-2xl font-bold text-[#1B2B3A] dark:text-white">
-                  {profile.name}
+                  {application.borrower?.full_name ?? "Borrower"}
                 </h1>
-                <p className="text-sm text-muted-foreground flex items-center gap-1">
-                  <MapPin className="h-3 w-3" /> {profile.location} - Member
-                  since {profile.memberSince}
+                <p className="text-sm text-muted-foreground">
+                  Credit score: {application.borrower?.credit_score ?? "—"}
                 </p>
-                {profile.kycVerified && (
+                {verified && (
                   <Badge className="bg-[#F5F0E0] text-[#C4A55A] dark:bg-[#C4A55A]/10 dark:text-[#C4A55A] mt-1 text-xs gap-1">
                     KYC Verified
                   </Badge>
@@ -65,265 +112,135 @@ export default function BorrowerProfilePage({
                 Requesting
               </p>
               <p className="text-3xl font-bold text-[#1B2B3A] dark:text-white">
-                <span className="text-sm font-normal text-muted-foreground">
-                  UGX{" "}
-                </span>
-                {profile.requestingAmount.toLocaleString()}
+                {formatCurrency(application.amount)}
               </p>
-              <p className="text-xs text-muted-foreground">
-                {profile.duration} months - {profile.loanType} Loan
+              <p className="text-xs text-muted-foreground capitalize">
+                {application.duration} months &middot; {application.loan_type}{" "}
+                Loan
               </p>
             </div>
 
             <div className="flex flex-col gap-2">
-              <Button
-                onClick={() => makeOffer({ borrowerId: id, data: {} })}
-                disabled={isPending}
-                className="bg-[#C4A55A] hover:bg-[#b3944a] text-white"
-              >
-                {isPending ? "Sending..." : "Make an Offer"}
-              </Button>
-              <Button variant="outline" className="gap-2">
-                <Bookmark className="h-4 w-4" /> Save for Later
-              </Button>
+              {application.status === "pending" ? (
+                <Button
+                  onClick={() => setShowOfferForm(true)}
+                  className="bg-[#C4A55A] hover:bg-[#b3944a] text-white"
+                >
+                  Make an Offer
+                </Button>
+              ) : (
+                <Badge className="bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300 capitalize">
+                  {application.status}
+                </Badge>
+              )}
             </div>
           </div>
         </CardContent>
       </Card>
 
+      {/* Make offer form */}
+      {showOfferForm && (
+        <Card className="bg-white dark:bg-gray-900 border-[#C4A55A]">
+          <CardHeader>
+            <h2 className="font-semibold text-[#1B2B3A] dark:text-white">
+              Make an Offer
+            </h2>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold uppercase tracking-wider text-gray-500">
+                  Amount (UGX)
+                </Label>
+                <Input
+                  type="number"
+                  placeholder={String(application.amount)}
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold uppercase tracking-wider text-gray-500">
+                  Interest Rate (% p.a.)
+                </Label>
+                <Input
+                  type="number"
+                  value={interestRate}
+                  onChange={(e) => setInterestRate(e.target.value)}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold uppercase tracking-wider text-gray-500">
+                  Duration (months)
+                </Label>
+                <Input
+                  type="number"
+                  placeholder={String(application.duration)}
+                  value={duration}
+                  onChange={(e) => setDuration(e.target.value)}
+                />
+              </div>
+            </div>
+
+            {numAmount > 0 && numDuration > 0 && (
+              <div className="flex gap-6 text-sm text-gray-600 dark:text-gray-400">
+                <span>
+                  Monthly payment:{" "}
+                  <strong className="text-[#1B2B3A] dark:text-white">
+                    {formatCurrency(Math.round(monthlyPayment))}
+                  </strong>
+                </span>
+                <span>
+                  Total repayable:{" "}
+                  <strong className="text-[#1B2B3A] dark:text-white">
+                    {formatCurrency(Math.round(totalRepayable))}
+                  </strong>
+                </span>
+              </div>
+            )}
+
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setShowOfferForm(false)}
+                disabled={isPending}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleSubmitOffer}
+                disabled={isPending || !numAmount || !numDuration}
+                className="bg-[#C4A55A] hover:bg-[#b3944a] text-white"
+              >
+                {isPending ? "Sending…" : "Send Offer"}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Tabs */}
       <Tabs defaultValue="overview">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="documents">Documents (6)</TabsTrigger>
-          <TabsTrigger value="guarantors">Guarantors (2)</TabsTrigger>
-          <TabsTrigger value="history">Loan History</TabsTrigger>
+          <TabsTrigger value="guarantors">
+            Guarantors ({application.guarantors?.length ?? 0})
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="mt-6 space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Left Column */}
-            <div className="lg:col-span-2 space-y-6">
-              {/* Loan Purpose */}
-              <Card className="bg-white dark:bg-gray-900">
-                <CardHeader>
-                  <h2 className="font-semibold text-[#1B2B3A] dark:text-white">
-                    Loan Purpose
-                  </h2>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-                    &ldquo;{profile.purpose}&rdquo;
-                  </p>
-                </CardContent>
-              </Card>
-
-              {/* Income & Affordability */}
-              <Card className="bg-white dark:bg-gray-900">
-                <CardHeader>
-                  <h2 className="font-semibold text-[#1B2B3A] dark:text-white">
-                    Income & Affordability
-                  </h2>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 gap-6">
-                    <div>
-                      <p className="text-xs text-muted-foreground">
-                        Monthly Income
-                      </p>
-                      <p className="text-xl font-bold text-[#1B2B3A] dark:text-white">
-                        {formatCurrency(profile.monthlyIncome)}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">
-                        Existing Obligations
-                      </p>
-                      <p className="text-xl font-bold text-[#1B2B3A] dark:text-white">
-                        {formatCurrency(profile.existingObligations)}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">
-                        Disposable Income
-                      </p>
-                      <p className="text-xl font-bold text-[#C4A55A]">
-                        {formatCurrency(profile.disposableIncome)}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">DTI Ratio</p>
-                      <p className="text-xl font-bold text-[#1B2B3A] dark:text-white">
-                        {profile.dtiRatio}%{" "}
-                        <Badge className="bg-[#F5F0E0] text-[#C4A55A] dark:bg-[#C4A55A]/10 dark:text-[#C4A55A] text-[10px] ml-1">
-                          {profile.dtiRating}
-                        </Badge>
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Credit Score */}
-              <Card className="bg-white dark:bg-gray-900">
-                <CardHeader>
-                  <h2 className="font-semibold text-[#1B2B3A] dark:text-white">
-                    Credit Score
-                  </h2>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-col sm:flex-row gap-8 items-start">
-                    <div className="relative w-32 h-32">
-                      <svg
-                        className="w-full h-full -rotate-90"
-                        viewBox="0 0 120 120"
-                      >
-                        <circle
-                          cx="60"
-                          cy="60"
-                          r="52"
-                          fill="none"
-                          stroke="currentColor"
-                          className="text-gray-200 dark:text-gray-700"
-                          strokeWidth="12"
-                        />
-                        <circle
-                          cx="60"
-                          cy="60"
-                          r="52"
-                          fill="none"
-                          stroke="#C4A55A"
-                          strokeWidth="12"
-                          strokeDasharray={`${creditScorePercent * 3.27} 327`}
-                          strokeLinecap="round"
-                        />
-                      </svg>
-                      <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <span className="text-3xl font-bold text-[#1B2B3A] dark:text-white">
-                          {profile.creditScore}
-                        </span>
-                        <span className="text-[10px] font-semibold text-[#C4A55A] uppercase">
-                          {profile.creditRating}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex-1 space-y-3">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">
-                          Payment history
-                        </span>
-                        <span className="font-medium text-[#C4A55A]">
-                          {profile.paymentHistory}
-                        </span>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">
-                          Credit utilization
-                        </span>
-                        <span className="font-medium">
-                          {profile.creditUtilization}
-                        </span>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">
-                          Credit age
-                        </span>
-                        <span className="font-medium">{profile.creditAge}</span>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">
-                          Recent enquiries
-                        </span>
-                        <span className="font-medium">
-                          {profile.recentEnquiries}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Right Column: Quick Stats + Risk */}
-            <div className="space-y-6">
-              <Card className="bg-white dark:bg-gray-900">
-                <CardHeader>
-                  <h2 className="font-semibold text-[#1B2B3A] dark:text-white">
-                    Quick Stats
-                  </h2>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {[
-                    {
-                      label: "Applications",
-                      value: profile.applications.toString(),
-                    },
-                    { label: "Loans completed", value: profile.loansCompleted },
-                    {
-                      label: "Current offers",
-                      value: profile.currentOffers.toString(),
-                    },
-                    { label: "Applied", value: profile.appliedAt },
-                    { label: "Response time", value: profile.responseTime },
-                  ].map((s) => (
-                    <div
-                      key={s.label}
-                      className="flex items-center justify-between py-1 border-b last:border-0 dark:border-gray-800"
-                    >
-                      <span className="text-sm text-muted-foreground">
-                        {s.label}
-                      </span>
-                      <span className="text-sm font-semibold text-[#1B2B3A] dark:text-white">
-                        {s.value}
-                      </span>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-
-              <Card className="bg-[#F5F0E0]/50 dark:bg-[#C4A55A]/10 border-[#E8D9B0] dark:border-[#C4A55A]/30">
-                <CardContent className="p-5">
-                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-                    Mpola Risk Assessment
-                  </p>
-                  <div className="flex items-center gap-2 mb-2">
-                    <ShieldCheck className="h-5 w-5 text-[#C4A55A]" />
-                    <span className="font-bold text-[#C4A55A]">
-                      {profile.riskLevel}
-                    </span>
-                  </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {profile.riskDescription}
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="documents" className="mt-6">
           <Card className="bg-white dark:bg-gray-900">
-            <CardContent className="p-6">
-              <div className="space-y-3">
-                {[
-                  "National ID (NIN)",
-                  "Business Registration",
-                  "Bank Statements (6 mo)",
-                  "Tax Returns",
-                  "Proof of Address",
-                  "Photos of Business",
-                ].map((doc) => (
-                  <div
-                    key={doc}
-                    className="flex items-center justify-between py-2 border-b last:border-0 dark:border-gray-800"
-                  >
-                    <span className="text-sm">{doc}</span>
-                    <Badge className="bg-[#F5F0E0] text-[#C4A55A] dark:bg-[#C4A55A]/10 dark:text-[#C4A55A] text-xs">
-                      Uploaded
-                    </Badge>
-                  </div>
-                ))}
-              </div>
+            <CardHeader>
+              <h2 className="font-semibold text-[#1B2B3A] dark:text-white">
+                Loan Purpose
+              </h2>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                {application.purpose
+                  ? `"${application.purpose}"`
+                  : "No purpose provided."}
+              </p>
             </CardContent>
           </Card>
         </TabsContent>
@@ -331,51 +248,28 @@ export default function BorrowerProfilePage({
         <TabsContent value="guarantors" className="mt-6">
           <Card className="bg-white dark:bg-gray-900">
             <CardContent className="p-6 space-y-4">
-              {[
-                { name: "Grace Namuli", rel: "Sibling", status: "Confirmed" },
-                {
-                  name: "Peter Mbabazi",
-                  rel: "Business Partner",
-                  status: "Confirmed",
-                },
-              ].map((g) => (
-                <div
-                  key={g.name}
-                  className="flex items-center justify-between py-2 border-b last:border-0 dark:border-gray-800"
-                >
-                  <div>
-                    <p className="text-sm font-medium text-[#1B2B3A] dark:text-white">
-                      {g.name}
-                    </p>
-                    <p className="text-xs text-muted-foreground">{g.rel}</p>
+              {application.guarantors && application.guarantors.length > 0 ? (
+                application.guarantors.map((g) => (
+                  <div
+                    key={g.id}
+                    className="flex items-center justify-between py-2 border-b last:border-0 dark:border-gray-800"
+                  >
+                    <div>
+                      <p className="text-sm font-medium text-[#1B2B3A] dark:text-white">
+                        {g.name}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {g.relationship_type ?? "—"} &middot; {g.phone}
+                      </p>
+                    </div>
+                    <Badge className="bg-[#F5F0E0] text-[#C4A55A] dark:bg-[#C4A55A]/10 dark:text-[#C4A55A] text-xs capitalize">
+                      {g.status}
+                    </Badge>
                   </div>
-                  <Badge className="bg-[#F5F0E0] text-[#C4A55A] dark:bg-[#C4A55A]/10 dark:text-[#C4A55A] text-xs">
-                    {g.status}
-                  </Badge>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="history" className="mt-6">
-          <Card className="bg-white dark:bg-gray-900">
-            <CardContent className="p-6">
-              <div className="space-y-3">
-                <div className="flex items-center justify-between py-2 border-b dark:border-gray-800">
-                  <div>
-                    <p className="text-sm font-medium text-[#1B2B3A] dark:text-white">
-                      Personal Loan - UGX 2,500,000
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      6 months - Completed on time
-                    </p>
-                  </div>
-                  <Badge className="bg-[#F5F0E0] text-[#C4A55A] dark:bg-[#C4A55A]/10 dark:text-[#C4A55A] text-xs">
-                    Completed
-                  </Badge>
-                </div>
-              </div>
+                ))
+              ) : (
+                <p className="text-sm text-gray-500">No guarantors added.</p>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

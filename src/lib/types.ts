@@ -15,42 +15,42 @@ export interface User {
   createdAt: string;
 }
 
+export interface ApplicationBorrower {
+  id: string;
+  full_name: string | null;
+  kyc_status: "pending" | "verified" | "rejected";
+  credit_score: number;
+}
+
 export interface LoanApplication {
   id: string;
-  reference: string;
+  reference_number: string;
   amount: number;
   duration: number;
-  loanType: "personal" | "business";
-  purpose: string;
-  description?: string;
-  status:
-    | "draft"
-    | "submitted"
-    | "reviewing_offers"
-    | "active"
-    | "completed"
-    | "rejected";
-  offersCount: number;
-  createdAt: string;
+  loan_type: "personal" | "business" | "education" | "agricultural" | "emergency";
+  purpose: string | null;
+  status: "pending" | "approved" | "rejected" | "funded" | "completed" | "defaulted";
+  interest_rate: number | null;
+  monthly_payment: number | null;
+  total_repayable: number | null;
+  created_at: string;
+  borrower: ApplicationBorrower | null;
+  offers?: LoanOffer[];
+  guarantors?: Guarantor[];
 }
 
 export interface LoanOffer {
   id: string;
-  applicationId: string;
-  lenderName: string;
-  lenderInitials: string;
-  lenderLogo?: string;
-  rating: number;
-  reviewCount: number;
-  interestRate: number;
-  monthlyPayment: number;
-  totalRepayable: number;
-  approvalTime: string;
-  offerSentAt: string;
-  features: string[];
-  isBestRate?: boolean;
-  isFeatured?: boolean;
+  application_id: string;
+  lender_id: string;
+  lender_name: string | null;
+  amount: number;
+  interest_rate: number;
+  duration: number;
+  monthly_payment: number | null;
+  total_repayable: number | null;
   status: "pending" | "accepted" | "declined" | "expired";
+  created_at: string;
 }
 
 export interface LoanRepayment {
@@ -85,12 +85,10 @@ export interface ActiveLoan {
 
 export interface Guarantor {
   id: string;
-  fullName: string;
-  relationship: string;
+  name: string;
   phone: string;
-  email: string;
-  status: "pending" | "confirmed" | "declined";
-  confirmedAt?: string;
+  relationship_type: string | null;
+  status: "pending" | "accepted" | "declined";
 }
 
 export interface Document {
@@ -99,21 +97,6 @@ export interface Document {
   description: string;
   status: "uploaded" | "not_uploaded";
   fileName?: string;
-}
-
-export interface Lender {
-  id: string;
-  name: string;
-  initials: string;
-  logo?: string;
-  rating: number;
-  reviewCount: number;
-  approvalTime: string;
-  minRate: number;
-  estimatedMonthly: number;
-  features: string[];
-  isFeatured?: boolean;
-  isBestRate?: boolean;
 }
 
 export type WalletTransactionType =
@@ -263,50 +246,8 @@ export interface BorrowerActivity {
     | "Accepted";
 }
 
-export interface MarketplaceBorrower {
-  id: string;
-  name: string;
-  initials: string;
-  location: string;
-  kycVerified: boolean;
-  loanType: "Business" | "Personal";
-  amount: number;
-  duration: number;
-  purpose: string;
-  documents: number;
-  guarantorsConfirmed: number;
-}
-
-export interface BorrowerProfile {
-  id: string;
-  name: string;
-  initials: string;
-  location: string;
-  memberSince: string;
-  kycVerified: boolean;
-  requestingAmount: number;
-  duration: number;
-  loanType: "Business" | "Personal";
-  purpose: string;
-  monthlyIncome: number;
-  existingObligations: number;
-  disposableIncome: number;
-  dtiRatio: number;
-  dtiRating: string;
-  creditScore: number;
-  creditRating: string;
-  paymentHistory: string;
-  creditUtilization: string;
-  creditAge: string;
-  recentEnquiries: number;
-  applications: number;
-  loansCompleted: string;
-  currentOffers: number;
-  appliedAt: string;
-  responseTime: string;
-  riskLevel: "Low Risk" | "Medium Risk" | "High Risk";
-  riskDescription: string;
-}
+/** A pending loan application as seen by lenders browsing the open marketplace. */
+export type MarketplaceApplication = LoanApplication;
 
 /** Lenders and borrowers share the same wallet model on the backend. */
 export type LenderWalletTransaction = WalletTransaction;

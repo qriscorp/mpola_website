@@ -1,27 +1,35 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
 
-export function useOffers(applicationId?: string) {
-  return useQuery({
-    queryKey: ["offers", applicationId],
-    queryFn: () => api.getOffers(applicationId),
-  });
-}
-
-export function useAcceptOffer() {
+export function useRespondToOffer() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (offerId: string) => api.acceptOffer(offerId),
-    onSuccess: () => {
-      toast.success("Offer accepted! Funds will be disbursed shortly.");
-      queryClient.invalidateQueries({ queryKey: ["offers"] });
+    mutationFn: ({
+      offerId,
+      status,
+    }: {
+      offerId: string;
+      applicationId: string;
+      status: "accepted" | "declined";
+    }) => api.respondToOffer(offerId, status),
+    onSuccess: (_result, variables) => {
+      if (variables.status === "accepted") {
+        toast.success("Offer accepted! Funds will be disbursed shortly.");
+      } else {
+        toast.success("Offer declined.");
+      }
+      queryClient.invalidateQueries({
+        queryKey: ["application", variables.applicationId],
+      });
       queryClient.invalidateQueries({ queryKey: ["applications"] });
+      queryClient.invalidateQueries({ queryKey: ["active-loan"] });
+      queryClient.invalidateQueries({ queryKey: ["wallet"] });
     },
-    onError: () => {
-      toast.error("Failed to accept offer. Please try again.");
+    onError: (err: Error) => {
+      toast.error(err.message || "Failed to respond to offer. Please try again.");
     },
   });
 }

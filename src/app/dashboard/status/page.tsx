@@ -45,7 +45,7 @@ export default function StatusPage() {
                   <div className="flex items-center gap-2">
                     <FileText className="w-5 h-5 text-gray-400" />
                     <span className="text-sm font-mono text-gray-400">
-                      {app.reference}
+                      #{app.id}
                     </span>
                     <Badge
                       className={`${getStatusColor(app.status)} border-0 text-xs`}
@@ -56,27 +56,27 @@ export default function StatusPage() {
                   <p className="text-lg font-bold text-[#1B2B3A] mt-2">
                     {formatCurrency(app.amount)}
                   </p>
-                  <p className="text-sm text-gray-500 mt-0.5">
-                    {app.loanType === "business" ? "Business" : "Personal"} ·{" "}
-                    {app.duration} months · {app.purpose}
+                  <p className="text-sm text-gray-500 mt-0.5 capitalize">
+                    {app.loan_type} · {app.duration} months
+                    {app.purpose ? ` · ${app.purpose}` : ""}
                   </p>
                 </div>
 
                 <div className="text-right">
                   <p className="text-xs text-gray-400">
-                    Applied {app.createdAt}
+                    Applied {new Date(app.created_at).toLocaleDateString("en-UG", { day: "numeric", month: "short", year: "numeric" })}
                   </p>
-                  {app.status === "reviewing_offers" && (
-                    <Link href="/dashboard/offers">
+                  {app.status === "pending" && (
+                    <Link href={`/dashboard/offers-received?applicationId=${app.id}`}>
                       <Button
                         size="sm"
                         className="mt-2 bg-[#2BB5A0] text-white hover:bg-[#239E8C] text-xs"
                       >
-                        View {app.offersCount} Offers
+                        View Offers
                       </Button>
                     </Link>
                   )}
-                  {app.status === "active" && (
+                  {app.status === "funded" && (
                     <Link href="/dashboard/repayments">
                       <Button
                         size="sm"
@@ -96,24 +96,16 @@ export default function StatusPage() {
                 <div className="flex-1 h-0.5 bg-emerald-200" />
                 <Step
                   label="Under Review"
-                  done={app.status !== "draft" && app.status !== "submitted"}
-                  current={app.status === "submitted"}
+                  done={app.status !== "pending"}
+                  current={app.status === "pending"}
                 />
                 <div
-                  className={`flex-1 h-0.5 ${app.offersCount > 0 ? "bg-emerald-200" : "bg-gray-200"}`}
+                  className={`flex-1 h-0.5 ${app.status === "funded" || app.status === "completed" ? "bg-emerald-200" : "bg-gray-200"}`}
                 />
                 <Step
-                  label={`${app.offersCount} Offers`}
-                  done={app.status === "active" || app.status === "completed"}
-                  current={app.status === "reviewing_offers"}
-                />
-                <div
-                  className={`flex-1 h-0.5 ${app.status === "active" || app.status === "completed" ? "bg-emerald-200" : "bg-gray-200"}`}
-                />
-                <Step
-                  label={app.status === "completed" ? "Completed" : "Active"}
+                  label={app.status === "completed" ? "Completed" : "Funded"}
                   done={app.status === "completed"}
-                  current={app.status === "active"}
+                  current={app.status === "funded"}
                 />
               </div>
             </CardContent>

@@ -1,22 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import {
-  FileText,
-  Shield,
-  Check,
-  ArrowLeft,
-  Download,
-  PenTool,
-} from "lucide-react";
-import { formatCurrency } from "@/lib/format";
-import { toast } from "sonner";
+import { FileText, Shield, Check, ArrowLeft, PenTool } from "lucide-react";
+import { formatCurrency, formatRate } from "@/lib/format";
+import { useUser } from "@/hooks/use-dashboard";
+import { useApplicationDetail } from "@/hooks/use-lender";
+import { useRespondToOffer } from "@/hooks/use-offers";
+import { CardSkeleton } from "@/components/skeletons";
 
 const TERMS = [
   "I have read and understood the full loan agreement terms.",
@@ -26,22 +22,56 @@ const TERMS = [
   "I confirm that all information provided is accurate and truthful.",
 ];
 
+// Matches mpola_api's REQUIRED_ACCEPTED_GUARANTORS (routers/loans.py).
+const REQUIRED_ACCEPTED_GUARANTORS = 2;
+
 export default function AcceptOfferPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const offerId = searchParams.get("offerId");
+  const applicationId = searchParams.get("applicationId") ?? "";
+
+  const { data: user } = useUser();
+  const { data: application, isLoading } = useApplicationDetail(applicationId);
+  const { mutate: respond, isPending, isSuccess } = useRespondToOffer();
+
   const [accepted, setAccepted] = useState<boolean[]>(
     Array(TERMS.length).fill(false),
   );
-  const [signed, setSigned] = useState(false);
-  const [loading, setLoading] = useState(false);
 
   const allAccepted = accepted.every(Boolean);
+  const offer = application?.offers?.find((o) => o.id === offerId);
+  const acceptedGuarantors = (application?.guarantors ?? []).filter(
+    (g) => g.status === "accepted",
+  ).length;
+  const guarantorsReady = acceptedGuarantors >= REQUIRED_ACCEPTED_GUARANTORS;
 
-  const handleSign = async () => {
-    setLoading(true);
-    await new Promise((r) => setTimeout(r, 2000));
-    setLoading(false);
-    setSigned(true);
-    toast.success("Loan agreement signed successfully!");
+  if (!offerId || !applicationId) {
+    return (
+      <div className="space-y-6">
+        <p className="text-sm text-gray-500">Missing offer reference.</p>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <CardSkeleton count={2} />
+      </div>
+    );
+  }
+
+  if (!offer) {
+    return (
+      <div className="space-y-6">
+        <p className="text-sm text-gray-500">Offer not found.</p>
+      </div>
+    );
+  }
+
+  const handleSign = () => {
+    respond({ offerId: offer.id, applicationId, status: "accepted" });
   };
 
   const handleProceed = () => {
@@ -85,11 +115,11 @@ export default function AcceptOfferPage() {
                     Loan Offer Summary
                   </h2>
                   <p className="text-sm text-muted-foreground">
-                    Kampala Capital Partners
+                    {offer.lender_name ?? "Lender"}
                   </p>
                 </div>
                 <Badge className="ml-auto bg-[#E8F8F5] text-[#2BB5A0] dark:bg-[#2BB5A0]/10">
-                  Best Rate
+                  {offer.status}
                 </Badge>
               </div>
             </CardHeader>
@@ -98,17 +128,19 @@ export default function AcceptOfferPage() {
                 <div>
                   <p className="text-xs text-muted-foreground">Loan Amount</p>
                   <p className="text-lg font-bold text-[#1B2B3A] dark:text-white">
-                    {formatCurrency(5000000)}
+                    {formatCurrency(offer.amount)}
                   </p>
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">Interest Rate</p>
-                  <p className="text-lg font-bold text-[#2BB5A0]">16% APR</p>
+                  <p className="text-lg font-bold text-[#2BB5A0]">
+                    {formatRate(offer.interest_rate)}
+                  </p>
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">Duration</p>
                   <p className="text-lg font-bold text-[#1B2B3A] dark:text-white">
-                    18 months
+                    {offer.duration} months
                   </p>
                 </div>
                 <div>
@@ -116,7 +148,7 @@ export default function AcceptOfferPage() {
                     Monthly Payment
                   </p>
                   <p className="text-lg font-bold text-[#C4A55A]">
-                    {formatCurrency(350000)}
+                    {formatCurrency(offer.monthly_payment ?? 0)}
                   </p>
                 </div>
               </div>
@@ -137,31 +169,33 @@ export default function AcceptOfferPage() {
                 </h3>
                 <p className="mb-3">
                   This Loan Agreement (&quot;Agreement&quot;) is entered into
-                  between Kampala Capital Partners (&quot;Lender&quot;) and
-                  Sarah Nakato (&quot;Borrower&quot;) through the Mpola
-                  platform.
+                  between {offer.lender_name ?? "the Lender"} (&quot;Lender&quot;)
+                  and {user?.fullName ?? "the Borrower"} (&quot;Borrower&quot;)
+                  through the Mpola platform.
                 </p>
                 <h4 className="mb-1 font-semibold text-foreground">
                   1. Loan Terms
                 </h4>
                 <p className="mb-3">
-                  The Lender agrees to provide a loan of UGX 5,000,000 at an
-                  annual interest rate of 16%, repayable over 18 monthly
-                  instalments of UGX 350,000 each.
+                  The Lender agrees to provide a loan of{" "}
+                  {formatCurrency(offer.amount)} at an annual interest rate of{" "}
+                  {offer.interest_rate}%, repayable over {offer.duration}{" "}
+                  monthly instalments of {formatCurrency(offer.monthly_payment ?? 0)}{" "}
+                  each.
                 </p>
                 <h4 className="mb-1 font-semibold text-foreground">
                   2. Repayment Schedule
                 </h4>
                 <p className="mb-3">
-                  Payments are due on the 1st of each month. Late payments
-                  beyond 7 days incur a 2% penalty on the overdue amount.
+                  Payments are due monthly from the disbursement date. Late
+                  payments may incur penalties per Mpola&apos;s platform terms.
                 </p>
                 <h4 className="mb-1 font-semibold text-foreground">
                   3. Disbursement
                 </h4>
                 <p className="mb-3">
-                  Funds will be disbursed to the Borrower&apos;s Mpola wallet
-                  within 24 hours of agreement execution.
+                  Funds will be disbursed to the Borrower&apos;s registered
+                  mobile money number upon acceptance.
                 </p>
                 <h4 className="mb-1 font-semibold text-foreground">
                   4. Early Repayment
@@ -172,11 +206,6 @@ export default function AcceptOfferPage() {
                   active.
                 </p>
               </div>
-
-              <Button variant="outline" size="sm" className="gap-2">
-                <Download className="h-4 w-4" />
-                Download Full Agreement (PDF)
-              </Button>
 
               <Separator />
 
@@ -194,7 +223,7 @@ export default function AcceptOfferPage() {
                         next[i] = !!checked;
                         setAccepted(next);
                       }}
-                      disabled={signed}
+                      disabled={isSuccess}
                     />
                     <span className="text-sm text-muted-foreground leading-tight">
                       {term}
@@ -218,7 +247,7 @@ export default function AcceptOfferPage() {
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              {signed ? (
+              {isSuccess ? (
                 <div className="rounded-lg border-2 border-[#2BB5A0] bg-[#E8F8F5] p-6 text-center dark:bg-[#2BB5A0]/10">
                   <Check className="mx-auto mb-2 h-10 w-10 text-[#2BB5A0]" />
                   <p className="font-semibold text-[#2BB5A0]">
@@ -229,7 +258,7 @@ export default function AcceptOfferPage() {
                     {new Date().toLocaleTimeString()}
                   </p>
                   <div className="mt-4 font-serif text-2xl italic text-[#1B2B3A] dark:text-white">
-                    Sarah Nakato
+                    {user?.fullName ?? ""}
                   </div>
                 </div>
               ) : (
@@ -241,14 +270,22 @@ export default function AcceptOfferPage() {
                 </div>
               )}
 
-              {!signed && (
+              {!isSuccess && !guarantorsReady && (
+                <p className="text-xs text-amber-600 bg-amber-50 rounded-lg px-3 py-2">
+                  Needs {REQUIRED_ACCEPTED_GUARANTORS} confirmed guarantors
+                  before this can be signed — {acceptedGuarantors} of{" "}
+                  {application?.guarantors?.length ?? 0} confirmed so far.
+                </p>
+              )}
+
+              {!isSuccess && (
                 <Button
                   className="w-full bg-[#2BB5A0] hover:bg-[#239E8C] text-white"
-                  disabled={!allAccepted || loading}
+                  disabled={!allAccepted || !guarantorsReady || isPending}
                   onClick={handleSign}
                 >
-                  {loading ? (
-                    "Signing..."
+                  {isPending ? (
+                    "Signing…"
                   ) : (
                     <>
                       <PenTool className="mr-2 h-4 w-4" />
@@ -258,7 +295,7 @@ export default function AcceptOfferPage() {
                 </Button>
               )}
 
-              {signed && (
+              {isSuccess && (
                 <Button
                   className="w-full bg-[#1B2B3A] hover:bg-[#1B2B3A]/90 text-white"
                   onClick={handleProceed}

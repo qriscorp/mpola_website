@@ -21,6 +21,7 @@ const PUBLIC_PATHS = [
   "/privacy-policy",
   "/borrower-code-of-conduct",
   "/lender-code-of-conduct",
+  "/guarantor",
 ];
 
 export function middleware(request: NextRequest) {

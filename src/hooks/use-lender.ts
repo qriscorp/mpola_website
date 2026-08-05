@@ -23,35 +23,50 @@ export function useBorrowerActivities() {
   });
 }
 
-export function useMarketplaceBorrowers() {
+export function useMarketplace(filters?: {
+  loan_type?: string;
+  min_amount?: number;
+  max_amount?: number;
+}) {
   return useQuery({
-    queryKey: ["lender", "marketplace"],
-    queryFn: api.getMarketplaceBorrowers,
+    queryKey: ["lender", "marketplace", filters],
+    queryFn: () => api.getMarketplace(filters),
   });
 }
 
-export function useBorrowerProfile(id: string) {
+export function useApplicationDetail(id: string) {
   return useQuery({
-    queryKey: ["lender", "borrower", id],
-    queryFn: () => api.getBorrowerProfile(id),
+    queryKey: ["application", id],
+    queryFn: () => api.getApplicationDetail(id),
+    enabled: !!id,
+  });
+}
+
+export function useMyOffers() {
+  return useQuery({
+    queryKey: ["lender", "offers"],
+    queryFn: api.getMyOffers,
   });
 }
 
 export function useMakeOffer() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({
-      borrowerId,
-      data,
-    }: {
-      borrowerId: string;
-      data: Record<string, unknown>;
-    }) => api.makeOffer(borrowerId, data),
-    onSuccess: () => {
+    mutationFn: (data: {
+      application_id: string;
+      amount: number;
+      interest_rate: number;
+      duration: number;
+    }) => api.makeOffer(data),
+    onSuccess: (_result, variables) => {
       toast.success("Offer sent successfully!");
-      qc.invalidateQueries({ queryKey: ["lender"] });
+      qc.invalidateQueries({ queryKey: ["lender", "marketplace"] });
+      qc.invalidateQueries({
+        queryKey: ["application", variables.application_id],
+      });
+      qc.invalidateQueries({ queryKey: ["lender", "offers"] });
     },
-    onError: () => toast.error("Failed to send offer"),
+    onError: (err: Error) => toast.error(err.message || "Failed to send offer"),
   });
 }
 

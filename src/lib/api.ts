@@ -1,10 +1,6 @@
 import {
   currentUser,
   dashboardStats,
-  applications,
-  loanOffers,
-  lenders,
-  guarantors,
   notifications,
   adminStats,
   adminUsers,
@@ -13,8 +9,6 @@ import {
   lenderProfile,
   lenderDashboardStats,
   borrowerActivities,
-  marketplaceBorrowers,
-  borrowerProfileData,
   lenderEarnings,
 } from "./dummy-data";
 import { API_BASE_URL } from "./constants";
@@ -25,8 +19,7 @@ import type {
   LoanRepayment,
   LoanApplication,
   LoanOffer,
-  Lender,
-  Guarantor,
+  MarketplaceApplication,
   Wallet,
   WalletTransaction,
   BankOption,
@@ -40,8 +33,6 @@ import type {
   LenderProfile,
   LenderDashboardStats,
   BorrowerActivity,
-  MarketplaceBorrower,
-  BorrowerProfile,
   LenderWalletTransaction,
   LenderEarnings,
 } from "./types";
@@ -171,6 +162,53 @@ async function apiAuthPost<T>(path: string, body: unknown): Promise<T> {
   const token = getCookie("lf_token");
   const res = await fetch(`${API_BASE_URL}${path}`, {
     method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify(body),
+  });
+  if (res.status === 401) {
+    redirectToSignIn();
+    throw new Error("Session expired");
+  }
+  if (!res.ok) {
+    const err = await res
+      .json()
+      .catch(() => ({ detail: "Request failed", message: "Request failed" }));
+    throw new Error(err.detail || err.message || `HTTP ${res.status}`);
+  }
+  return res.json();
+}
+
+/** POST multipart/form-data with the JWT attached — for file uploads. */
+async function apiAuthUpload<T>(path: string, formData: FormData): Promise<T> {
+  const token = getCookie("lf_token");
+  const res = await fetch(`${API_BASE_URL}${path}`, {
+    method: "POST",
+    headers: {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: formData,
+  });
+  if (res.status === 401) {
+    redirectToSignIn();
+    throw new Error("Session expired");
+  }
+  if (!res.ok) {
+    const err = await res
+      .json()
+      .catch(() => ({ detail: "Request failed", message: "Request failed" }));
+    throw new Error(err.detail || err.message || `HTTP ${res.status}`);
+  }
+  return res.json();
+}
+
+/** PATCH with the JWT from the lf_token cookie attached — for endpoints that require auth. */
+async function apiAuthPatch<T>(path: string, body: unknown): Promise<T> {
+  const token = getCookie("lf_token");
+  const res = await fetch(`${API_BASE_URL}${path}`, {
+    method: "PATCH",
     headers: {
       "Content-Type": "application/json",
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -609,32 +647,50 @@ export const api = {
     return apiAuthGet(`/loans/active/${loanId}`);
   },
   getApplications: async (): Promise<LoanApplication[]> => {
-    await delay(300);
-    return applications;
+    const res = await apiAuthGet<{
+      total: number;
+      applications: LoanApplication[];
+    }>("/loans/applications");
+    return res.applications;
+  },
+  getApplicationDetail: async (id: string): Promise<LoanApplication> => {
+    return apiAuthGet(`/loans/applications/${id}`);
+  },
+  addGuarantor: async (
+    applicationId: string,
+    data: { name: string; phone: string; relationship_type?: string },
+  ): Promise<{ status: number; message: string }> => {
+    return apiAuthPost(`/loans/applications/${applicationId}/guarantors`, data);
+  },
+
+  // Guarantor confirmation — public, the guarantor has no account.
+  getGuarantorInvite: async (
+    token: string,
+  ): Promise<{
+    guarantor: { id: string; name: string; status: string };
+    application: {
+      id: string | null;
+      amount: number | null;
+      duration: number | null;
+      loan_type: string | null;
+      borrower_name: string | null;
+    };
+  }> => {
+    return apiGet(`/loans/guarantors/${token}`);
+  },
+  respondToGuarantorInvite: async (
+    token: string,
+    status: "accepted" | "declined",
+  ): Promise<{ status: number; message: string }> => {
+    return apiPost(`/loans/guarantors/${token}/respond`, { status });
   },
 
   // Offers
-  getOffers: async (applicationId?: string): Promise<LoanOffer[]> => {
-    await delay(300);
-    if (applicationId) {
-      return loanOffers.filter((o) => o.applicationId === applicationId);
-    }
-    return loanOffers;
-  },
-  acceptOffer: async (_offerId: string): Promise<void> => {
-    await delay();
-  },
-
-  // Lenders
-  getLenders: async (): Promise<Lender[]> => {
-    await delay(300);
-    return lenders;
-  },
-
-  // Guarantors
-  getGuarantors: async (): Promise<Guarantor[]> => {
-    await delay(300);
-    return guarantors;
+  respondToOffer: async (
+    offerId: string,
+    status: "accepted" | "declined",
+  ): Promise<{ status: number; message: string }> => {
+    return apiAuthPatch(`/loans/offers/${offerId}`, { status });
   },
 
   // Repayments
@@ -719,20 +775,42 @@ export const api = {
   },
 
   // Application submission
-  submitApplication: async (
-    _data: Record<string, unknown>,
-  ): Promise<{ reference: string }> => {
-    await delay(1000);
-    return { reference: "LF-2026-00847" };
+  submitApplication: async (data: {
+    amount: number;
+    duration: number;
+    loan_type: string;
+    purpose?: string;
+  }): Promise<{
+    status: number;
+    message: string;
+    application: LoanApplication;
+  }> => {
+    return apiAuthPost("/loans/applications", data);
   },
 
   // Upload
   uploadDocument: async (
-    _file: File,
-    _key: string,
-  ): Promise<{ url: string }> => {
-    await delay(1000);
-    return { url: "/uploads/mock-doc.pdf" };
+    applicationId: string,
+    file: File,
+    documentType: string,
+  ): Promise<{
+    status: number;
+    message: string;
+    document: {
+      id: string;
+      document_type: string;
+      file_url: string;
+      file_name: string | null;
+      verified: boolean;
+    };
+  }> => {
+    const formData = new FormData();
+    formData.append("document_type", documentType);
+    formData.append("file", file);
+    return apiAuthUpload(
+      `/loans/applications/${applicationId}/documents`,
+      formData,
+    );
   },
 
   // Notifications
@@ -800,19 +878,31 @@ export const api = {
     await delay(300);
     return borrowerActivities;
   },
-  getMarketplaceBorrowers: async (): Promise<MarketplaceBorrower[]> => {
-    await delay(300);
-    return marketplaceBorrowers;
+  getMarketplace: async (filters?: {
+    loan_type?: string;
+    min_amount?: number;
+    max_amount?: number;
+  }): Promise<{ total: number; applications: MarketplaceApplication[] }> => {
+    const params = new URLSearchParams();
+    if (filters?.loan_type) params.set("loan_type", filters.loan_type);
+    if (filters?.min_amount) params.set("min_amount", String(filters.min_amount));
+    if (filters?.max_amount) params.set("max_amount", String(filters.max_amount));
+    const qs = params.toString();
+    return apiAuthGet(`/loans/marketplace${qs ? `?${qs}` : ""}`);
   },
-  getBorrowerProfile: async (_id: string): Promise<BorrowerProfile> => {
-    await delay(300);
-    return borrowerProfileData;
+  getMyOffers: async (): Promise<LoanOffer[]> => {
+    const res = await apiAuthGet<{ total: number; offers: LoanOffer[] }>(
+      "/loans/offers/mine",
+    );
+    return res.offers;
   },
-  makeOffer: async (
-    _borrowerId: string,
-    _data: Record<string, unknown>,
-  ): Promise<void> => {
-    await delay(800);
+  makeOffer: async (data: {
+    application_id: string;
+    amount: number;
+    interest_rate: number;
+    duration: number;
+  }): Promise<{ status: number; message: string; offer: LoanOffer }> => {
+    return apiAuthPost("/loans/offers", data);
   },
   getLenderWallet: async (): Promise<Wallet> => {
     return api.getWallet();
