@@ -6,6 +6,12 @@ import { Bell, Menu } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { LenderSidebarContent } from "@/components/lender-sidebar";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { useNotifications } from "@/hooks/use-notifications";
+
+function useHasUnreadNotifications(): boolean {
+  const { data: items } = useNotifications();
+  return (items ?? []).some((n) => !n.read);
+}
 
 /**
  * Slim top bar shown ONLY on mobile (lg+ uses the sidebar's own logo area).
@@ -13,6 +19,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
  */
 export function LenderTopNav() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const hasUnread = useHasUnreadNotifications();
 
   return (
     <header className="lg:hidden sticky top-0 z-30 flex items-center justify-between h-14 px-4 bg-[#1B2B3A] border-b border-white/10">
@@ -47,7 +54,9 @@ export function LenderTopNav() {
           className="relative p-1.5 text-gray-300 hover:text-white"
         >
           <Bell className="h-5 w-5" />
-          <span className="absolute top-0.5 right-0.5 h-2 w-2 bg-red-500 rounded-full" />
+          {hasUnread && (
+            <span className="absolute top-0.5 right-0.5 h-2 w-2 bg-red-500 rounded-full" />
+          )}
         </Link>
       </div>
     </header>
@@ -56,9 +65,10 @@ export function LenderTopNav() {
 
 /**
  * Per-page header row used inside the main content area on desktop.
- * Renders the page title + notification bell + "+ Post an Offer" CTA.
+ * Renders the page title + notification bell + "Browse Marketplace" CTA.
  */
 export function LenderPageHeader({ title }: { title: string }) {
+  const hasUnread = useHasUnreadNotifications();
   return (
     <div className="flex items-center justify-between mb-6">
       <h1 className="text-2xl sm:text-3xl font-bold text-[#1B2B3A] dark:text-white">
@@ -72,13 +82,15 @@ export function LenderPageHeader({ title }: { title: string }) {
           aria-label="Notifications"
         >
           <Bell className="h-5 w-5" />
-          <span className="absolute top-1 right-1 h-2 w-2 bg-red-500 rounded-full" />
+          {hasUnread && (
+            <span className="absolute top-1 right-1 h-2 w-2 bg-red-500 rounded-full" />
+          )}
         </Link>
         <Link
-          href="/lender/post-offer"
+          href="/lender/marketplace"
           className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#C4A55A] hover:bg-[#b3944a] text-white text-sm font-semibold transition-colors"
         >
-          + Post an Offer
+          Browse Marketplace
         </Link>
       </div>
     </div>

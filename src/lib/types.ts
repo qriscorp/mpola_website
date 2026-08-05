@@ -11,7 +11,7 @@ export interface User {
   registrationNumber?: string;
   profilePic?: string;
   kycStatus: "pending" | "verified" | "rejected";
-  location: string;
+  location?: string;
   createdAt: string;
 }
 
@@ -35,6 +35,8 @@ export interface LoanApplication {
   total_repayable: number | null;
   created_at: string;
   borrower: ApplicationBorrower | null;
+  offers_count: number;
+  pending_offers_count: number;
   offers?: LoanOffer[];
   guarantors?: Guarantor[];
 }
@@ -42,6 +44,10 @@ export interface LoanApplication {
 export interface LoanOffer {
   id: string;
   application_id: string;
+  application_reference: string | null;
+  borrower_name: string | null;
+  loan_type: string | null;
+  application_status: string | null;
   lender_id: string;
   lender_name: string | null;
   amount: number;
@@ -67,6 +73,8 @@ export interface ActiveLoan {
   id: string;
   borrower_id: string;
   lender_id: string;
+  borrower_name: string | null;
+  lender_name: string | null;
   amount: number;
   interest_rate: number;
   duration: number;
@@ -153,7 +161,7 @@ export interface Notification {
   id: string;
   title: string;
   message: string;
-  type: "offer" | "payment" | "status" | "system";
+  type: string | null;
   read: boolean;
   createdAt: string;
 }
@@ -253,8 +261,11 @@ export type MarketplaceApplication = LoanApplication;
 export type LenderWalletTransaction = WalletTransaction;
 
 export interface LenderEarnings {
-  totalEarnings: number;
-  thisMonth: number;
-  avgYield: number;
-  monthlyData: { month: string; amount: number }[];
+  total_deployed: number;
+  active_loans: number;
+  total_repaid: number;
+  total_earned: number;
+  this_month_earned: number;
+  avg_yield: number;
+  monthly_earnings: { month: string; amount: number }[];
 }

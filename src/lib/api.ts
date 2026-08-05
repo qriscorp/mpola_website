@@ -1,15 +1,9 @@
 import {
-  currentUser,
-  dashboardStats,
-  notifications,
   adminStats,
   adminUsers,
   adminLoans,
   adminApplications,
   lenderProfile,
-  lenderDashboardStats,
-  borrowerActivities,
-  lenderEarnings,
 } from "./dummy-data";
 import { API_BASE_URL } from "./constants";
 import type {
@@ -31,8 +25,6 @@ import type {
   AdminLoan,
   AdminApplication,
   LenderProfile,
-  LenderDashboardStats,
-  BorrowerActivity,
   LenderWalletTransaction,
   LenderEarnings,
 } from "./types";
@@ -626,12 +618,64 @@ export const api = {
 
   // Dashboard
   getUser: async (): Promise<User> => {
-    await delay(300);
-    return currentUser;
+    const u = await apiAuthGet<{
+      id: string;
+      email: string;
+      full_name: string;
+      phone_number: string;
+      nin: string | null;
+      account_type: string;
+      profile_pic: string | null;
+      kyc_status: string;
+      created_at: string;
+    }>("/users/me");
+    return {
+      id: u.id,
+      fullName: u.full_name,
+      email: u.email,
+      phone: u.phone_number,
+      nin: u.nin ?? "",
+      accountType: u.account_type as User["accountType"],
+      profilePic: u.profile_pic ?? undefined,
+      kycStatus: u.kyc_status as User["kycStatus"],
+      createdAt: u.created_at,
+    };
   },
   getDashboardStats: async (): Promise<DashboardStats> => {
-    await delay(300);
-    return dashboardStats;
+    const [applications, loans, wallet] = await Promise.all([
+      api.getApplications(),
+      api.getMyActiveLoans(),
+      api.getWallet(),
+    ]);
+    const pendingApps = applications.filter((a) => a.status === "pending");
+    const newOffers = pendingApps.reduce(
+      (sum, a) => sum + (a.pending_offers_count ?? 0),
+      0,
+    );
+    const activeLoans = loans.filter(
+      (l) => l.status === "active" || l.status === "overdue",
+    ).length;
+    return {
+      activeLoans,
+      applicationsPending: pendingApps.length,
+      newOffers,
+      walletBalance: wallet.balance,
+    };
+  },
+  getRecentNotifications: async (
+    limit = 3,
+  ): Promise<
+    { id: string; title: string; message: string; created_at: string }[]
+  > => {
+    const res = await apiAuthGet<{
+      notifications: {
+        id: string;
+        title: string;
+        message: string;
+        created_at: string;
+      }[];
+    }>(`/notifications/?limit=${limit}`);
+    return res.notifications;
   },
   getActiveLoan: async (): Promise<ActiveLoan | null> => {
     const res = await apiAuthGet<{ total: number; loans: ActiveLoan[] }>(
@@ -645,6 +689,12 @@ export const api = {
   },
   getLoanDetail: async (loanId: string): Promise<ActiveLoan> => {
     return apiAuthGet(`/loans/active/${loanId}`);
+  },
+  getMyActiveLoans: async (): Promise<ActiveLoan[]> => {
+    const res = await apiAuthGet<{ total: number; loans: ActiveLoan[] }>(
+      "/loans/active?limit=100",
+    );
+    return res.loans;
   },
   getApplications: async (): Promise<LoanApplication[]> => {
     const res = await apiAuthGet<{
@@ -815,19 +865,34 @@ export const api = {
 
   // Notifications
   getNotifications: async (): Promise<Notification[]> => {
-    await delay();
-    return notifications;
+    const res = await apiAuthGet<{
+      total: number;
+      unread: number;
+      notifications: {
+        id: string;
+        title: string;
+        message: string;
+        type: string | null;
+        is_read: boolean;
+        created_at: string;
+      }[];
+    }>("/notifications/?limit=50");
+    return res.notifications.map((n) => ({
+      id: n.id,
+      title: n.title,
+      message: n.message,
+      type: n.type,
+      read: n.is_read,
+      createdAt: n.created_at,
+    }));
   },
 
   markNotificationRead: async (id: string): Promise<void> => {
-    await delay(200);
-    const n = notifications.find((n) => n.id === id);
-    if (n) n.read = true;
+    await apiAuthPatch(`/notifications/${id}/read`, {});
   },
 
   markAllNotificationsRead: async (): Promise<void> => {
-    await delay(300);
-    notifications.forEach((n) => (n.read = true));
+    await apiAuthPost("/notifications/read-all", {});
   },
 
   // Admin APIs
@@ -870,14 +935,6 @@ export const api = {
     await delay(300);
     return lenderProfile;
   },
-  getLenderDashboardStats: async (): Promise<LenderDashboardStats> => {
-    await delay(300);
-    return lenderDashboardStats;
-  },
-  getBorrowerActivities: async (): Promise<BorrowerActivity[]> => {
-    await delay(300);
-    return borrowerActivities;
-  },
   getMarketplace: async (filters?: {
     loan_type?: string;
     min_amount?: number;
@@ -911,7 +968,6 @@ export const api = {
     return api.getTransactions();
   },
   getLenderEarnings: async (): Promise<LenderEarnings> => {
-    await delay(300);
-    return lenderEarnings;
+    return apiAuthGet("/loans/earnings");
   },
 };

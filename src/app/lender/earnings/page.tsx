@@ -1,51 +1,52 @@
 "use client";
 
 import { LenderPageHeader } from "@/components/lender-top-nav";
+import { CardSkeleton } from "@/components/skeletons";
 import { useLenderEarnings } from "@/hooks/use-lender";
 import { formatCurrency } from "@/lib/format";
 
-const byType = [
-  { type: "Business", amount: 3100000, pct: 50 },
-  { type: "Personal", amount: 1800000, pct: 29 },
-  { type: "Emergency", amount: 800000, pct: 13 },
-  { type: "Agricultural", amount: 500000, pct: 8 },
-];
+function monthLabel(monthKey: string): string {
+  const [year, month] = monthKey.split("-").map(Number);
+  return new Date(year, month - 1, 1).toLocaleString("en-US", {
+    month: "short",
+  });
+}
 
 export default function LenderEarningsPage() {
-  const { data: earnings } = useLenderEarnings();
-  const monthlyData = earnings?.monthlyData ?? [
-    { month: "Jan", amount: 800000 },
-    { month: "Feb", amount: 900000 },
-    { month: "Mar", amount: 1100000 },
-    { month: "Apr", amount: 1200000 },
-    { month: "May", amount: 1400000 },
-    { month: "Jun", amount: 800000 },
-  ];
-  const maxVal = Math.max(...monthlyData.map((entry) => entry.amount), 1);
+  const { data: earnings, isLoading } = useLenderEarnings();
+
+  if (isLoading) {
+    return (
+      <div className="max-w-6xl space-y-6">
+        <LenderPageHeader title="Earnings Summary" />
+        <CardSkeleton count={4} />
+      </div>
+    );
+  }
+
+  const monthlyEarnings = earnings?.monthly_earnings ?? [];
+  const maxVal = Math.max(...monthlyEarnings.map((entry) => entry.amount), 1);
 
   const stats = [
     {
       label: "Total Earned",
-      value: earnings
-        ? formatCurrency(earnings.totalEarnings)
-        : "UGX 6,200,000",
+      value: formatCurrency(earnings?.total_earned ?? 0),
       helper: "Since joining",
     },
     {
       label: "This Month",
-      value: earnings ? formatCurrency(earnings.thisMonth) : "UGX 1,400,000",
-      helper: "Up 18% vs last month",
-      helperAccent: true,
+      value: formatCurrency(earnings?.this_month_earned ?? 0),
+      helper: "Interest earned this month",
     },
     {
       label: "Average Yield",
-      value: `${earnings?.avgYield ?? 5.8}%`,
+      value: `${(earnings?.avg_yield ?? 0).toFixed(1)}%`,
       helper: "Per active loan",
     },
     {
-      label: "Loans Repaid",
-      value: "14",
-      helper: "100% recovery",
+      label: "Active Loans",
+      value: String(earnings?.active_loans ?? 0),
+      helper: `${formatCurrency(earnings?.total_deployed ?? 0)} deployed`,
     },
   ];
 
@@ -65,33 +66,33 @@ export default function LenderEarningsPage() {
             <p className="mt-2 text-3xl font-black text-[#1B2B3A]">
               {stat.value}
             </p>
-            <p
-              className={`mt-1 text-xs ${stat.helperAccent ? "text-emerald-600" : "text-gray-400"}`}
-            >
-              {stat.helper}
-            </p>
+            <p className="mt-1 text-xs text-gray-400">{stat.helper}</p>
           </div>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.35fr_1fr]">
-        <div className="rounded-xl border border-gray-200 bg-white p-5 sm:p-6">
-          <div className="mb-5 flex items-end justify-between gap-3">
-            <div>
-              <h2 className="text-xl font-black text-[#1B2B3A]">
-                Monthly Earnings
-              </h2>
-              <p className="text-xs text-gray-500">
-                Interest revenue trend by month
-              </p>
-            </div>
-            <span className="rounded-full border border-[#E8D9B0] bg-[#F5F0E0] px-3 py-1 text-xs font-semibold text-[#9F7F34]">
-              Last 6 months
-            </span>
+      <div className="rounded-xl border border-gray-200 bg-white p-5 sm:p-6">
+        <div className="mb-5 flex items-end justify-between gap-3">
+          <div>
+            <h2 className="text-xl font-black text-[#1B2B3A]">
+              Monthly Earnings
+            </h2>
+            <p className="text-xs text-gray-500">
+              Interest revenue trend by month
+            </p>
           </div>
+          <span className="rounded-full border border-[#E8D9B0] bg-[#F5F0E0] px-3 py-1 text-xs font-semibold text-[#9F7F34]">
+            Last 6 months
+          </span>
+        </div>
 
+        {monthlyEarnings.length === 0 ? (
+          <p className="py-10 text-center text-sm text-gray-400">
+            No earnings recorded yet.
+          </p>
+        ) : (
           <div className="flex h-56 items-end gap-2 sm:gap-3">
-            {monthlyData.map((entry) => {
+            {monthlyEarnings.map((entry) => {
               const heightPct = (entry.amount / maxVal) * 100;
               return (
                 <div
@@ -103,46 +104,16 @@ export default function LenderEarningsPage() {
                   </span>
                   <div
                     className="w-full rounded-t-md bg-[#C4A55A] transition-colors hover:bg-[#b3944a]"
-                    style={{ height: `${Math.max(14, heightPct)}%` }}
+                    style={{ height: `${Math.max(4, heightPct)}%` }}
                   />
                   <span className="text-[11px] font-medium text-gray-500">
-                    {entry.month}
+                    {monthLabel(entry.month)}
                   </span>
                 </div>
               );
             })}
           </div>
-        </div>
-
-        <div className="rounded-xl border border-gray-200 bg-white p-5 sm:p-6">
-          <h2 className="text-xl font-black text-[#1B2B3A]">
-            Earnings by Loan Type
-          </h2>
-          <p className="mb-5 text-xs text-gray-500">
-            Distribution by funded category
-          </p>
-
-          <div className="space-y-4">
-            {byType.map((item) => (
-              <div key={item.type}>
-                <div className="mb-1.5 flex items-center justify-between text-sm">
-                  <span className="font-semibold text-[#1B2B3A]">
-                    {item.type}
-                  </span>
-                  <span className="font-semibold text-gray-500">
-                    {formatCurrency(item.amount)}
-                  </span>
-                </div>
-                <div className="h-2.5 overflow-hidden rounded-full bg-gray-100">
-                  <div
-                    className="h-full rounded-full bg-[#C4A55A]"
-                    style={{ width: `${item.pct}%` }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );

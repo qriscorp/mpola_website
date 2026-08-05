@@ -31,7 +31,6 @@ import type {
   LenderProfile,
   LenderDashboardStats,
   BorrowerActivity,
-  LenderEarnings,
 } from "./types";
 
 export const notifications: Notification[] = [
@@ -359,17 +358,3 @@ export const borrowerActivities: BorrowerActivity[] = [
     status: "Accepted",
   },
 ];
-
-export const lenderEarnings: LenderEarnings = {
-  totalEarnings: 8420000,
-  thisMonth: 1240000,
-  avgYield: 14.2,
-  monthlyData: [
-    { month: "Nov", amount: 850000 },
-    { month: "Dec", amount: 920000 },
-    { month: "Jan", amount: 1050000 },
-    { month: "Feb", amount: 1100000 },
-    { month: "Mar", amount: 1180000 },
-    { month: "Apr", amount: 1240000 },
-  ],
-};

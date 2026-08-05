@@ -4,67 +4,51 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
-  useLenderDashboardStats,
-  useBorrowerActivities,
+  useLenderEarnings,
+  useLenderActiveLoans,
+  useMarketplace,
 } from "@/hooks/use-lender";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, formatRate, getInitials } from "@/lib/format";
+import { CardSkeleton } from "@/components/skeletons";
 import { LenderPageHeader } from "@/components/lender-top-nav";
 
-const mockOffers = [
-  {
-    id: "LF-2024-001",
-    amount: "UGX 50M",
-    rate: "5%/mo",
-    maxDuration: "Max 6 months",
-    types: ["Business", "Personal", "Emergency"],
-    applied: 12,
-    approved: 3,
-    status: "Active",
-  },
-  {
-    id: "LF-2024-002",
-    amount: "UGX 20M",
-    rate: "7%/mo",
-    maxDuration: "Max 3 months",
-    types: ["Personal", "Emergency"],
-    applied: 9,
-    approved: 2,
-    status: "Active",
-  },
-];
-
 export default function LenderDashboardPage() {
-  const { data: stats } = useLenderDashboardStats();
-  const { data: activities = [] } = useBorrowerActivities();
+  const { data: earnings, isLoading: earningsLoading } = useLenderEarnings();
+  const { data: loans, isLoading: loansLoading } = useLenderActiveLoans();
+  const { data: marketplace, isLoading: marketplaceLoading } =
+    useMarketplace();
+
+  if (earningsLoading || loansLoading || marketplaceLoading) {
+    return (
+      <div className="space-y-6">
+        <LenderPageHeader title="Dashboard" />
+        <CardSkeleton count={4} />
+      </div>
+    );
+  }
+
+  const activeLoans = (loans ?? []).filter(
+    (l) => l.status === "active" || l.status === "overdue",
+  );
+  const openApplications = marketplace?.applications ?? [];
 
   const statCards = [
     {
       label: "Total Deployed",
-      value: stats
-        ? `UGX ${(stats.totalDeployed / 1_000_000).toFixed(0)}M`
-        : "UGX 48M",
-      sub: "↑ 12% this month",
-      subColor: "text-emerald-500",
+      value: formatCurrency(earnings?.total_deployed ?? 0),
     },
     {
-      label: "Active Offers",
-      value: stats?.activeLoans?.toString() ?? "3",
-      sub: "28 total applicants",
-      subColor: "text-gray-400",
+      label: "Active Loans",
+      value: String(earnings?.active_loans ?? 0),
     },
     {
-      label: "Pending Applications",
-      value: "7",
-      sub: "Awaiting review",
-      subColor: "text-amber-500",
+      label: "Open Marketplace",
+      value: String(openApplications.length),
+      sub: "Applications you can offer on",
     },
     {
       label: "Total Earned",
-      value: stats
-        ? `UGX ${(stats.monthlyReturns / 1_000_000).toFixed(1)}M`
-        : "UGX 6.2M",
-      sub: "↑ 18% vs last month",
-      subColor: "text-emerald-500",
+      value: formatCurrency(earnings?.total_earned ?? 0),
     },
   ];
 
@@ -85,159 +69,110 @@ export default function LenderDashboardPage() {
             <p className="text-2xl lg:text-3xl font-bold text-[#1B2B3A] dark:text-white mt-1">
               {s.value}
             </p>
-            {s.sub && <p className={`text-xs mt-1 ${s.subColor}`}>{s.sub}</p>}
+            {s.sub && <p className="text-xs mt-1 text-gray-400">{s.sub}</p>}
           </div>
         ))}
       </div>
 
       {/* Two-column main content */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* My Active Offers */}
+        {/* My Active Loans */}
         <div className="lg:col-span-2 space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="font-semibold text-[#1B2B3A] dark:text-white">
-              My Active Offers
+              My Active Loans
             </h2>
           </div>
-          {mockOffers.map((offer) => (
-            <div
-              key={offer.id}
-              className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5"
-            >
-              <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                <div className="flex-1 min-w-0">
-                  <p className="text-2xl font-bold text-[#1B2B3A] dark:text-white">
-                    {offer.amount}
-                  </p>
-                  <p className="text-[#C4A55A] font-semibold text-sm mt-0.5">
-                    {offer.rate} · {offer.maxDuration}
-                  </p>
-                  <p className="text-xs text-gray-400 mt-1">
-                    {offer.types.join(" · ")}
-                  </p>
-                </div>
-                <div className="flex gap-6 sm:gap-8 shrink-0">
-                  <div className="text-center">
-                    <p className="text-xl font-bold text-[#1B2B3A] dark:text-white">
-                      {offer.applied}
+          {activeLoans.length === 0 ? (
+            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-8 text-center text-sm text-gray-400">
+              You don&apos;t have any active loans yet.
+            </div>
+          ) : (
+            activeLoans.slice(0, 3).map((loan) => (
+              <div
+                key={loan.id}
+                className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5"
+              >
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-2xl font-bold text-[#1B2B3A] dark:text-white">
+                      {formatCurrency(loan.amount)}
                     </p>
-                    <p className="text-[11px] text-gray-400">Apps</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-xl font-bold text-[#1B2B3A] dark:text-white">
-                      {offer.approved}
+                    <p className="text-[#C4A55A] font-semibold text-sm mt-0.5">
+                      {formatRate(loan.interest_rate)} · {loan.duration}{" "}
+                      months
                     </p>
-                    <p className="text-[11px] text-gray-400">Approved</p>
+                    <p className="text-xs text-gray-400 mt-1">
+                      {loan.borrower_name ?? "Unknown borrower"}
+                    </p>
                   </div>
-                  <Badge className="self-center bg-emerald-50 text-emerald-600 border border-emerald-200 font-semibold text-xs">
-                    Active
+                  <Badge
+                    className={
+                      loan.status === "overdue"
+                        ? "self-center bg-red-50 text-red-600 border border-red-200 font-semibold text-xs"
+                        : "self-center bg-emerald-50 text-emerald-600 border border-emerald-200 font-semibold text-xs"
+                    }
+                  >
+                    {loan.status === "overdue" ? "Overdue" : "On Track"}
                   </Badge>
                 </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
           <Link
-            href="/lender/offers"
+            href="/lender/portfolio"
             className="flex items-center justify-center w-full py-3 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:border-[#C4A55A] hover:text-[#C4A55A] transition-colors"
           >
-            View All Offers →
+            View Full Portfolio →
           </Link>
         </div>
 
-        {/* Recent Applications */}
+        {/* Open Marketplace Applications */}
         <div className="space-y-4">
           <h2 className="font-semibold text-[#1B2B3A] dark:text-white">
-            Recent Applications
+            New Requests
           </h2>
           <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 divide-y divide-gray-100 dark:divide-gray-800">
-            {activities.slice(0, 3).map((a, i) => (
-              <div key={a.id ?? i} className="p-4 flex items-center gap-3">
-                <Avatar className="h-9 w-9 shrink-0">
-                  <AvatarFallback className="bg-[#1B2B3A] text-white text-xs font-bold">
-                    {a.borrowerInitials}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-[#1B2B3A] dark:text-white truncate">
-                    {a.borrowerName}
-                  </p>
-                  <p className="text-xs text-gray-400 truncate">
-                    {a.loanType} · #LF-001
-                  </p>
-                  <div className="w-16 h-1 rounded-full bg-[#C4A55A] mt-1 opacity-60" />
-                </div>
-                <div className="shrink-0 text-right">
-                  <p className="text-sm font-bold text-[#1B2B3A] dark:text-white">
-                    {formatCurrency(a.amount)}
-                  </p>
-                  <p className="text-xs text-gray-400">2 mo</p>
-                </div>
-                <Link
-                  href="/lender/applicant"
-                  className="shrink-0 px-3 py-1.5 rounded-lg bg-[#C4A55A] text-white text-xs font-semibold hover:bg-[#b3944a] transition-colors"
-                >
-                  Review
-                </Link>
-              </div>
-            ))}
-            {activities.length === 0 && (
-              <>
-                {[
-                  {
-                    initials: "AK",
-                    name: "Agnes Kyomuhendo",
-                    type: "Business",
-                    amount: "UGX 8M",
-                    offer: "#LF-001",
-                  },
-                  {
-                    initials: "BT",
-                    name: "Brian Tumwine",
-                    type: "Personal",
-                    amount: "UGX 3M",
-                    offer: "#LF-001",
-                  },
-                ].map((row) => (
-                  <div
-                    key={row.initials}
-                    className="p-4 flex items-center gap-3"
-                  >
-                    <Avatar className="h-9 w-9 shrink-0">
-                      <AvatarFallback className="bg-[#1B2B3A] text-white text-xs font-bold">
-                        {row.initials}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-[#1B2B3A] dark:text-white truncate">
-                        {row.name}
-                      </p>
-                      <p className="text-xs text-gray-400 truncate">
-                        {row.type} · {row.offer}
-                      </p>
-                      <div className="w-16 h-1 rounded-full bg-[#C4A55A] mt-1 opacity-60" />
-                    </div>
-                    <div className="shrink-0 text-right">
-                      <p className="text-sm font-bold text-[#1B2B3A] dark:text-white">
-                        {row.amount}
-                      </p>
-                      <p className="text-xs text-gray-400">2 mo</p>
-                    </div>
-                    <Link
-                      href="/lender/applicant"
-                      className="shrink-0 px-3 py-1.5 rounded-lg bg-[#C4A55A] text-white text-xs font-semibold hover:bg-[#b3944a] transition-colors"
-                    >
-                      Review
-                    </Link>
+            {openApplications.length === 0 ? (
+              <p className="p-4 text-sm text-gray-400">
+                No open requests right now.
+              </p>
+            ) : (
+              openApplications.slice(0, 3).map((a) => (
+                <div key={a.id} className="p-4 flex items-center gap-3">
+                  <Avatar className="h-9 w-9 shrink-0">
+                    <AvatarFallback className="bg-[#1B2B3A] text-white text-xs font-bold">
+                      {getInitials(a.borrower?.full_name ?? "?")}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-[#1B2B3A] dark:text-white truncate">
+                      {a.borrower?.full_name ?? "Unknown"}
+                    </p>
+                    <p className="text-xs text-gray-400 truncate">
+                      {a.loan_type} · {a.duration} months
+                    </p>
                   </div>
-                ))}
-              </>
+                  <div className="shrink-0 text-right">
+                    <p className="text-sm font-bold text-[#1B2B3A] dark:text-white">
+                      {formatCurrency(a.amount)}
+                    </p>
+                  </div>
+                  <Link
+                    href={`/lender/marketplace/${a.id}`}
+                    className="shrink-0 px-3 py-1.5 rounded-lg bg-[#C4A55A] text-white text-xs font-semibold hover:bg-[#b3944a] transition-colors"
+                  >
+                    Review
+                  </Link>
+                </div>
+              ))
             )}
           </div>
           <Link
-            href="/lender/applications"
+            href="/lender/marketplace"
             className="flex items-center justify-center w-full py-3 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:border-[#C4A55A] hover:text-[#C4A55A] transition-colors"
           >
-            View All Applications →
+            Browse Marketplace →
           </Link>
         </div>
       </div>

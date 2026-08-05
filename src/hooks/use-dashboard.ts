@@ -30,3 +30,10 @@ export function useApplications() {
     queryFn: api.getApplications,
   });
 }
+
+export function useRecentNotifications(limit = 3) {
+  return useQuery({
+    queryKey: ["recent-notifications", limit],
+    queryFn: () => api.getRecentNotifications(limit),
+  });
+}

@@ -9,20 +9,6 @@ export function useLenderProfile() {
   });
 }
 
-export function useLenderDashboardStats() {
-  return useQuery({
-    queryKey: ["lender", "stats"],
-    queryFn: api.getLenderDashboardStats,
-  });
-}
-
-export function useBorrowerActivities() {
-  return useQuery({
-    queryKey: ["lender", "activities"],
-    queryFn: api.getBorrowerActivities,
-  });
-}
-
 export function useMarketplace(filters?: {
   loan_type?: string;
   min_amount?: number;
@@ -88,5 +74,20 @@ export function useLenderEarnings() {
   return useQuery({
     queryKey: ["lender", "earnings"],
     queryFn: api.getLenderEarnings,
+  });
+}
+
+export function useLenderActiveLoans() {
+  return useQuery({
+    queryKey: ["lender", "active-loans"],
+    queryFn: api.getMyActiveLoans,
+  });
+}
+
+export function useLenderLoanDetail(loanId: string) {
+  return useQuery({
+    queryKey: ["lender", "loan-detail", loanId],
+    queryFn: () => api.getLoanDetail(loanId),
+    enabled: !!loanId,
   });
 }

@@ -6,7 +6,7 @@ import {
   CheckCheck,
   CreditCard,
   Gift,
-  Info,
+  UserCheck,
   Settings,
 } from "lucide-react";
 import {
@@ -17,33 +17,32 @@ import {
 import { BorrowerPageHeader } from "@/components/top-nav";
 import type { Notification } from "@/lib/types";
 
-type FilterKey = "all" | "unread" | Notification["type"];
+type FilterKey = "all" | "unread" | "offers" | "payments" | "guarantors";
 
 const typeConfig: Record<
-  Notification["type"],
+  string,
   { icon: typeof Bell; iconBg: string; iconColor: string }
 > = {
-  offer: {
-    icon: Gift,
-    iconBg: "bg-[#E6F4F2]",
-    iconColor: "text-[#149D8E]",
-  },
-  payment: {
-    icon: CreditCard,
-    iconBg: "bg-[#E6F4F2]",
-    iconColor: "text-[#149D8E]",
-  },
-  status: {
-    icon: Info,
-    iconBg: "bg-blue-50",
-    iconColor: "text-blue-600",
-  },
-  system: {
-    icon: Settings,
-    iconBg: "bg-gray-100",
-    iconColor: "text-gray-600",
-  },
+  loan_offer: { icon: Gift, iconBg: "bg-[#E6F4F2]", iconColor: "text-[#149D8E]" },
+  offer_accepted: { icon: Gift, iconBg: "bg-[#E6F4F2]", iconColor: "text-[#149D8E]" },
+  offer_declined: { icon: Gift, iconBg: "bg-gray-100", iconColor: "text-gray-600" },
+  payment: { icon: CreditCard, iconBg: "bg-[#E6F4F2]", iconColor: "text-[#149D8E]" },
+  repayment: { icon: CreditCard, iconBg: "bg-[#E6F4F2]", iconColor: "text-[#149D8E]" },
+  guarantor_response: { icon: UserCheck, iconBg: "bg-blue-50", iconColor: "text-blue-600" },
 };
+
+const defaultTypeConfig = {
+  icon: Settings,
+  iconBg: "bg-gray-100",
+  iconColor: "text-gray-600",
+};
+
+function categoryOf(type: string | null): "offers" | "payments" | "guarantors" | "other" {
+  if (type === "loan_offer" || type === "offer_accepted" || type === "offer_declined") return "offers";
+  if (type === "payment" || type === "repayment") return "payments";
+  if (type === "guarantor_response") return "guarantors";
+  return "other";
+}
 
 function timeSince(dateStr: string) {
   const diffMs = Date.now() - new Date(dateStr).getTime();
@@ -66,16 +65,16 @@ export default function NotificationsPage() {
   const filteredItems = useMemo(() => {
     if (filter === "all") return items;
     if (filter === "unread") return items.filter((item) => !item.read);
-    return items.filter((item) => item.type === filter);
+    return items.filter((item) => categoryOf(item.type) === filter);
   }, [items, filter]);
 
   const filterPills: Array<{ key: FilterKey; label: string; count?: number }> =
     [
       { key: "all", label: "All", count: items.length },
       { key: "unread", label: "Unread", count: unreadCount },
-      { key: "offer", label: "Offers" },
-      { key: "payment", label: "Payments" },
-      { key: "status", label: "Status" },
+      { key: "offers", label: "Offers" },
+      { key: "payments", label: "Payments" },
+      { key: "guarantors", label: "Guarantors" },
     ];
 
   return (
@@ -141,7 +140,7 @@ export default function NotificationsPage() {
       ) : (
         <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
           {filteredItems.map((item, index) => {
-            const cfg = typeConfig[item.type];
+            const cfg = (item.type && typeConfig[item.type]) || defaultTypeConfig;
             const Icon = cfg.icon;
             return (
               <button
