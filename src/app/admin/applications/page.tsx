@@ -32,18 +32,32 @@ import {
 } from "@/hooks/use-admin";
 import { formatCurrency } from "@/lib/format";
 import { downloadCsv } from "@/lib/csv";
+import { CardSkeleton, TableSkeleton } from "@/components/skeletons";
 import { toast } from "sonner";
+
+type StatusTab = "all" | "pending" | "funded" | "completed" | "rejected" | "defaulted";
+const TABS: { key: StatusTab; label: string }[] = [
+  { key: "all", label: "All" },
+  { key: "pending", label: "Pending" },
+  { key: "funded", label: "Funded" },
+  { key: "completed", label: "Completed" },
+  { key: "rejected", label: "Rejected" },
+  { key: "defaulted", label: "Defaulted" },
+];
 
 export default function AdminApplicationsPage() {
   const { data: applications = [], isLoading } = useAdminApplications();
   const updateStatus = useUpdateApplicationStatus();
   const [search, setSearch] = useState("");
+  const [tab, setTab] = useState<StatusTab>("all");
 
-  const filtered = applications.filter(
-    (a) =>
-      (a.borrower_name ?? "").toLowerCase().includes(search.toLowerCase()) ||
-      a.reference_number.toLowerCase().includes(search.toLowerCase()),
-  );
+  const filtered = applications
+    .filter((a) => tab === "all" || a.status === tab)
+    .filter(
+      (a) =>
+        (a.borrower_name ?? "").toLowerCase().includes(search.toLowerCase()) ||
+        a.reference_number.toLowerCase().includes(search.toLowerCase()),
+    );
 
   const handleStatus = (id: string, action: "approve" | "reject") => {
     updateStatus.mutate(
@@ -87,6 +101,16 @@ export default function AdminApplicationsPage() {
         return "";
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <h1 className="text-2xl font-bold text-[#1B2B3A] dark:text-white">Applications</h1>
+        <CardSkeleton count={1} height="h-20" />
+        <TableSkeleton rows={8} />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -145,6 +169,22 @@ export default function AdminApplicationsPage() {
         </Card>
       </div>
 
+      <div className="flex gap-2 flex-wrap">
+        {TABS.map((t) => (
+          <button
+            key={t.key}
+            onClick={() => setTab(t.key)}
+            className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors ${
+              tab === t.key
+                ? "bg-[#2BB5A0] border-[#2BB5A0] text-white"
+                : "bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-[#2BB5A0]"
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
       <Card className="bg-white dark:bg-gray-900">
         <CardHeader>
           <div className="relative">
@@ -183,15 +223,7 @@ export default function AdminApplicationsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {isLoading ? (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8">
-                    <div className="animate-pulse text-muted-foreground">
-                      Loading...
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ) : filtered.length === 0 ? (
+              {filtered.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                     No applications match your search.

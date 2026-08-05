@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -26,6 +28,7 @@ import {
   UserX,
   Trash2,
   Download,
+  Eye,
 } from "lucide-react";
 import {
   useAdminUsers,
@@ -34,9 +37,11 @@ import {
 } from "@/hooks/use-admin";
 import { formatCurrency } from "@/lib/format";
 import { downloadCsv } from "@/lib/csv";
+import { CardSkeleton, TableSkeleton } from "@/components/skeletons";
 import { toast } from "sonner";
 
 export default function AdminUsersPage() {
+  const router = useRouter();
   const { data: users = [], isLoading } = useAdminUsers();
   const suspend = useSuspendUser();
   const deactivate = useDeactivateUser();
@@ -55,17 +60,17 @@ export default function AdminUsersPage() {
     });
   };
 
-  const handleDeactivate = (username: string) => {
+  const handleDelete = (username: string) => {
     if (
       !confirm(
-        `Permanently deactivate ${username}? This cannot be undone (data is purged after 30 days).`,
+        `Permanently delete ${username}? This removes their account, loans, and applications right away — it cannot be undone (audit record kept for 30 days).`,
       )
     ) {
       return;
     }
     deactivate.mutate(
       { username },
-      { onSuccess: () => toast.success(`${username} deactivated`) },
+      { onSuccess: () => toast.success(`${username} deleted`) },
     );
   };
 
@@ -86,6 +91,16 @@ export default function AdminUsersPage() {
       })),
     );
   };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <h1 className="text-2xl font-bold text-[#1B2B3A] dark:text-white">Users</h1>
+        <CardSkeleton count={1} height="h-20" />
+        <TableSkeleton rows={8} />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -185,15 +200,7 @@ export default function AdminUsersPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {isLoading ? (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8">
-                    <div className="animate-pulse text-muted-foreground">
-                      Loading users...
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ) : filtered.length === 0 ? (
+              {filtered.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                     No users match your search.
@@ -203,14 +210,14 @@ export default function AdminUsersPage() {
                 filtered.map((user) => (
                   <TableRow key={user.id}>
                     <TableCell>
-                      <div>
+                      <Link href={`/admin/users/${user.username}`} className="block hover:underline">
                         <p className="font-medium text-sm text-[#1B2B3A] dark:text-white">
                           {user.full_name ?? user.username}
                         </p>
                         <p className="text-xs text-muted-foreground">
                           {user.email}
                         </p>
-                      </div>
+                      </Link>
                     </TableCell>
                     <TableCell className="hidden sm:table-cell">
                       <Badge
@@ -257,6 +264,13 @@ export default function AdminUsersPage() {
                           <MoreVertical className="h-4 w-4" />
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            className="gap-2"
+                            onClick={() => router.push(`/admin/users/${user.username}`)}
+                          >
+                            <Eye className="h-4 w-4" />
+                            View Profile
+                          </DropdownMenuItem>
                           {user.is_active ? (
                             <DropdownMenuItem
                               className="gap-2 text-amber-600"
@@ -276,10 +290,10 @@ export default function AdminUsersPage() {
                           )}
                           <DropdownMenuItem
                             className="gap-2 text-red-600"
-                            onClick={() => handleDeactivate(user.username)}
+                            onClick={() => handleDelete(user.username)}
                           >
                             <Trash2 className="h-4 w-4" />
-                            Deactivate Account
+                            Delete User
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>

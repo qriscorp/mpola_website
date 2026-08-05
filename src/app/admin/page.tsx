@@ -134,6 +134,23 @@ export default function AdminDashboardPage() {
     },
   ];
 
+  if (isLoading) {
+    return (
+      <div className="space-y-6 animate-pulse">
+        <h1 className="text-2xl font-bold text-[#1B2B3A] dark:text-white">Admin Dashboard</h1>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-32 bg-gray-100 dark:bg-gray-800 rounded-xl" />
+          ))}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 h-72 bg-gray-100 dark:bg-gray-800 rounded-xl" />
+          <div className="h-72 bg-gray-100 dark:bg-gray-800 rounded-xl" />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -164,7 +181,7 @@ export default function AdminDashboardPage() {
                 </div>
               </div>
               <p className="text-2xl font-bold text-[#1B2B3A] dark:text-white">
-                {isLoading ? "…" : stat.value}
+                {stat.value}
               </p>
               <p className="text-xs text-muted-foreground mt-1">{stat.label}</p>
               <p className="text-[11px] text-muted-foreground mt-2">{stat.sub}</p>
@@ -186,13 +203,23 @@ export default function AdminDashboardPage() {
                   Last 6 months
                 </p>
               </div>
-              <div className="text-right">
-                <p className="text-xl font-bold text-[#2BB5A0]">
-                  {formatCurrency(stats?.platform.total_wallet_balance ?? 0)}
-                </p>
-                <p className="text-[10px] text-muted-foreground">
-                  Total wallet balance
-                </p>
+              <div className="flex gap-6">
+                <div className="text-right">
+                  <p className="text-xl font-bold text-[#2BB5A0]">
+                    {formatCurrency(stats?.platform.total_interest_generated ?? 0)}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground">
+                    Interest generated
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xl font-bold text-[#1B2B3A] dark:text-white">
+                    {formatCurrency(stats?.platform.total_wallet_balance ?? 0)}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground">
+                    Wallet balance
+                  </p>
+                </div>
               </div>
             </div>
           </CardHeader>

@@ -10,6 +10,7 @@ import {
   CreditCard,
   Wallet,
   Settings,
+  ShieldAlert,
   LogOut,
   ChevronLeft,
 } from "lucide-react";
@@ -26,6 +27,7 @@ const adminNav = [
   { icon: FileText, label: "Applications", href: "/admin/applications" },
   { icon: CreditCard, label: "Loans", href: "/admin/loans" },
   { icon: Wallet, label: "Wallet & Payments", href: "/admin/payments" },
+  { icon: ShieldAlert, label: "Audit Log", href: "/admin/audit-logs" },
   { icon: Settings, label: "Settings", href: "/admin/settings", badgeKey: "pendingOfferTemplates" as const },
 ];
 

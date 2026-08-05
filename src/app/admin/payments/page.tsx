@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/format";
 import { useAdminPayments, useAdminStats } from "@/hooks/use-admin";
 import { downloadCsv } from "@/lib/csv";
+import { CardSkeleton, TableSkeleton } from "@/components/skeletons";
 
 const inflowTypes = new Set(["deposit", "repayment", "top_up"]);
 
@@ -51,6 +52,16 @@ export default function AdminPaymentsPage() {
       })),
     );
   };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <h1 className="text-2xl font-bold text-[#1B2B3A] dark:text-white">Wallet & Payments</h1>
+        <CardSkeleton count={1} height="h-24" />
+        <TableSkeleton rows={8} />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -155,15 +166,7 @@ export default function AdminPaymentsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {isLoading ? (
-                <TableRow>
-                  <TableCell colSpan={5} className="text-center py-8">
-                    <div className="animate-pulse text-muted-foreground">
-                      Loading...
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ) : transactions.length === 0 ? (
+              {transactions.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
                     No transactions yet.

@@ -191,6 +191,7 @@ export interface AdminStats {
   };
   platform: {
     total_wallet_balance: number;
+    total_interest_generated: number;
     repayment_rate: number;
     default_rate: number;
     kyc_completion_rate: number;

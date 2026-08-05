@@ -18,17 +18,30 @@ import { Search, Download } from "lucide-react";
 import { useAdminLoans } from "@/hooks/use-admin";
 import { formatCurrency, formatRate } from "@/lib/format";
 import { downloadCsv } from "@/lib/csv";
+import { CardSkeleton, TableSkeleton } from "@/components/skeletons";
+
+type StatusTab = "all" | "active" | "overdue" | "completed" | "defaulted";
+const TABS: { key: StatusTab; label: string }[] = [
+  { key: "all", label: "All" },
+  { key: "active", label: "Active" },
+  { key: "overdue", label: "Overdue" },
+  { key: "completed", label: "Completed" },
+  { key: "defaulted", label: "Defaulted" },
+];
 
 export default function AdminLoansPage() {
   const { data: loans = [], isLoading } = useAdminLoans();
   const [search, setSearch] = useState("");
+  const [tab, setTab] = useState<StatusTab>("all");
 
-  const filtered = loans.filter(
-    (l) =>
-      (l.borrower_name ?? "").toLowerCase().includes(search.toLowerCase()) ||
-      l.reference.toLowerCase().includes(search.toLowerCase()) ||
-      (l.lender_name ?? "").toLowerCase().includes(search.toLowerCase()),
-  );
+  const filtered = loans
+    .filter((l) => tab === "all" || l.status === tab)
+    .filter(
+      (l) =>
+        (l.borrower_name ?? "").toLowerCase().includes(search.toLowerCase()) ||
+        l.reference.toLowerCase().includes(search.toLowerCase()) ||
+        (l.lender_name ?? "").toLowerCase().includes(search.toLowerCase()),
+    );
 
   const statusColor = (s: string) => {
     switch (s) {
@@ -69,6 +82,16 @@ export default function AdminLoansPage() {
       })),
     );
   };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <h1 className="text-2xl font-bold text-[#1B2B3A] dark:text-white">Loans</h1>
+        <CardSkeleton count={1} height="h-20" />
+        <TableSkeleton rows={8} />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -125,6 +148,22 @@ export default function AdminLoansPage() {
         </Card>
       </div>
 
+      <div className="flex gap-2 flex-wrap">
+        {TABS.map((t) => (
+          <button
+            key={t.key}
+            onClick={() => setTab(t.key)}
+            className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors ${
+              tab === t.key
+                ? "bg-[#2BB5A0] border-[#2BB5A0] text-white"
+                : "bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-[#2BB5A0]"
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
       <Card className="bg-white dark:bg-gray-900">
         <CardHeader>
           <div className="relative">
@@ -165,15 +204,7 @@ export default function AdminLoansPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {isLoading ? (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8">
-                    <div className="animate-pulse text-muted-foreground">
-                      Loading...
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ) : filtered.length === 0 ? (
+              {filtered.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                     No loans match your search.
