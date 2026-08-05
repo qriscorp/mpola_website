@@ -1,12 +1,10 @@
 import {
   currentUser,
   dashboardStats,
-  activeLoan,
   applications,
   loanOffers,
   lenders,
   guarantors,
-  instalments,
   notifications,
   adminStats,
   adminUsers,
@@ -24,11 +22,11 @@ import type {
   User,
   DashboardStats,
   ActiveLoan,
+  LoanRepayment,
   LoanApplication,
   LoanOffer,
   Lender,
   Guarantor,
-  Instalment,
   Wallet,
   WalletTransaction,
   BankOption,
@@ -598,8 +596,17 @@ export const api = {
     return dashboardStats;
   },
   getActiveLoan: async (): Promise<ActiveLoan | null> => {
-    await delay(300);
-    return activeLoan;
+    const res = await apiAuthGet<{ total: number; loans: ActiveLoan[] }>(
+      "/loans/active",
+    );
+    return (
+      res.loans.find((l) => l.status === "active" || l.status === "overdue") ??
+      res.loans[0] ??
+      null
+    );
+  },
+  getLoanDetail: async (loanId: string): Promise<ActiveLoan> => {
+    return apiAuthGet(`/loans/active/${loanId}`);
   },
   getApplications: async (): Promise<LoanApplication[]> => {
     await delay(300);
@@ -631,9 +638,19 @@ export const api = {
   },
 
   // Repayments
-  getInstalments: async (_loanId?: string): Promise<Instalment[]> => {
-    await delay(300);
-    return instalments;
+  makeRepayment: async (data: {
+    loan_id: string;
+    amount: number;
+    payment_method: "wallet" | "mobile_money";
+    phone_number?: string;
+    carrier?: string;
+  }): Promise<{
+    status: number;
+    message: string;
+    repayment: LoanRepayment;
+    loan: ActiveLoan;
+  }> => {
+    return apiAuthPost("/loans/repayments", data);
   },
 
   // Wallet — one wallet per user; borrower and lender portals hit the same endpoints.

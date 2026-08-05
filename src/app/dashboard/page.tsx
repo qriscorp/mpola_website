@@ -32,13 +32,16 @@ export default function DashboardPage() {
             <p className="text-4xl font-extrabold mt-1">
               UGX {activeLoan.amount.toLocaleString()}
             </p>
-            <p className="text-sm text-white/80 mt-1">
-              Next payment: {formatCurrency(activeLoan.nextPaymentAmount)} due
-              15 Jun 2024
-            </p>
+            {activeLoan.next_payment_amount && (
+              <p className="text-sm text-white/80 mt-1">
+                Next payment: {formatCurrency(activeLoan.next_payment_amount)}
+                {activeLoan.next_payment_date &&
+                  ` due ${new Date(activeLoan.next_payment_date).toLocaleDateString("en-UG", { day: "numeric", month: "short", year: "numeric" })}`}
+              </p>
+            )}
           </div>
           <Link
-            href="/dashboard/repayments/pay"
+            href={`/dashboard/repayments/pay?loanId=${activeLoan.id}`}
             className="inline-flex items-center justify-center px-6 py-2.5 rounded-xl bg-white text-[#2BB5A0] font-bold text-sm hover:bg-white/90 transition-colors shrink-0"
           >
             Pay Now

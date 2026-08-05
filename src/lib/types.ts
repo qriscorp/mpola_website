@@ -53,25 +53,34 @@ export interface LoanOffer {
   status: "pending" | "accepted" | "declined" | "expired";
 }
 
-export interface ActiveLoan {
+export interface LoanRepayment {
   id: string;
-  reference: string;
   amount: number;
-  lenderName: string;
-  interestRate: number;
-  totalInstalments: number;
-  paidInstalments: number;
-  monthlyPayment: number;
-  nextPaymentDate: string;
-  nextPaymentAmount: number;
+  instalment_number: number;
+  status: string;
+  payment_method: "wallet" | "mobile_money" | null;
+  transaction_id: string | null;
+  created_at: string;
 }
 
-export interface Instalment {
-  number: number;
-  dueDate: string;
+export interface ActiveLoan {
+  id: string;
+  borrower_id: string;
+  lender_id: string;
   amount: number;
-  status: "paid" | "due" | "upcoming" | "overdue";
-  paidOn?: string;
+  interest_rate: number;
+  duration: number;
+  monthly_payment: number;
+  total_repayable: number;
+  total_paid: number;
+  paid_instalments: number;
+  total_instalments: number;
+  next_payment_date: string | null;
+  next_payment_amount: number | null;
+  status: "active" | "completed" | "overdue" | "defaulted";
+  disbursed_at: string | null;
+  created_at: string;
+  repayments?: LoanRepayment[];
 }
 
 export interface Guarantor {

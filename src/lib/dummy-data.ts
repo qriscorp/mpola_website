@@ -2,8 +2,6 @@ import {
   User,
   LoanApplication,
   LoanOffer,
-  ActiveLoan,
-  Instalment,
   Guarantor,
   Lender,
   DashboardStats,
@@ -27,19 +25,6 @@ export const dashboardStats: DashboardStats = {
   applicationsPending: 1,
   newOffers: 2,
   walletBalance: 842500,
-};
-
-export const activeLoan: ActiveLoan = {
-  id: "loan_001",
-  reference: "LF-2026-00621",
-  amount: 5000000,
-  lenderName: "Kampala Capital Partners",
-  interestRate: 13.5,
-  totalInstalments: 12,
-  paidInstalments: 4,
-  monthlyPayment: 458200,
-  nextPaymentDate: "2026-05-01",
-  nextPaymentAmount: 458200,
 };
 
 export const applications: LoanApplication[] = [
@@ -214,45 +199,6 @@ export const guarantors: Guarantor[] = [
     status: "confirmed",
     confirmedAt: "17 Apr 2026 · 11:42 EAT",
   },
-];
-
-export const instalments: Instalment[] = [
-  {
-    number: 1,
-    dueDate: "1 Jan 2026",
-    amount: 458200,
-    status: "paid",
-    paidOn: "1 Jan 2026",
-  },
-  {
-    number: 2,
-    dueDate: "1 Feb 2026",
-    amount: 458200,
-    status: "paid",
-    paidOn: "31 Jan 2026",
-  },
-  {
-    number: 3,
-    dueDate: "1 Mar 2026",
-    amount: 458200,
-    status: "paid",
-    paidOn: "2 Mar 2026",
-  },
-  {
-    number: 4,
-    dueDate: "1 Apr 2026",
-    amount: 458200,
-    status: "paid",
-    paidOn: "1 Apr 2026",
-  },
-  { number: 5, dueDate: "1 May 2026", amount: 458200, status: "due" },
-  { number: 6, dueDate: "1 Jun 2026", amount: 458200, status: "upcoming" },
-  { number: 7, dueDate: "1 Jul 2026", amount: 458200, status: "upcoming" },
-  { number: 8, dueDate: "1 Aug 2026", amount: 458200, status: "upcoming" },
-  { number: 9, dueDate: "1 Sep 2026", amount: 458200, status: "upcoming" },
-  { number: 10, dueDate: "1 Oct 2026", amount: 458200, status: "upcoming" },
-  { number: 11, dueDate: "1 Nov 2026", amount: 458200, status: "upcoming" },
-  { number: 12, dueDate: "1 Dec 2026", amount: 458200, status: "upcoming" },
 ];
 
 // ─── Notifications ───

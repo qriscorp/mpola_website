@@ -1,9 +1,36 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { BorrowerPageHeader } from "@/components/top-nav";
+import { formatCurrency } from "@/lib/format";
+
+function formatDateTime(iso: string | null): string {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleString("en-UG", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+const METHOD_LABEL: Record<string, string> = {
+  mobile_money: "Mobile Money",
+  wallet: "Mpola Wallet",
+};
 
 export default function PaymentConfirmationPage() {
+  const searchParams = useSearchParams();
+  const txn = searchParams.get("txn") ?? "—";
+  const amount = Number(searchParams.get("amount") ?? 0);
+  const method = searchParams.get("method") ?? "";
+  const loanRef = searchParams.get("loanRef") ?? "—";
+  const date = searchParams.get("date");
+
   return (
     <div className="space-y-6">
       <BorrowerPageHeader title="Payment Receipt" />
@@ -36,10 +63,10 @@ export default function PaymentConfirmationPage() {
 
           <div className="space-y-3">
             {[
-              ["Transaction ID", "#TXN-20240507-0091"],
-              ["Date", "07 May 2024, 14:32"],
-              ["Method", "MTN MoMo (+256 700 123 456)"],
-              ["Loan Ref", "#LN-2024-031"],
+              ["Transaction ID", `#${txn}`],
+              ["Date", formatDateTime(date)],
+              ["Method", METHOD_LABEL[method] ?? method],
+              ["Loan Ref", `#${loanRef}`],
             ].map(([label, value]) => (
               <div
                 key={String(label)}
@@ -57,7 +84,7 @@ export default function PaymentConfirmationPage() {
                 Amount Paid
               </span>
               <span className="text-2xl sm:text-3xl leading-none font-black text-[#19A44B]">
-                UGX 2,400,000
+                {formatCurrency(amount)}
               </span>
             </div>
           </div>
