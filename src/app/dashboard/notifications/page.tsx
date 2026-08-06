@@ -15,6 +15,7 @@ import {
   useNotifications,
 } from "@/hooks/use-notifications";
 import { BorrowerPageHeader } from "@/components/top-nav";
+import { CardSkeleton } from "@/components/skeletons";
 import type { Notification } from "@/lib/types";
 
 type FilterKey = "all" | "unread" | "offers" | "payments" | "guarantors";
@@ -122,14 +123,7 @@ export default function NotificationsPage() {
       </div>
 
       {isLoading ? (
-        <div className="space-y-3">
-          {[1, 2, 3].map((n) => (
-            <div
-              key={n}
-              className="h-20 animate-pulse rounded-xl bg-gray-100"
-            />
-          ))}
-        </div>
+        <CardSkeleton count={3} height="h-20" />
       ) : filteredItems.length === 0 ? (
         <div className="rounded-xl border border-gray-200 bg-white px-5 py-12 text-center">
           <Bell className="mx-auto h-10 w-10 text-gray-300" />

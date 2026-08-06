@@ -12,6 +12,7 @@ import { ArrowLeft } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useApplicationDetail, useMakeOffer } from "@/hooks/use-lender";
 import { formatCurrency } from "@/lib/format";
+import { CardSkeleton } from "@/components/skeletons";
 
 function initials(name: string | null | undefined): string {
   if (!name) return "?";
@@ -37,7 +38,13 @@ export default function ApplicationDetailPage({
   const [interestRate, setInterestRate] = useState("15");
   const [duration, setDuration] = useState("");
 
-  if (isLoading) return null;
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <CardSkeleton count={2} />
+      </div>
+    );
+  }
   if (!application) {
     return (
       <div className="space-y-6">

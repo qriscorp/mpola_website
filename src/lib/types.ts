@@ -13,6 +13,7 @@ export interface User {
   kycStatus: "pending" | "verified" | "rejected";
   location?: string;
   twoFactorEnabled?: boolean;
+  creditScore: number;
   createdAt: string;
 }
 

@@ -26,6 +26,7 @@ import {
 import { useUser, useUpdateProfile } from "@/hooks/use-dashboard";
 import { api } from "@/lib/api";
 import { formatCurrency, formatRate } from "@/lib/format";
+import { CardSkeleton } from "@/components/skeletons";
 
 function Toggle({ on, onToggle }: { on: boolean; onToggle: () => void }) {
   return (
@@ -118,6 +119,22 @@ export default function AdminSettingsPage() {
     } finally {
       setChangingPassword(false);
     }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6 max-w-3xl">
+        <div>
+          <h1 className="text-2xl font-bold text-[#1B2B3A] dark:text-white">
+            Platform Settings
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Configure Mpola platform settings
+          </p>
+        </div>
+        <CardSkeleton count={4} height="h-48" />
+      </div>
+    );
   }
 
   return (

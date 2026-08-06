@@ -249,6 +249,7 @@ function mapAuthUser(data: AuthResponse): User {
     nin: "",
     accountType: "individual",
     kycStatus: (data.user.kyc_status as User["kycStatus"]) || "pending",
+    creditScore: data.user.credit_score ?? 0,
     createdAt: new Date().toISOString(),
   };
 }
@@ -263,6 +264,7 @@ interface RawUserProfile {
   profile_pic: string | null;
   kyc_status: string;
   two_factor_enabled?: boolean;
+  credit_score?: number | null;
   created_at: string;
 }
 
@@ -277,6 +279,7 @@ function mapUserProfile(u: RawUserProfile): User {
     twoFactorEnabled: u.two_factor_enabled ?? false,
     profilePic: u.profile_pic ?? undefined,
     kycStatus: u.kyc_status as User["kycStatus"],
+    creditScore: u.credit_score ?? 0,
     createdAt: u.created_at,
   };
 }

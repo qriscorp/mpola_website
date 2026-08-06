@@ -13,7 +13,7 @@ import { DashboardSkeleton } from "@/components/skeletons";
 import { BorrowerPageHeader } from "@/components/top-nav";
 
 export default function DashboardPage() {
-  const { isLoading: userLoading } = useUser();
+  const { data: user, isLoading: userLoading } = useUser();
   const { data: stats, isLoading: statsLoading } = useDashboardStats();
   const { data: activeLoan } = useActiveLoan();
   const { data: recentNotifications } = useRecentNotifications();
@@ -62,7 +62,7 @@ export default function DashboardPage() {
       )}
 
       {/* Stats Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 border-t-4 border-t-[#2BB5A0] p-5">
           <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
             Loan Balance
@@ -98,6 +98,17 @@ export default function DashboardPage() {
           >
             Review now →
           </Link>
+        </div>
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 border-t-4 border-t-[#C4A55A] p-5">
+          <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+            Credit Score
+          </p>
+          <p className="text-3xl font-bold text-[#1B2B3A] dark:text-white mt-1">
+            {user?.creditScore || "—"}
+          </p>
+          <p className="text-xs text-gray-400 mt-1">
+            Higher scores unlock better rates
+          </p>
         </div>
       </div>
 

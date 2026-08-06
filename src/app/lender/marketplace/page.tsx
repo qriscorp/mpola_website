@@ -68,7 +68,9 @@ export default function MarketplacePage() {
       <LenderPageHeader title="Borrower Marketplace" />
 
       <p className="text-sm text-gray-500">
-        {isLoading ? "Loading…" : `${total} loan applications available for review.`}
+        {isLoading
+          ? "Finding loan applications for you…"
+          : `${total} loan applications available for review.`}
       </p>
 
       <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-5">
@@ -102,6 +104,13 @@ export default function MarketplacePage() {
         ))}
       </div>
 
+      {isLoading ? (
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 animate-pulse">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="h-64 bg-gray-100 dark:bg-gray-800 rounded-xl" />
+          ))}
+        </div>
+      ) : (
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
         {filtered.map((a, idx) => {
           const verified = a.borrower?.kyc_status === "verified";
@@ -167,6 +176,7 @@ export default function MarketplacePage() {
           );
         })}
       </div>
+      )}
 
       <PaginationControls
         page={page}

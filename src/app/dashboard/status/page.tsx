@@ -14,9 +14,19 @@ import { Button } from "@/components/ui/button";
 import { BorrowerPageHeader } from "@/components/top-nav";
 import { getStatusColor, getStatusLabel, formatCurrency } from "@/lib/format";
 import { useApplications } from "@/hooks/use-dashboard";
+import { CardSkeleton } from "@/components/skeletons";
 
 export default function StatusPage() {
-  const { data: applications } = useApplications();
+  const { data: applications, isLoading } = useApplications();
+
+  if (isLoading) {
+    return (
+      <div className="max-w-3xl space-y-6">
+        <BorrowerPageHeader title="Application Status" />
+        <CardSkeleton count={3} height="h-32" />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-3xl space-y-6">
