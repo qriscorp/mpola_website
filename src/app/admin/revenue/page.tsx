@@ -67,8 +67,6 @@ export default function AdminRevenuePage() {
         user: t.username ?? "",
         category: t.category,
         platform_fee: t.platform_fee,
-        provider_fee: t.provider_fee,
-        total_fee: t.total_fee,
       })),
     );
   };
@@ -90,8 +88,10 @@ export default function AdminRevenuePage() {
         <div>
           <h1 className="text-2xl font-bold text-[#1B2B3A] dark:text-white">Revenue</h1>
           <p className="text-sm text-muted-foreground">
-            Platform fee income — 0.5% charged on every withdrawal, plus Interswitch
-            (MTN/Airtel) and Flutterwave provider surcharges
+            Platform fee income — the 0.5% Mpola keeps on withdrawals, loan
+            disbursements, and loan repayments. Interswitch/Flutterwave
+            surcharges are pass-through costs, not revenue, and aren&apos;t
+            counted here.
           </p>
         </div>
         <Button variant="outline" className="gap-2 w-full sm:w-auto" onClick={handleExport}>
@@ -101,7 +101,7 @@ export default function AdminRevenuePage() {
       </div>
 
       {/* Summary */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Card className="bg-white dark:bg-gray-900">
           <CardContent className="p-5">
             <div className="flex items-center gap-3">
@@ -124,26 +124,9 @@ export default function AdminRevenuePage() {
                 <TrendingUp className="h-5 w-5 text-[#C4A55A]" />
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Platform Fee (0.5%)</p>
+                <p className="text-xs text-muted-foreground">Platform Fee Rate</p>
                 <p className="text-xl font-bold text-[#1B2B3A] dark:text-white">
-                  {formatCurrency(data?.totals.platform_fee ?? 0)}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="bg-white dark:bg-gray-900">
-          <CardContent className="p-5">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
-                <TrendingUp className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">
-                  Provider Fees (pass-through)
-                </p>
-                <p className="text-xl font-bold text-[#1B2B3A] dark:text-white">
-                  {formatCurrency(data?.totals.provider_fee ?? 0)}
+                  0.5%
                 </p>
               </div>
             </div>
@@ -218,7 +201,7 @@ export default function AdminRevenuePage() {
                   </div>
                 </div>
                 <p className="text-sm font-semibold text-[#1B2B3A] dark:text-white">
-                  {formatCurrency(c.total_fee)}
+                  {formatCurrency(c.revenue)}
                 </p>
               </button>
             ))}
@@ -252,21 +235,15 @@ export default function AdminRevenuePage() {
                 <TableHead className="text-xs uppercase text-muted-foreground hidden sm:table-cell">
                   Category
                 </TableHead>
-                <TableHead className="text-xs uppercase text-muted-foreground text-right hidden md:table-cell">
-                  Platform Fee
-                </TableHead>
-                <TableHead className="text-xs uppercase text-muted-foreground text-right hidden md:table-cell">
-                  Provider Fee
-                </TableHead>
                 <TableHead className="text-xs uppercase text-muted-foreground text-right">
-                  Total
+                  Revenue
                 </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {transactions.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
                     No revenue transactions yet.
                   </TableCell>
                 </TableRow>
@@ -284,14 +261,8 @@ export default function AdminRevenuePage() {
                         {categoryLabel[tx.category] ?? tx.category}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right text-sm text-muted-foreground hidden md:table-cell">
-                      {formatCurrency(tx.platform_fee)}
-                    </TableCell>
-                    <TableCell className="text-right text-sm text-muted-foreground hidden md:table-cell">
-                      {formatCurrency(tx.provider_fee)}
-                    </TableCell>
                     <TableCell className="text-right text-sm font-semibold text-[#1B2B3A] dark:text-white">
-                      {formatCurrency(tx.total_fee)}
+                      {formatCurrency(tx.platform_fee)}
                     </TableCell>
                   </TableRow>
                 ))

@@ -201,8 +201,9 @@ export interface AdminStats {
   platform: {
     total_wallet_balance: number;
     total_interest_generated: number;
+    // Platform fee only (0.5%) — excludes Interswitch/Flutterwave provider
+    // surcharges, which are pass-through costs, not Mpola revenue.
     total_platform_revenue: number;
-    total_platform_fee_only: number;
     repayment_rate: number;
     default_rate: number;
     kyc_completion_rate: number;
@@ -312,15 +313,16 @@ export interface AdminRevenueTx {
   username: string | null;
   category: "mobile_money_withdrawal" | "bank_withdrawal" | "loan_disbursement" | "loan_repayment";
   platform_fee: number;
-  provider_fee: number;
-  total_fee: number;
   created_at: string;
 }
 
 export interface AdminRevenue {
   total: number;
-  totals: { revenue: number; platform_fee: number; provider_fee: number };
-  by_category: { category: string; total_fee: number; count: number }[];
+  // Platform fee only — Interswitch/Flutterwave provider surcharges are
+  // collected from users on withdrawals but passed straight through to the
+  // provider, so they're not Mpola revenue and are excluded here.
+  totals: { revenue: number };
+  by_category: { category: string; revenue: number; count: number }[];
   monthly_revenue: { month: string; revenue: number }[];
   transactions: AdminRevenueTx[];
 }
