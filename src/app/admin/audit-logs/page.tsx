@@ -17,6 +17,7 @@ import { useAdminAuditLogs } from "@/hooks/use-admin";
 import { CardSkeleton, TableSkeleton } from "@/components/skeletons";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
+import { FadeSwap } from "@/components/motion/fade-swap";
 
 const PAGE_SIZE = 20;
 
@@ -40,17 +41,17 @@ export default function AdminAuditLogsPage() {
   const logs = data?.logs ?? [];
   const total = data?.total ?? 0;
 
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <h1 className="text-2xl font-bold text-[#1B2B3A] dark:text-white">Audit Log</h1>
-        <CardSkeleton count={1} height="h-20" />
-        <TableSkeleton rows={10} />
-      </div>
-    );
-  }
-
   return (
+    <FadeSwap
+      loading={isLoading}
+      skeleton={
+        <div className="space-y-6">
+          <h1 className="text-2xl font-bold text-[#1B2B3A] dark:text-white">Audit Log</h1>
+          <CardSkeleton count={1} height="h-20" />
+          <TableSkeleton rows={10} />
+        </div>
+      }
+    >
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-[#1B2B3A] dark:text-white flex items-center gap-2">
@@ -133,5 +134,6 @@ export default function AdminAuditLogsPage() {
         </CardContent>
       </Card>
     </div>
+    </FadeSwap>
   );
 }

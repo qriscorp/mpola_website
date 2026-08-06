@@ -45,6 +45,8 @@ import { CardSkeleton, TableSkeleton } from "@/components/skeletons";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { toast } from "sonner";
+import { FadeSwap } from "@/components/motion/fade-swap";
+import { StaggerList, StaggerItem } from "@/components/motion/stagger";
 
 const PAGE_SIZE = 20;
 
@@ -133,17 +135,17 @@ export default function AdminUsersPage() {
     );
   };
 
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <h1 className="text-2xl font-bold text-[#1B2B3A] dark:text-white">Users</h1>
-        <CardSkeleton count={1} height="h-20" />
-        <TableSkeleton rows={8} />
-      </div>
-    );
-  }
-
   return (
+    <FadeSwap
+      loading={isLoading}
+      skeleton={
+        <div className="space-y-6">
+          <h1 className="text-2xl font-bold text-[#1B2B3A] dark:text-white">Users</h1>
+          <CardSkeleton count={1} height="h-20" />
+          <TableSkeleton rows={8} />
+        </div>
+      }
+    >
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -165,7 +167,8 @@ export default function AdminUsersPage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <StaggerList className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <StaggerItem>
         <Card className="bg-white dark:bg-gray-900">
           <CardContent className="p-4">
             <p className="text-xs text-muted-foreground">Total Users</p>
@@ -174,6 +177,8 @@ export default function AdminUsersPage() {
             </p>
           </CardContent>
         </Card>
+        </StaggerItem>
+        <StaggerItem>
         <Card className="bg-white dark:bg-gray-900">
           <CardContent className="p-4">
             <p className="text-xs text-muted-foreground">Verified</p>
@@ -182,6 +187,8 @@ export default function AdminUsersPage() {
             </p>
           </CardContent>
         </Card>
+        </StaggerItem>
+        <StaggerItem>
         <Card className="bg-white dark:bg-gray-900">
           <CardContent className="p-4">
             <p className="text-xs text-muted-foreground">Active</p>
@@ -190,6 +197,8 @@ export default function AdminUsersPage() {
             </p>
           </CardContent>
         </Card>
+        </StaggerItem>
+        <StaggerItem>
         <Card className="bg-white dark:bg-gray-900">
           <CardContent className="p-4">
             <p className="text-xs text-muted-foreground">Suspended</p>
@@ -198,7 +207,8 @@ export default function AdminUsersPage() {
             </p>
           </CardContent>
         </Card>
-      </div>
+        </StaggerItem>
+      </StaggerList>
 
       {/* Search + Table */}
       <Card className="bg-white dark:bg-gray-900">
@@ -410,5 +420,6 @@ export default function AdminUsersPage() {
         </CardContent>
       </Card>
     </div>
+    </FadeSwap>
   );
 }

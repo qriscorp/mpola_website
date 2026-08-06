@@ -16,6 +16,7 @@ import {
 } from "@/hooks/use-notifications";
 import { BorrowerPageHeader } from "@/components/top-nav";
 import { CardSkeleton } from "@/components/skeletons";
+import { StaggerList, StaggerItem } from "@/components/motion/stagger";
 import type { Notification } from "@/lib/types";
 
 type FilterKey = "all" | "unread" | "offers" | "payments" | "guarantors";
@@ -132,13 +133,13 @@ export default function NotificationsPage() {
           </p>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+        <StaggerList className="overflow-hidden rounded-xl border border-gray-200 bg-white">
           {filteredItems.map((item, index) => {
             const cfg = (item.type && typeConfig[item.type]) || defaultTypeConfig;
             const Icon = cfg.icon;
             return (
+              <StaggerItem key={item.id} className="w-full">
               <button
-                key={item.id}
                 onClick={() => !item.read && markRead.mutate(item.id)}
                 className={`flex w-full items-start gap-4 px-4 py-4 text-left transition-colors sm:px-5 ${
                   index !== filteredItems.length - 1
@@ -172,9 +173,10 @@ export default function NotificationsPage() {
                   <span className="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full bg-[#2BB5A0]" />
                 )}
               </button>
+              </StaggerItem>
             );
           })}
-        </div>
+        </StaggerList>
       )}
     </div>
   );

@@ -2,6 +2,7 @@
 
 import { useId, useState } from "react";
 import { useRouter } from "next/navigation";
+import { AnimatePresence, motion } from "framer-motion";
 import { Check, Upload } from "lucide-react";
 import { BorrowerPageHeader } from "@/components/top-nav";
 import { Button } from "@/components/ui/button";
@@ -645,43 +646,53 @@ export default function ApplyPage() {
         <>
           <StepperHeader currentStep={currentStep} />
 
-          {currentStep === 1 && (
-            <Step1
-              amount={amount}
-              setAmount={setAmount}
-              duration={duration}
-              setDuration={setDuration}
-              loanType={loanType}
-              setLoanType={setLoanType}
-              purpose={purpose}
-              setPurpose={setPurpose}
-            />
-          )}
-          {currentStep === 2 && (
-            <Step2
-              files={files}
-              onSelect={(key, file) =>
-                setFiles((prev) => ({ ...prev, [key]: file }))
-              }
-            />
-          )}
-          {currentStep === 3 && (
-            <Step3
-              guarantors={guarantors}
-              onAdd={(g) => setGuarantors((prev) => [...prev, g])}
-              onRemove={(idx) =>
-                setGuarantors((prev) => prev.filter((_, i) => i !== idx))
-              }
-            />
-          )}
-          {currentStep === 4 && (
-            <Step4
-              amount={amount}
-              duration={duration}
-              loanType={loanType}
-              guarantors={guarantors}
-            />
-          )}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentStep}
+              initial={{ opacity: 0, x: 16 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -16 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+            >
+              {currentStep === 1 && (
+                <Step1
+                  amount={amount}
+                  setAmount={setAmount}
+                  duration={duration}
+                  setDuration={setDuration}
+                  loanType={loanType}
+                  setLoanType={setLoanType}
+                  purpose={purpose}
+                  setPurpose={setPurpose}
+                />
+              )}
+              {currentStep === 2 && (
+                <Step2
+                  files={files}
+                  onSelect={(key, file) =>
+                    setFiles((prev) => ({ ...prev, [key]: file }))
+                  }
+                />
+              )}
+              {currentStep === 3 && (
+                <Step3
+                  guarantors={guarantors}
+                  onAdd={(g) => setGuarantors((prev) => [...prev, g])}
+                  onRemove={(idx) =>
+                    setGuarantors((prev) => prev.filter((_, i) => i !== idx))
+                  }
+                />
+              )}
+              {currentStep === 4 && (
+                <Step4
+                  amount={amount}
+                  duration={duration}
+                  loanType={loanType}
+                  guarantors={guarantors}
+                />
+              )}
+            </motion.div>
+          </AnimatePresence>
 
           <div className="flex justify-between pt-4">
             <Button

@@ -8,6 +8,8 @@ import { CardSkeleton } from "@/components/skeletons";
 import { useMyOffers, useOfferTemplates } from "@/hooks/use-lender";
 import { formatCurrency, formatRate } from "@/lib/format";
 import type { LoanOffer } from "@/lib/types";
+import { FadeSwap } from "@/components/motion/fade-swap";
+import { StaggerList, StaggerItem } from "@/components/motion/stagger";
 
 const templateStatusLabel: Record<string, string> = {
   pending_review: "Pending Review",
@@ -70,16 +72,16 @@ export default function MyOffersPage() {
   const filtered =
     tab === "All" ? allOffers : allOffers.filter((o) => o.status === tab);
 
-  if (isLoading) {
-    return (
-      <div className="space-y-6 max-w-5xl">
-        <LenderPageHeader title="My Offers" />
-        <CardSkeleton count={3} />
-      </div>
-    );
-  }
-
   return (
+    <FadeSwap
+      loading={isLoading}
+      skeleton={
+        <div className="space-y-6 max-w-5xl">
+          <LenderPageHeader title="My Offers" />
+          <CardSkeleton count={3} />
+        </div>
+      }
+    >
     <div className="space-y-6 max-w-5xl">
       <LenderPageHeader title="My Offers" />
 
@@ -105,9 +107,10 @@ export default function MyOffersPage() {
           You haven&apos;t made any offers in this category yet.
         </p>
       ) : (
-        <div className="space-y-4">
+        <StaggerList className="space-y-4">
           {filtered.map((offer) => (
-            <Card key={offer.id} className="bg-white dark:bg-gray-900">
+            <StaggerItem key={offer.id}>
+            <Card className="bg-white dark:bg-gray-900">
               <CardContent className="p-5 sm:p-6">
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                   {/* Left: offer info */}
@@ -163,12 +166,13 @@ export default function MyOffersPage() {
                 </div>
               </CardContent>
             </Card>
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerList>
       )}
 
       {templates && templates.length > 0 && (
-        <div className="space-y-4">
+        <StaggerList className="space-y-4">
           <h2 className="text-lg font-bold text-[#1B2B3A] dark:text-white">
             Submitted Standing Offers
           </h2>
@@ -177,7 +181,8 @@ export default function MyOffersPage() {
             going live on the marketplace.
           </p>
           {templates.map((t) => (
-            <Card key={t.id} className="bg-white dark:bg-gray-900">
+            <StaggerItem key={t.id}>
+            <Card className="bg-white dark:bg-gray-900">
               <CardContent className="p-5 sm:p-6">
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                   <div className="flex-1 min-w-0">
@@ -199,9 +204,11 @@ export default function MyOffersPage() {
                 </div>
               </CardContent>
             </Card>
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerList>
       )}
     </div>
+    </FadeSwap>
   );
 }

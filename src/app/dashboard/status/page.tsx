@@ -15,20 +15,22 @@ import { BorrowerPageHeader } from "@/components/top-nav";
 import { getStatusColor, getStatusLabel, formatCurrency } from "@/lib/format";
 import { useApplications } from "@/hooks/use-dashboard";
 import { CardSkeleton } from "@/components/skeletons";
+import { FadeSwap } from "@/components/motion/fade-swap";
+import { StaggerList, StaggerItem } from "@/components/motion/stagger";
 
 export default function StatusPage() {
   const { data: applications, isLoading } = useApplications();
 
-  if (isLoading) {
-    return (
-      <div className="max-w-3xl space-y-6">
-        <BorrowerPageHeader title="Application Status" />
-        <CardSkeleton count={3} height="h-32" />
-      </div>
-    );
-  }
-
   return (
+    <FadeSwap
+      loading={isLoading}
+      skeleton={
+        <div className="max-w-3xl space-y-6">
+          <BorrowerPageHeader title="Application Status" />
+          <CardSkeleton count={3} height="h-32" />
+        </div>
+      }
+    >
     <div className="max-w-3xl space-y-6">
       <BorrowerPageHeader title="Application Status" />
 
@@ -43,10 +45,10 @@ export default function StatusPage() {
         Track the progress of all your loan applications.
       </p>
 
-      <div className="space-y-4">
+      <StaggerList className="space-y-4">
         {applications?.map((app) => (
+          <StaggerItem key={app.id}>
           <Card
-            key={app.id}
             className="bg-white rounded-2xl border border-gray-200"
           >
             <CardContent className="p-6">
@@ -120,9 +122,11 @@ export default function StatusPage() {
               </div>
             </CardContent>
           </Card>
+          </StaggerItem>
         ))}
-      </div>
+      </StaggerList>
     </div>
+    </FadeSwap>
   );
 }
 

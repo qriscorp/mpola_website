@@ -13,6 +13,8 @@ import {
 } from "@/hooks/use-lender";
 import { formatCurrency, formatRate, getInitials } from "@/lib/format";
 import type { MarketplaceApplication } from "@/lib/types";
+import { FadeSwap } from "@/components/motion/fade-swap";
+import { StaggerList, StaggerItem } from "@/components/motion/stagger";
 
 type AppStatus = "Pending" | "Approved" | "Declined";
 
@@ -67,16 +69,16 @@ export default function ApplicationsPage() {
     );
   }
 
-  if (isLoading) {
-    return (
-      <div className="space-y-6 max-w-5xl">
-        <LenderPageHeader title="Applications Inbox" />
-        <CardSkeleton count={3} />
-      </div>
-    );
-  }
-
   return (
+    <FadeSwap
+      loading={isLoading}
+      skeleton={
+        <div className="space-y-6 max-w-5xl">
+          <LenderPageHeader title="Applications Inbox" />
+          <CardSkeleton count={3} />
+        </div>
+      }
+    >
     <div className="space-y-6 max-w-5xl">
       <LenderPageHeader title="Applications Inbox" />
 
@@ -118,9 +120,9 @@ export default function ApplicationsPage() {
           No applications in this category.
         </div>
       ) : (
-        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 divide-y divide-gray-100 dark:divide-gray-800">
+        <StaggerList className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 divide-y divide-gray-100 dark:divide-gray-800">
           {filtered.map((app, idx) => (
-            <div
+            <StaggerItem
               key={app.id}
               className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 sm:p-5"
             >
@@ -187,9 +189,9 @@ export default function ApplicationsPage() {
                   View
                 </Link>
               </div>
-            </div>
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerList>
       )}
 
       {/* Approve = make a real offer modal */}
@@ -254,5 +256,6 @@ export default function ApplicationsPage() {
         </div>
       )}
     </div>
+    </FadeSwap>
   );
 }

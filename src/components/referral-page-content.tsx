@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CardSkeleton } from "@/components/skeletons";
 import { useReferralInfo } from "@/hooks/use-support";
+import { StaggerList, StaggerItem } from "@/components/motion/stagger";
 
 const ACCENT = {
   teal: { text: "text-[#2BB5A0]", bg: "bg-[#E8F8F5] dark:bg-[#2BB5A0]/10", solid: "bg-[#2BB5A0] hover:bg-[#239E8C]" },
@@ -77,18 +78,18 @@ export function ReferralPageContent({ accent }: { accent: "teal" | "gold" }) {
               No referrals yet — share your link to get started.
             </p>
           ) : (
-            <div className="divide-y divide-gray-100 dark:divide-gray-800">
+            <StaggerList className="divide-y divide-gray-100 dark:divide-gray-800">
               {data.referred_users.map((u, i) => (
-                <div key={i} className="flex items-center justify-between py-3 text-sm">
+                <StaggerItem key={i} className="flex items-center justify-between py-3 text-sm">
                   <span className="font-medium text-[#1B2B3A] dark:text-white">
                     {u.full_name ?? "Mpola user"}
                   </span>
                   <span className="text-xs text-muted-foreground capitalize">
                     {u.role} · joined {new Date(u.created_at).toLocaleDateString()}
                   </span>
-                </div>
+                </StaggerItem>
               ))}
-            </div>
+            </StaggerList>
           )}
         </CardContent>
       </Card>

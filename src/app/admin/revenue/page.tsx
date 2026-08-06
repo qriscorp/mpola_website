@@ -27,6 +27,8 @@ import { formatCurrency } from "@/lib/format";
 import { useAdminRevenue } from "@/hooks/use-admin";
 import { downloadCsv } from "@/lib/csv";
 import { CardSkeleton, TableSkeleton } from "@/components/skeletons";
+import { FadeSwap } from "@/components/motion/fade-swap";
+import { StaggerList, StaggerItem } from "@/components/motion/stagger";
 
 const PAGE_SIZE = 20;
 
@@ -71,18 +73,18 @@ export default function AdminRevenuePage() {
     );
   };
 
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <h1 className="text-2xl font-bold text-[#1B2B3A] dark:text-white">Revenue</h1>
-        <CardSkeleton count={3} height="h-24" />
-        <CardSkeleton count={1} height="h-72" />
-        <TableSkeleton rows={8} />
-      </div>
-    );
-  }
-
   return (
+    <FadeSwap
+      loading={isLoading}
+      skeleton={
+        <div className="space-y-6">
+          <h1 className="text-2xl font-bold text-[#1B2B3A] dark:text-white">Revenue</h1>
+          <CardSkeleton count={3} height="h-24" />
+          <CardSkeleton count={1} height="h-72" />
+          <TableSkeleton rows={8} />
+        </div>
+      }
+    >
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -101,7 +103,8 @@ export default function AdminRevenuePage() {
       </div>
 
       {/* Summary */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <StaggerList className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <StaggerItem>
         <Card className="bg-white dark:bg-gray-900">
           <CardContent className="p-5">
             <div className="flex items-center gap-3">
@@ -117,6 +120,8 @@ export default function AdminRevenuePage() {
             </div>
           </CardContent>
         </Card>
+        </StaggerItem>
+        <StaggerItem>
         <Card className="bg-white dark:bg-gray-900">
           <CardContent className="p-5">
             <div className="flex items-center gap-3">
@@ -132,7 +137,8 @@ export default function AdminRevenuePage() {
             </div>
           </CardContent>
         </Card>
-      </div>
+        </StaggerItem>
+      </StaggerList>
 
       {/* Monthly trend + category breakdown */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -278,5 +284,6 @@ export default function AdminRevenuePage() {
         </CardContent>
       </Card>
     </div>
+    </FadeSwap>
   );
 }

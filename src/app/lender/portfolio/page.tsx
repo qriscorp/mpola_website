@@ -7,6 +7,7 @@ import { TableSkeleton } from "@/components/skeletons";
 import { useLenderActiveLoans } from "@/hooks/use-lender";
 import { formatCurrency, formatRate } from "@/lib/format";
 import type { ActiveLoan } from "@/lib/types";
+import { FadeSwap } from "@/components/motion/fade-swap";
 
 type LoanStatus = ActiveLoan["status"];
 
@@ -67,16 +68,16 @@ export default function LenderPortfolioPage() {
     .reduce((sum, l) => sum + Math.max(l.total_repayable - l.total_paid, 0), 0);
   const overdueCount = allLoans.filter((l) => l.status === "overdue").length;
 
-  if (isLoading) {
-    return (
-      <div className="space-y-6 max-w-6xl">
-        <LenderPageHeader title="My Portfolio" />
-        <TableSkeleton rows={4} />
-      </div>
-    );
-  }
-
   return (
+    <FadeSwap
+      loading={isLoading}
+      skeleton={
+        <div className="space-y-6 max-w-6xl">
+          <LenderPageHeader title="My Portfolio" />
+          <TableSkeleton rows={4} />
+        </div>
+      }
+    >
     <div className="space-y-6 max-w-6xl">
       <LenderPageHeader title="My Portfolio" />
 
@@ -221,5 +222,6 @@ export default function LenderPortfolioPage() {
         )}
       </div>
     </div>
+    </FadeSwap>
   );
 }

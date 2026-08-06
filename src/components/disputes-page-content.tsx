@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/select";
 import { CardSkeleton } from "@/components/skeletons";
 import { useMyDisputes, useFileDispute } from "@/hooks/use-support";
+import { StaggerList, StaggerItem } from "@/components/motion/stagger";
 
 const ACCENT = {
   teal: { text: "text-[#2BB5A0]", solid: "bg-[#2BB5A0] hover:bg-[#239E8C]" },
@@ -116,9 +117,9 @@ export function DisputesPageContent({ accent }: { accent: "teal" | "gold" }) {
             No disputes filed.
           </p>
         ) : (
-          <div className="divide-y divide-gray-100 dark:divide-gray-800">
+          <StaggerList className="divide-y divide-gray-100 dark:divide-gray-800">
             {disputes.map((d) => (
-              <div key={d.id} className="py-4 space-y-1">
+              <StaggerItem key={d.id} className="py-4 space-y-1">
                 <div className="flex items-center justify-between">
                   <Badge variant="outline" className="text-xs">
                     {categoryLabel[d.category] ?? d.category}
@@ -136,9 +137,9 @@ export function DisputesPageContent({ accent }: { accent: "teal" | "gold" }) {
                 <p className="text-xs text-muted-foreground">
                   Filed {new Date(d.created_at).toLocaleDateString()}
                 </p>
-              </div>
+              </StaggerItem>
             ))}
-          </div>
+          </StaggerList>
         )}
       </CardContent>
     </Card>

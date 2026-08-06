@@ -6,6 +6,7 @@ import { BorrowerPageHeader } from "@/components/top-nav";
 import { useApplications } from "@/hooks/use-dashboard";
 import { formatCurrency, getStatusColor, getStatusLabel } from "@/lib/format";
 import { TableSkeleton } from "@/components/skeletons";
+import { StaggerList, StaggerItem } from "@/components/motion/stagger";
 
 const tabs = ["All", "Pending", "Funded", "Closed"] as const;
 type Tab = (typeof tabs)[number];
@@ -54,9 +55,9 @@ export default function MyRequestsPage() {
           No loan requests here yet.
         </div>
       ) : (
-        <div className="space-y-4">
+        <StaggerList className="space-y-4">
           {filtered.map((app) => (
-            <div
+            <StaggerItem
               key={app.id}
               className="bg-white rounded-2xl border border-gray-200 p-6 flex flex-col sm:flex-row sm:items-center gap-4"
             >
@@ -83,9 +84,9 @@ export default function MyRequestsPage() {
                   View Offers
                 </Link>
               )}
-            </div>
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerList>
       )}
 
       <div>

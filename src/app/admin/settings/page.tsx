@@ -27,6 +27,8 @@ import { useUser, useUpdateProfile } from "@/hooks/use-dashboard";
 import { api } from "@/lib/api";
 import { formatCurrency, formatRate } from "@/lib/format";
 import { CardSkeleton } from "@/components/skeletons";
+import { FadeSwap } from "@/components/motion/fade-swap";
+import { StaggerList, StaggerItem } from "@/components/motion/stagger";
 
 function Toggle({ on, onToggle }: { on: boolean; onToggle: () => void }) {
   return (
@@ -135,23 +137,23 @@ export default function AdminSettingsPage() {
     }
   }
 
-  if (isLoading) {
-    return (
-      <div className="space-y-6 max-w-3xl">
-        <div>
-          <h1 className="text-2xl font-bold text-[#1B2B3A] dark:text-white">
-            Platform Settings
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Configure Mpola platform settings
-          </p>
-        </div>
-        <CardSkeleton count={4} height="h-48" />
-      </div>
-    );
-  }
-
   return (
+    <FadeSwap
+      loading={isLoading}
+      skeleton={
+        <div className="space-y-6 max-w-3xl">
+          <div>
+            <h1 className="text-2xl font-bold text-[#1B2B3A] dark:text-white">
+              Platform Settings
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Configure Mpola platform settings
+            </p>
+          </div>
+          <CardSkeleton count={4} height="h-48" />
+        </div>
+      }
+    >
     <div className="space-y-6 max-w-3xl">
       <div>
         <h1 className="text-2xl font-bold text-[#1B2B3A] dark:text-white">
@@ -430,9 +432,9 @@ export default function AdminSettingsPage() {
               Nothing waiting for review.
             </p>
           ) : (
-            <div className="space-y-3">
+            <StaggerList className="space-y-3">
               {pendingTemplates.map((t) => (
-                <div
+                <StaggerItem
                   key={t.id}
                   className="flex flex-col sm:flex-row sm:items-center gap-3 p-3 rounded-lg border border-gray-100 dark:border-gray-800"
                 >
@@ -472,9 +474,9 @@ export default function AdminSettingsPage() {
                       Reject
                     </Button>
                   </div>
-                </div>
+                </StaggerItem>
               ))}
-            </div>
+            </StaggerList>
           )}
         </CardContent>
       </Card>
@@ -556,5 +558,6 @@ export default function AdminSettingsPage() {
         </Button>
       </div>
     </div>
+    </FadeSwap>
   );
 }

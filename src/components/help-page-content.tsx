@@ -21,6 +21,7 @@ import {
   useCreateSupportTicket,
   useReplySupportTicket,
 } from "@/hooks/use-support";
+import { StaggerList, StaggerItem } from "@/components/motion/stagger";
 
 const ACCENT = {
   teal: { text: "text-[#2BB5A0]", bg: "bg-[#E8F8F5] dark:bg-[#2BB5A0]/10", solid: "bg-[#2BB5A0] hover:bg-[#239E8C]" },
@@ -163,10 +164,10 @@ export function HelpPageContent({ accent }: { accent: "teal" | "gold" }) {
               No support tickets yet.
             </p>
           ) : (
-            <div className="divide-y divide-gray-100 dark:divide-gray-800">
+            <StaggerList className="divide-y divide-gray-100 dark:divide-gray-800">
               {tickets.map((t) => (
+                <StaggerItem key={t.id}>
                 <button
-                  key={t.id}
                   onClick={() => setActiveTicketId(t.id === activeTicketId ? null : t.id)}
                   className="w-full flex items-center justify-between py-3 text-left"
                 >
@@ -183,8 +184,9 @@ export function HelpPageContent({ accent }: { accent: "teal" | "gold" }) {
                     {t.status.replace("_", " ")}
                   </Badge>
                 </button>
+                </StaggerItem>
               ))}
-            </div>
+            </StaggerList>
           )}
 
           {activeTicket && (

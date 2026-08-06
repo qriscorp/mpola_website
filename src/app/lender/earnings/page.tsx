@@ -4,6 +4,8 @@ import { LenderPageHeader } from "@/components/lender-top-nav";
 import { CardSkeleton } from "@/components/skeletons";
 import { useLenderEarnings } from "@/hooks/use-lender";
 import { formatCurrency } from "@/lib/format";
+import { FadeSwap } from "@/components/motion/fade-swap";
+import { StaggerList, StaggerItem } from "@/components/motion/stagger";
 
 function monthLabel(monthKey: string): string {
   const [year, month] = monthKey.split("-").map(Number);
@@ -14,15 +16,6 @@ function monthLabel(monthKey: string): string {
 
 export default function LenderEarningsPage() {
   const { data: earnings, isLoading } = useLenderEarnings();
-
-  if (isLoading) {
-    return (
-      <div className="max-w-6xl space-y-6">
-        <LenderPageHeader title="Earnings Summary" />
-        <CardSkeleton count={4} />
-      </div>
-    );
-  }
 
   const monthlyEarnings = earnings?.monthly_earnings ?? [];
   const maxVal = Math.max(...monthlyEarnings.map((entry) => entry.amount), 1);
@@ -51,12 +44,21 @@ export default function LenderEarningsPage() {
   ];
 
   return (
+    <FadeSwap
+      loading={isLoading}
+      skeleton={
+        <div className="max-w-6xl space-y-6">
+          <LenderPageHeader title="Earnings Summary" />
+          <CardSkeleton count={4} />
+        </div>
+      }
+    >
     <div className="max-w-6xl space-y-6">
       <LenderPageHeader title="Earnings Summary" />
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <StaggerList className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {stats.map((stat) => (
-          <div
+          <StaggerItem
             key={stat.label}
             className="rounded-xl border border-gray-200 bg-white p-5"
           >
@@ -67,9 +69,9 @@ export default function LenderEarningsPage() {
               {stat.value}
             </p>
             <p className="mt-1 text-xs text-gray-400">{stat.helper}</p>
-          </div>
+          </StaggerItem>
         ))}
-      </div>
+      </StaggerList>
 
       <div className="rounded-xl border border-gray-200 bg-white p-5 sm:p-6">
         <div className="mb-5 flex items-end justify-between gap-3">
@@ -116,5 +118,6 @@ export default function LenderEarningsPage() {
         )}
       </div>
     </div>
+    </FadeSwap>
   );
 }

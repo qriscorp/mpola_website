@@ -18,6 +18,8 @@ import { useAdminPayments, useAdminStats } from "@/hooks/use-admin";
 import { downloadCsv } from "@/lib/csv";
 import { CardSkeleton, TableSkeleton } from "@/components/skeletons";
 import { PaginationControls } from "@/components/ui/pagination-controls";
+import { FadeSwap } from "@/components/motion/fade-swap";
+import { StaggerList, StaggerItem } from "@/components/motion/stagger";
 
 const PAGE_SIZE = 20;
 
@@ -59,17 +61,17 @@ export default function AdminPaymentsPage() {
     );
   };
 
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <h1 className="text-2xl font-bold text-[#1B2B3A] dark:text-white">Wallet & Payments</h1>
-        <CardSkeleton count={1} height="h-24" />
-        <TableSkeleton rows={8} />
-      </div>
-    );
-  }
-
   return (
+    <FadeSwap
+      loading={isLoading}
+      skeleton={
+        <div className="space-y-6">
+          <h1 className="text-2xl font-bold text-[#1B2B3A] dark:text-white">Wallet & Payments</h1>
+          <CardSkeleton count={1} height="h-24" />
+          <TableSkeleton rows={8} />
+        </div>
+      }
+    >
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -91,7 +93,8 @@ export default function AdminPaymentsPage() {
       </div>
 
       {/* Summary */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <StaggerList className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <StaggerItem>
         <Card className="bg-white dark:bg-gray-900">
           <CardContent className="p-5">
             <div className="flex items-center gap-3">
@@ -109,6 +112,8 @@ export default function AdminPaymentsPage() {
             </div>
           </CardContent>
         </Card>
+        </StaggerItem>
+        <StaggerItem>
         <Card className="bg-white dark:bg-gray-900">
           <CardContent className="p-5">
             <div className="flex items-center gap-3">
@@ -124,6 +129,8 @@ export default function AdminPaymentsPage() {
             </div>
           </CardContent>
         </Card>
+        </StaggerItem>
+        <StaggerItem>
         <Card className="bg-white dark:bg-gray-900">
           <CardContent className="p-5">
             <div className="flex items-center gap-3">
@@ -141,7 +148,8 @@ export default function AdminPaymentsPage() {
             </div>
           </CardContent>
         </Card>
-      </div>
+        </StaggerItem>
+      </StaggerList>
 
       {/* Transactions Table */}
       <Card className="bg-white dark:bg-gray-900">
@@ -223,5 +231,6 @@ export default function AdminPaymentsPage() {
         </CardContent>
       </Card>
     </div>
+    </FadeSwap>
   );
 }

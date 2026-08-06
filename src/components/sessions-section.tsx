@@ -2,6 +2,7 @@
 
 import { Monitor } from "lucide-react";
 import { useLoginSessions, useSignOutEverywhere } from "@/hooks/use-support";
+import { StaggerList, StaggerItem } from "@/components/motion/stagger";
 
 function summarizeUserAgent(ua: string | null): string {
   if (!ua) return "Unknown device";
@@ -45,9 +46,9 @@ export function SessionsSection() {
       ) : !sessions?.length ? (
         <p className="text-sm text-gray-400">No recent login activity.</p>
       ) : (
-        <div className="space-y-3">
+        <StaggerList className="space-y-3">
           {sessions.map((s) => (
-            <div
+            <StaggerItem
               key={s.id}
               className="flex items-center gap-3 rounded-xl border border-gray-100 dark:border-gray-800 p-3"
             >
@@ -68,9 +69,9 @@ export function SessionsSection() {
                   {new Date(s.created_at).toLocaleString()}
                 </p>
               </div>
-            </div>
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerList>
       )}
       <p className="mt-4 text-xs text-gray-400">
         Mpola keeps one active session per account — &quot;Sign out everywhere&quot; ends

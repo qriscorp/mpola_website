@@ -8,6 +8,8 @@ import { CardSkeleton } from "@/components/skeletons";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { formatCurrency, formatRate, getInitials } from "@/lib/format";
+import { FadeSwap } from "@/components/motion/fade-swap";
+import { StaggerList, StaggerItem } from "@/components/motion/stagger";
 
 const avatarColors = ["#1B2B3A", "#2BB5A0", "#8B4513", "#C4A55A"];
 
@@ -51,16 +53,16 @@ export default function BrowseOffersPage() {
     }, null);
   }, [offers]);
 
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <BorrowerPageHeader title="Browse Lender Offers" />
-        <CardSkeleton count={3} />
-      </div>
-    );
-  }
-
   return (
+    <FadeSwap
+      loading={isLoading}
+      skeleton={
+        <div className="space-y-6">
+          <BorrowerPageHeader title="Browse Lender Offers" />
+          <CardSkeleton count={3} />
+        </div>
+      }
+    >
     <div className="space-y-6">
       <BorrowerPageHeader title="Browse Lender Offers" />
 
@@ -106,9 +108,9 @@ export default function BrowseOffersPage() {
             : "No offers match your filters."}
         </div>
       ) : (
-        <div className="space-y-4">
+        <StaggerList className="space-y-4">
           {filtered.map((offer, idx) => (
-            <div
+            <StaggerItem
               key={offer.id}
               className={`bg-white dark:bg-gray-900 rounded-2xl border p-5 flex flex-col sm:flex-row sm:items-center gap-4 ${offer.id === bestOfferId ? "border-[#2BB5A0]" : "border-gray-200 dark:border-gray-800"}`}
             >
@@ -162,10 +164,11 @@ export default function BrowseOffersPage() {
                   View & Respond
                 </Link>
               </div>
-            </div>
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerList>
       )}
     </div>
+    </FadeSwap>
   );
 }

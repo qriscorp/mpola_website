@@ -8,6 +8,7 @@ import { useMarketplace } from "@/hooks/use-lender";
 import { formatCurrency } from "@/lib/format";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
+import { StaggerList, StaggerItem } from "@/components/motion/stagger";
 
 const PAGE_SIZE = 20;
 const tabs = ["All", "Business", "Personal"] as const;
@@ -111,11 +112,11 @@ export default function MarketplacePage() {
           ))}
         </div>
       ) : (
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <StaggerList className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
         {filtered.map((a, idx) => {
           const verified = a.borrower?.kyc_status === "verified";
           return (
-            <div
+            <StaggerItem
               key={a.id}
               className="rounded-xl border border-gray-200 bg-white p-5 transition-shadow hover:shadow-md"
             >
@@ -172,10 +173,10 @@ export default function MarketplacePage() {
               >
                 Review Application
               </Link>
-            </div>
+            </StaggerItem>
           );
         })}
-      </div>
+      </StaggerList>
       )}
 
       <PaginationControls
