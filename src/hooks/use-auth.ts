@@ -93,13 +93,30 @@ export function useSignIn() {
         password: data.password,
         portal: "borrower",
       }),
-    onSuccess: () => {
+    onSuccess: (result) => {
+      if (result.requires2FA) return; // caller shows the 2FA code modal instead
       toast.success("Welcome back!");
       const role = getCookie("lf_role") || "borrower";
       router.push(getPostAuthRoute(role));
     },
     onError: (error: Error) => {
       toast.error(error.message || "Invalid credentials. Please try again.");
+    },
+  });
+}
+
+export function useVerifyLogin2FA() {
+  const router = useRouter();
+  return useMutation({
+    mutationFn: ({ username, code }: { username: string; code: string }) =>
+      api.verifyLogin2FA(username, code),
+    onSuccess: () => {
+      toast.success("Welcome back!");
+      const role = getCookie("lf_role") || "borrower";
+      router.push(getPostAuthRoute(role));
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Invalid code. Please try again.");
     },
   });
 }
@@ -136,7 +153,8 @@ export function useLenderSignIn() {
         phoneOrEmail: data.phoneOrEmail,
         password: data.password,
       }),
-    onSuccess: () => {
+    onSuccess: (result) => {
+      if (result.requires2FA) return; // caller shows the 2FA code modal instead
       toast.success("Welcome back!");
       const role = getCookie("lf_role") || "lender";
       router.push(getPostAuthRoute(role));

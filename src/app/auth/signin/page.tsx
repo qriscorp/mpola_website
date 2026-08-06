@@ -7,10 +7,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useSignIn } from "@/hooks/use-auth";
 import { signInSchema, type SignInFormData } from "@/lib/schemas";
 import { PhoneOtpSigninModal } from "@/components/phone-otp-signin-modal";
+import { TwoFactorSignInModal } from "@/components/two-factor-signin-modal";
 
 export default function SignInPage() {
   const { mutate: signIn, isPending } = useSignIn();
   const [otpModalOpen, setOtpModalOpen] = useState(false);
+  const [twoFAUsername, setTwoFAUsername] = useState<string | null>(null);
 
   const {
     register,
@@ -21,7 +23,12 @@ export default function SignInPage() {
     defaultValues: { rememberMe: true },
   });
 
-  const onSubmit = (data: SignInFormData) => signIn(data);
+  const onSubmit = (data: SignInFormData) =>
+    signIn(data, {
+      onSuccess: (result) => {
+        if (result.requires2FA) setTwoFAUsername(result.username);
+      },
+    });
 
   return (
     <div className="min-h-screen bg-[#F0F2F5] flex flex-col p-4">
@@ -142,6 +149,11 @@ export default function SignInPage() {
             open={otpModalOpen}
             onClose={() => setOtpModalOpen(false)}
             portal="borrower"
+          />
+          <TwoFactorSignInModal
+            open={!!twoFAUsername}
+            username={twoFAUsername ?? ""}
+            onClose={() => setTwoFAUsername(null)}
           />
         </div>
       </div>

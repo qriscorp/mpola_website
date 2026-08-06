@@ -57,6 +57,21 @@ export interface AuthResponse {
   refresh_token: string;
 }
 
+export interface RequiresTwoFactorResponse {
+  status: number;
+  requires_2fa: true;
+  username: string;
+  message: string;
+}
+
+// /auth/login returns this shape when the account has 2FA enabled — no
+// tokens yet, just a signal to collect the code that was just SMS'd out.
+type LoginApiResponse = AuthResponse | RequiresTwoFactorResponse;
+
+export type SignInOutcome =
+  | { requires2FA: true; username: string }
+  | { requires2FA: false; user: User };
+
 export interface SignupDraftResponse {
   status: number;
   message: string;
@@ -393,15 +408,28 @@ export const api = {
     phoneOrEmail: string;
     password: string;
     portal?: "borrower" | "lender";
-  }): Promise<User> => {
+  }): Promise<SignInOutcome> => {
     // If input looks like a phone number, normalize it
     const identifier = /^\d{9,12}$/.test(data.phoneOrEmail.replace(/\D/g, ""))
       ? normalizePhone(data.phoneOrEmail)
       : data.phoneOrEmail;
-    const res = await apiPost<AuthResponse>("/auth/login", {
+    const res = await apiPost<LoginApiResponse>("/auth/login", {
       username: identifier,
       password: data.password,
       portal: data.portal,
+    });
+    if ("requires_2fa" in res) {
+      return { requires2FA: true, username: res.username };
+    }
+    storeTokens(res);
+    return { requires2FA: false, user: mapAuthUser(res) };
+  },
+
+  /** Completes a sign-in that returned requires2FA — verifies the SMS code and issues tokens. */
+  verifyLogin2FA: async (username: string, code: string): Promise<User> => {
+    const res = await apiPost<AuthResponse>("/auth/verify_login_2fa", {
+      username,
+      code,
     });
     storeTokens(res);
     return mapAuthUser(res);
@@ -429,15 +457,18 @@ export const api = {
   lenderSignIn: async (data: {
     phoneOrEmail: string;
     password: string;
-  }): Promise<User> => {
+  }): Promise<SignInOutcome> => {
     const identifier = /^\d{9,12}$/.test(data.phoneOrEmail.replace(/\D/g, ""))
       ? normalizePhone(data.phoneOrEmail)
       : data.phoneOrEmail;
-    const res = await apiPost<AuthResponse>("/auth/login", {
+    const res = await apiPost<LoginApiResponse>("/auth/login", {
       username: identifier,
       password: data.password,
       portal: "lender",
     });
+    if ("requires_2fa" in res) {
+      return { requires2FA: true, username: res.username };
+    }
     if (
       res.user!.role !== "lender" &&
       res.user!.role !== "admin" &&
@@ -449,7 +480,7 @@ export const api = {
       );
     }
     storeTokens(res);
-    return mapAuthUser(res);
+    return { requires2FA: false, user: mapAuthUser(res) };
   },
 
   lenderRegister: async (

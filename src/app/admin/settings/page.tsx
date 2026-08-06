@@ -43,11 +43,12 @@ function Toggle({ on, onToggle }: { on: boolean; onToggle: () => void }) {
   );
 }
 
+// Overdue/default events aren't per-loan admin alerts — the lender on each
+// loan is notified directly, and admins see the weekly totals instead (see
+// notif_weekly_digest below) so a busy platform doesn't flood the admin team.
 const NOTIFICATION_ITEMS = [
-  { key: "notif_new_applications", label: "Email notifications for new applications" },
-  { key: "notif_overdue_sms", label: "SMS alerts for overdue payments" },
-  { key: "notif_weekly_digest", label: "Weekly performance digest" },
-  { key: "notif_default_alerts", label: "Real-time alerts for defaults" },
+  { key: "notif_new_applications", label: "Notify admins of new applications" },
+  { key: "notif_weekly_digest", label: "Weekly performance digest (includes overdue/default totals)" },
 ];
 
 const DEFAULTS: Record<string, string> = {
@@ -57,7 +58,12 @@ const DEFAULTS: Record<string, string> = {
   min_loan_amount: "500000",
   max_loan_amount: "100000000",
   max_interest_rate: "25",
-  late_payment_penalty: "2",
+  // These four map directly to the keys the collections engine (scheduler.py)
+  // actually reads — see its module docstring for the exact semantics.
+  reminder_days_before_due: "3",
+  grace_period_days: "3",
+  default_after_days: "60",
+  late_fee_rate: "2", // stored as a fraction (0.02) — shown here as a percentage
 };
 
 export default function AdminSettingsPage() {
@@ -80,6 +86,11 @@ export default function AdminSettingsPage() {
       for (const key of Object.keys(DEFAULTS)) {
         if (settings[key]) next[key] = settings[key].value;
       }
+      // The collections engine stores late_fee_rate as a fraction (0.02) —
+      // shown here as a percentage (2) for a human to actually read.
+      if (settings.late_fee_rate) {
+        next.late_fee_rate = String(parseFloat(settings.late_fee_rate.value) * 100);
+      }
       setForm(next);
     }
   }, [settings]);
@@ -92,7 +103,10 @@ export default function AdminSettingsPage() {
     try {
       await Promise.all(
         Object.entries(form).map(([key, value]) =>
-          api.updateAdminSetting(key, value),
+          api.updateAdminSetting(
+            key,
+            key === "late_fee_rate" ? String(Number(value) / 100) : value,
+          ),
         ),
       );
       toast.success("Settings saved");
@@ -235,14 +249,70 @@ export default function AdminSettingsPage() {
                 disabled={isLoading}
               />
             </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Collections */}
+      <Card className="bg-white dark:bg-gray-900">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Database className="h-4 w-4 text-[#C4A55A]" />
+            <h2 className="font-semibold text-[#1B2B3A] dark:text-white">
+              Collections
+            </h2>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Controls the daily job that sends payment reminders and moves
+            loans through active → overdue → defaulted.
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label>Late Payment Penalty (%)</Label>
+              <Label>Payment Reminder (days before due)</Label>
               <Input
                 type="number"
-                value={form.late_payment_penalty}
-                onChange={(e) => setForm({ ...form, late_payment_penalty: e.target.value })}
+                value={form.reminder_days_before_due}
+                onChange={(e) =>
+                  setForm({ ...form, reminder_days_before_due: e.target.value })
+                }
                 disabled={isLoading}
               />
+            </div>
+            <div className="space-y-2">
+              <Label>Grace Period (days past due)</Label>
+              <Input
+                type="number"
+                value={form.grace_period_days}
+                onChange={(e) => setForm({ ...form, grace_period_days: e.target.value })}
+                disabled={isLoading}
+              />
+              <p className="text-xs text-muted-foreground">
+                A loan flips to &quot;overdue&quot; once it&apos;s this many days past
+                its due date.
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label>Default After (days overdue)</Label>
+              <Input
+                type="number"
+                value={form.default_after_days}
+                onChange={(e) => setForm({ ...form, default_after_days: e.target.value })}
+                disabled={isLoading}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Late Fee (%)</Label>
+              <Input
+                type="number"
+                value={form.late_fee_rate}
+                onChange={(e) => setForm({ ...form, late_fee_rate: e.target.value })}
+                disabled={isLoading}
+              />
+              <p className="text-xs text-muted-foreground">
+                One-time fee added to the loan the moment it goes overdue.
+              </p>
             </div>
           </div>
         </CardContent>

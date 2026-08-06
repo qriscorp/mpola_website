@@ -1,13 +1,16 @@
 "use client";
 
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useLenderSignIn } from "@/hooks/use-auth";
 import { signInSchema, type SignInFormData } from "@/lib/schemas";
+import { TwoFactorSignInModal } from "@/components/two-factor-signin-modal";
 
 export default function LenderSignInPage() {
   const { mutate: signIn, isPending } = useLenderSignIn();
+  const [twoFAUsername, setTwoFAUsername] = useState<string | null>(null);
 
   const {
     register,
@@ -19,7 +22,14 @@ export default function LenderSignInPage() {
   });
 
   const onSubmit = (data: SignInFormData) =>
-    signIn({ phoneOrEmail: data.phoneOrEmail, password: data.password });
+    signIn(
+      { phoneOrEmail: data.phoneOrEmail, password: data.password },
+      {
+        onSuccess: (result) => {
+          if (result.requires2FA) setTwoFAUsername(result.username);
+        },
+      },
+    );
 
   return (
     <div className="min-h-screen bg-[#F0F2F5] flex flex-col p-4">
@@ -147,6 +157,12 @@ export default function LenderSignInPage() {
           </p>
         </div>
       </div>
+
+      <TwoFactorSignInModal
+        open={!!twoFAUsername}
+        username={twoFAUsername ?? ""}
+        onClose={() => setTwoFAUsername(null)}
+      />
     </div>
   );
 }
