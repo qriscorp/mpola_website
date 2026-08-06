@@ -44,7 +44,7 @@ export function AdminTopNav() {
       <div className="flex items-center gap-3">
         <ThemeToggle />
         <Link
-          href="/admin"
+          href="/admin/notifications"
           className="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
           aria-label="Notifications"
         >
