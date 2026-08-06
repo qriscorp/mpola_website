@@ -11,6 +11,8 @@ import {
 import { formatCurrency } from "@/lib/format";
 import { DashboardSkeleton } from "@/components/skeletons";
 import { BorrowerPageHeader } from "@/components/top-nav";
+import { FadeSwap } from "@/components/motion/fade-swap";
+import { StaggerList, StaggerItem } from "@/components/motion/stagger";
 
 export default function DashboardPage() {
   const { data: user, isLoading: userLoading } = useUser();
@@ -18,7 +20,7 @@ export default function DashboardPage() {
   const { data: activeLoan } = useActiveLoan();
   const { data: recentNotifications } = useRecentNotifications();
 
-  if (userLoading || statsLoading) return <DashboardSkeleton />;
+  const loading = userLoading || statsLoading;
 
   const loanBalance = activeLoan
     ? Math.max(activeLoan.total_repayable - activeLoan.total_paid, 0)
@@ -31,6 +33,7 @@ export default function DashboardPage() {
     : 0;
 
   return (
+    <FadeSwap loading={loading} skeleton={<DashboardSkeleton />}>
     <div className="space-y-6 max-w-300">
       <BorrowerPageHeader title="Dashboard" />
 
@@ -62,8 +65,8 @@ export default function DashboardPage() {
       )}
 
       {/* Stats Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 border-t-4 border-t-[#2BB5A0] p-5">
+      <StaggerList className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StaggerItem className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 border-t-4 border-t-[#2BB5A0] p-5">
           <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
             Loan Balance
           </p>
@@ -75,8 +78,8 @@ export default function DashboardPage() {
               ? `${remainingInstalments} payment${remainingInstalments === 1 ? "" : "s"} remaining`
               : "No active loan"}
           </p>
-        </div>
-        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 border-t-4 border-t-[#2BB5A0] p-5">
+        </StaggerItem>
+        <StaggerItem className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 border-t-4 border-t-[#2BB5A0] p-5">
           <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
             Total Repaid
           </p>
@@ -84,8 +87,8 @@ export default function DashboardPage() {
             {formatCurrency(activeLoan?.total_paid ?? 0)}
           </p>
           <p className="text-xs text-gray-400 mt-1">{repaidPct}% complete</p>
-        </div>
-        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 border-t-4 border-t-[#2BB5A0] p-5">
+        </StaggerItem>
+        <StaggerItem className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 border-t-4 border-t-[#2BB5A0] p-5">
           <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
             Offers Received
           </p>
@@ -98,8 +101,8 @@ export default function DashboardPage() {
           >
             Review now →
           </Link>
-        </div>
-        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 border-t-4 border-t-[#C4A55A] p-5">
+        </StaggerItem>
+        <StaggerItem className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 border-t-4 border-t-[#C4A55A] p-5">
           <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
             Credit Score
           </p>
@@ -109,8 +112,8 @@ export default function DashboardPage() {
           <p className="text-xs text-gray-400 mt-1">
             Higher scores unlock better rates
           </p>
-        </div>
-      </div>
+        </StaggerItem>
+      </StaggerList>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Quick Actions */}
@@ -185,5 +188,6 @@ export default function DashboardPage() {
         </div>
       </div>
     </div>
+    </FadeSwap>
   );
 }

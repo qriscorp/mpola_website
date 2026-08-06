@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { AdminSidebar } from "@/components/admin-sidebar";
 import { AdminTopNav } from "@/components/admin-top-nav";
 import { RealtimeProvider } from "@/components/realtime-provider";
+import { PageTransition } from "@/components/motion/page-transition";
 
 export const metadata: Metadata = {
   title: "Admin Dashboard – Mpola",
@@ -21,7 +22,7 @@ export default function AdminLayout({
       <div className="flex flex-1 min-h-0">
         <AdminSidebar />
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
-          {children}
+          <PageTransition>{children}</PageTransition>
         </main>
       </div>
     </div>

@@ -11,6 +11,8 @@ import {
 import { formatCurrency, formatRate, getInitials } from "@/lib/format";
 import { CardSkeleton } from "@/components/skeletons";
 import { LenderPageHeader } from "@/components/lender-top-nav";
+import { FadeSwap } from "@/components/motion/fade-swap";
+import { StaggerList, StaggerItem } from "@/components/motion/stagger";
 
 export default function LenderDashboardPage() {
   const { data: earnings, isLoading: earningsLoading } = useLenderEarnings();
@@ -18,14 +20,7 @@ export default function LenderDashboardPage() {
   const { data: marketplace, isLoading: marketplaceLoading } =
     useMarketplace();
 
-  if (earningsLoading || loansLoading || marketplaceLoading) {
-    return (
-      <div className="space-y-6">
-        <LenderPageHeader title="Dashboard" />
-        <CardSkeleton count={4} />
-      </div>
-    );
-  }
+  const loading = earningsLoading || loansLoading || marketplaceLoading;
 
   const activeLoans = (loans ?? []).filter(
     (l) => l.status === "active" || l.status === "overdue",
@@ -53,13 +48,22 @@ export default function LenderDashboardPage() {
   ];
 
   return (
+    <FadeSwap
+      loading={loading}
+      skeleton={
+        <div className="space-y-6">
+          <LenderPageHeader title="Dashboard" />
+          <CardSkeleton count={4} />
+        </div>
+      }
+    >
     <div className="space-y-6">
       <LenderPageHeader title="Dashboard" />
 
       {/* Stat cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <StaggerList className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {statCards.map((s) => (
-          <div
+          <StaggerItem
             key={s.label}
             className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 border-t-4 border-t-[#C4A55A] p-5"
           >
@@ -70,9 +74,9 @@ export default function LenderDashboardPage() {
               {s.value}
             </p>
             {s.sub && <p className="text-xs mt-1 text-gray-400">{s.sub}</p>}
-          </div>
+          </StaggerItem>
         ))}
-      </div>
+      </StaggerList>
 
       {/* Two-column main content */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -177,5 +181,6 @@ export default function LenderDashboardPage() {
         </div>
       </div>
     </div>
+    </FadeSwap>
   );
 }

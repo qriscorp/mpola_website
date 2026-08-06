@@ -26,6 +26,8 @@ import {
   useAdminApplications,
 } from "@/hooks/use-admin";
 import { formatCurrency } from "@/lib/format";
+import { FadeSwap } from "@/components/motion/fade-swap";
+import { StaggerList, StaggerItem } from "@/components/motion/stagger";
 import {
   BarChart,
   Bar,
@@ -153,24 +155,23 @@ export default function AdminDashboardPage() {
     },
   ];
 
-  if (isLoading) {
-    return (
-      <div className="space-y-6 animate-pulse">
-        <h1 className="text-2xl font-bold text-[#1B2B3A] dark:text-white">Admin Dashboard</h1>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-32 bg-gray-100 dark:bg-gray-800 rounded-xl" />
-          ))}
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 h-72 bg-gray-100 dark:bg-gray-800 rounded-xl" />
-          <div className="h-72 bg-gray-100 dark:bg-gray-800 rounded-xl" />
-        </div>
+  const skeleton = (
+    <div className="space-y-6 animate-pulse">
+      <h1 className="text-2xl font-bold text-[#1B2B3A] dark:text-white">Admin Dashboard</h1>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="h-32 bg-gray-100 dark:bg-gray-800 rounded-xl" />
+        ))}
       </div>
-    );
-  }
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 h-72 bg-gray-100 dark:bg-gray-800 rounded-xl" />
+        <div className="h-72 bg-gray-100 dark:bg-gray-800 rounded-xl" />
+      </div>
+    </div>
+  );
 
   return (
+    <FadeSwap loading={isLoading} skeleton={skeleton}>
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
@@ -188,26 +189,28 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <StaggerList className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {statCards.map((stat) => (
-          <Card key={stat.label} className="bg-white dark:bg-gray-900">
-            <CardContent className="p-5">
-              <div className="flex items-center justify-between mb-3">
-                <div
-                  className={`h-10 w-10 rounded-lg ${stat.bg} flex items-center justify-center`}
-                >
-                  <stat.icon className={`h-5 w-5 ${stat.color}`} />
+          <StaggerItem key={stat.label}>
+            <Card className="bg-white dark:bg-gray-900">
+              <CardContent className="p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <div
+                    className={`h-10 w-10 rounded-lg ${stat.bg} flex items-center justify-center`}
+                  >
+                    <stat.icon className={`h-5 w-5 ${stat.color}`} />
+                  </div>
                 </div>
-              </div>
-              <p className="text-2xl font-bold text-[#1B2B3A] dark:text-white">
-                {stat.value}
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">{stat.label}</p>
-              <p className="text-[11px] text-muted-foreground mt-2">{stat.sub}</p>
-            </CardContent>
-          </Card>
+                <p className="text-2xl font-bold text-[#1B2B3A] dark:text-white">
+                  {stat.value}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">{stat.label}</p>
+                <p className="text-[11px] text-muted-foreground mt-2">{stat.sub}</p>
+              </CardContent>
+            </Card>
+          </StaggerItem>
         ))}
-      </div>
+      </StaggerList>
 
       {/* Growth & Activity — simple, at-a-glance view for the admin */}
       <Card className="bg-white dark:bg-gray-900">
@@ -668,5 +671,6 @@ export default function AdminDashboardPage() {
         </Card>
       </div>
     </div>
+    </FadeSwap>
   );
 }
