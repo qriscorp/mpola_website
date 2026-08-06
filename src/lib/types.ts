@@ -213,6 +213,29 @@ export interface AdminStats {
   user_growth: { month: string; borrowers: number; lenders: number }[];
 }
 
+export interface AdminActivityPeriod {
+  today: number;
+  yesterday: number;
+  this_week: number;
+  last_week: number;
+  week_change_pct: number;
+  this_month: number;
+  last_month: number;
+  month_change_pct: number;
+}
+
+export interface AdminActivity {
+  users: AdminActivityPeriod;
+  transactions: AdminActivityPeriod;
+  offers: AdminActivityPeriod;
+  daily_activity: {
+    date: string;
+    new_users: number;
+    transactions: number;
+    offers: number;
+  }[];
+}
+
 export interface AdminUser {
   id: string;
   username: string;
@@ -284,7 +307,7 @@ export interface AdminPaymentTx {
 export interface AdminRevenueTx {
   id: string;
   username: string | null;
-  category: "mobile_money_withdrawal" | "bank_withdrawal";
+  category: "mobile_money_withdrawal" | "bank_withdrawal" | "loan_disbursement" | "loan_repayment";
   platform_fee: number;
   provider_fee: number;
   total_fee: number;

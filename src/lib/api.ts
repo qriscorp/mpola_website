@@ -14,6 +14,7 @@ import type {
   TransferStatusResult,
   Notification,
   AdminStats,
+  AdminActivity,
   AdminUser,
   AdminLoan,
   AdminApplication,
@@ -979,6 +980,10 @@ export const api = {
   // Admin APIs
   getAdminStats: async (): Promise<AdminStats> => {
     return apiAuthGet("/admin/stats");
+  },
+
+  getAdminActivity: async (): Promise<AdminActivity> => {
+    return apiAuthGet("/admin/activity");
   },
 
   getAdminUsers: async (

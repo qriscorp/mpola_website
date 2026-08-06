@@ -7,6 +7,7 @@ import { useLoanDetail, useMakeRepayment } from "@/hooks/use-repayments";
 import { useWallet } from "@/hooks/use-wallet";
 import { formatCurrency } from "@/lib/format";
 import { FormSkeleton } from "@/components/skeletons";
+import { calcPlatformFee } from "@/lib/fees";
 
 type Method = "mobile_money" | "wallet";
 
@@ -46,6 +47,8 @@ export default function MakePaymentPage() {
   const dueAmount = loan.next_payment_amount ?? loan.monthly_payment;
   const effectiveAmount = amount ? Number(amount) : dueAmount;
   const instalmentNumber = loan.paid_instalments + 1;
+  const walletFee = method === "wallet" ? calcPlatformFee(effectiveAmount) : 0;
+  const walletTotalDebit = effectiveAmount + walletFee;
 
   const handleSubmit = () => {
     makeRepayment(
@@ -122,9 +125,25 @@ export default function MakePaymentPage() {
             />
           </div>
         ) : (
-          <p className="mt-6 text-sm text-gray-500">
-            Wallet balance: {formatCurrency(wallet?.balance ?? 0)}
-          </p>
+          <div className="mt-6 space-y-3">
+            <p className="text-sm text-gray-500">
+              Wallet balance: {formatCurrency(wallet?.balance ?? 0)}
+            </p>
+            <div className="rounded-xl bg-gray-50 border border-gray-200 p-3 space-y-1 text-xs">
+              <div className="flex justify-between text-gray-600">
+                <span>Repayment amount</span>
+                <span>{formatCurrency(effectiveAmount)}</span>
+              </div>
+              <div className="flex justify-between text-gray-600">
+                <span>Platform fee (0.5%)</span>
+                <span>{formatCurrency(walletFee)}</span>
+              </div>
+              <div className="flex justify-between font-semibold text-[#1B2B3A] pt-1 border-t border-gray-200">
+                <span>Total debited from wallet</span>
+                <span>{formatCurrency(walletTotalDebit)}</span>
+              </div>
+            </div>
+          </div>
         )}
 
         <div className="mt-6">
@@ -149,7 +168,9 @@ export default function MakePaymentPage() {
           disabled={isPending || (method === "mobile_money" && !phone)}
           className="mt-7 inline-flex w-full items-center justify-center rounded-xl bg-[#149D8E] px-5 py-3 text-base font-semibold text-white transition-colors hover:bg-[#108a7d] disabled:opacity-50"
         >
-          {isPending ? "Processing…" : `Pay ${formatCurrency(effectiveAmount)}`}
+          {isPending
+            ? "Processing…"
+            : `Pay ${formatCurrency(method === "wallet" ? walletTotalDebit : effectiveAmount)}`}
         </button>
       </div>
     </div>

@@ -12,6 +12,7 @@ import { formatCurrency, formatRate } from "@/lib/format";
 import { useUser } from "@/hooks/use-dashboard";
 import { useApplicationDetail } from "@/hooks/use-lender";
 import { useRespondToOffer } from "@/hooks/use-offers";
+import { useWallet } from "@/hooks/use-wallet";
 import { CardSkeleton } from "@/components/skeletons";
 
 const TERMS = [
@@ -33,6 +34,7 @@ export default function AcceptOfferPage() {
 
   const { data: user } = useUser();
   const { data: application, isLoading } = useApplicationDetail(applicationId);
+  const { data: wallet } = useWallet();
   const { mutate: respond, isPending, isSuccess } = useRespondToOffer();
 
   const [accepted, setAccepted] = useState<boolean[]>(
@@ -45,6 +47,7 @@ export default function AcceptOfferPage() {
     (g) => g.status === "accepted",
   ).length;
   const guarantorsReady = acceptedGuarantors >= REQUIRED_ACCEPTED_GUARANTORS;
+  const walletReady = wallet?.is_wallet_setup ?? false;
 
   if (!offerId || !applicationId) {
     return (
@@ -194,8 +197,11 @@ export default function AcceptOfferPage() {
                   3. Disbursement
                 </h4>
                 <p className="mb-3">
-                  Funds will be disbursed to the Borrower&apos;s registered
-                  mobile money number upon acceptance.
+                  Funds are transferred wallet-to-wallet: the full{" "}
+                  {formatCurrency(offer.amount)} will be credited to the
+                  Borrower&apos;s Mpola wallet upon acceptance. The Lender
+                  covers Mpola&apos;s 0.5% platform fee on top of the loan
+                  amount — the Borrower receives the exact amount agreed.
                 </p>
                 <h4 className="mb-1 font-semibold text-foreground">
                   4. Early Repayment
@@ -278,10 +284,17 @@ export default function AcceptOfferPage() {
                 </p>
               )}
 
+              {!isSuccess && !walletReady && (
+                <p className="text-xs text-amber-600 bg-amber-50 rounded-lg px-3 py-2">
+                  Set up your Mpola wallet before signing — that&apos;s where
+                  the disbursed funds will land.
+                </p>
+              )}
+
               {!isSuccess && (
                 <Button
                   className="w-full bg-[#2BB5A0] hover:bg-[#239E8C] text-white"
-                  disabled={!allAccepted || !guarantorsReady || isPending}
+                  disabled={!allAccepted || !guarantorsReady || !walletReady || isPending}
                   onClick={handleSign}
                 >
                   {isPending ? (

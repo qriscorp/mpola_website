@@ -17,7 +17,7 @@ export function useRespondToOffer() {
     }) => api.respondToOffer(offerId, status),
     onSuccess: (_result, variables) => {
       if (variables.status === "accepted") {
-        toast.success("Offer accepted! Funds will be disbursed shortly.");
+        toast.success("Offer accepted! Funds have been added to your wallet.");
       } else {
         toast.success("Offer declined.");
       }

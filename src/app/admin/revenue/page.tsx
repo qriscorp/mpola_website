@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { PaginationControls } from "@/components/ui/pagination-controls";
-import { TrendingUp, Smartphone, Landmark, Download } from "lucide-react";
+import { TrendingUp, Smartphone, Landmark, HandCoins, ArrowLeftRight, Download } from "lucide-react";
 import {
   Area,
   AreaChart,
@@ -33,12 +33,23 @@ const PAGE_SIZE = 20;
 const categoryLabel: Record<string, string> = {
   mobile_money_withdrawal: "Mobile Money Withdrawal",
   bank_withdrawal: "Bank Withdrawal",
+  loan_disbursement: "Loan Disbursement",
+  loan_repayment: "Loan Repayment",
+};
+
+const categoryIcon: Record<string, typeof Smartphone> = {
+  mobile_money_withdrawal: Smartphone,
+  bank_withdrawal: Landmark,
+  loan_disbursement: HandCoins,
+  loan_repayment: ArrowLeftRight,
 };
 
 const categoryColor: Record<string, string> = {
   mobile_money_withdrawal:
     "bg-[#F5F0E0] text-[#C4A55A] dark:bg-[#C4A55A]/10",
   bank_withdrawal: "bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400",
+  loan_disbursement: "bg-purple-50 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400",
+  loan_repayment: "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400",
 };
 
 export default function AdminRevenuePage() {
@@ -195,11 +206,10 @@ export default function AdminRevenuePage() {
                 }`}
               >
                 <div className="flex items-center gap-2">
-                  {c.category === "mobile_money_withdrawal" ? (
-                    <Smartphone className="h-4 w-4 text-[#C4A55A]" />
-                  ) : (
-                    <Landmark className="h-4 w-4 text-blue-600" />
-                  )}
+                  {(() => {
+                    const Icon = categoryIcon[c.category] ?? Smartphone;
+                    return <Icon className="h-4 w-4 text-[#C4A55A]" />;
+                  })()}
                   <div>
                     <p className="text-sm font-medium text-[#1B2B3A] dark:text-white">
                       {categoryLabel[c.category] ?? c.category}

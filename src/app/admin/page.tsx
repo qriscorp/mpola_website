@@ -11,12 +11,17 @@ import {
   Wallet,
   AlertTriangle,
   TrendingUp,
+  TrendingDown,
   Activity,
   PieChart as PieIcon,
   ClipboardList,
+  UserPlus,
+  ArrowLeftRight,
+  HandCoins,
 } from "lucide-react";
 import {
   useAdminStats,
+  useAdminActivity,
   useAdminLoans,
   useAdminApplications,
 } from "@/hooks/use-admin";
@@ -40,6 +45,24 @@ import {
 } from "recharts";
 
 const PIE_COLORS = ["#2BB5A0", "#C4A55A", "#6366f1", "#f59e0b", "#ef4444", "#8b5cf6"];
+
+function ChangeBadge({ pct }: { pct: number }) {
+  const positive = pct >= 0;
+  return (
+    <span
+      className={`inline-flex items-center gap-0.5 text-[11px] font-semibold ${
+        positive ? "text-emerald-600 dark:text-emerald-400" : "text-red-500"
+      }`}
+    >
+      {positive ? (
+        <TrendingUp className="h-3 w-3" />
+      ) : (
+        <TrendingDown className="h-3 w-3" />
+      )}
+      {Math.abs(pct)}%
+    </span>
+  );
+}
 
 function monthLabel(monthKey: string): string {
   const [y, m] = monthKey.split("-").map(Number);
@@ -78,6 +101,7 @@ function ChartTooltip({
 
 export default function AdminDashboardPage() {
   const { data: stats, isLoading } = useAdminStats();
+  const { data: activity } = useAdminActivity();
   const { data: overdueLoansData } = useAdminLoans(1, 10, { status: "overdue" });
   const { data: recentApplicationsData } = useAdminApplications(1, 4);
   const loans = overdueLoansData?.loans ?? [];
@@ -184,6 +208,119 @@ export default function AdminDashboardPage() {
           </Card>
         ))}
       </div>
+
+      {/* Growth & Activity — simple, at-a-glance view for the admin */}
+      <Card className="bg-white dark:bg-gray-900">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Activity className="h-4 w-4 text-[#2BB5A0]" />
+            <h2 className="font-semibold text-[#1B2B3A] dark:text-white">
+              Growth & Activity
+            </h2>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            New signups, transactions, and offers — today, this week vs last week, this month vs last month
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {[
+              {
+                icon: UserPlus,
+                label: "New Users",
+                color: "text-[#2BB5A0]",
+                bg: "bg-[#E8F8F5] dark:bg-[#2BB5A0]/10",
+                data: activity?.users,
+              },
+              {
+                icon: ArrowLeftRight,
+                label: "Transactions",
+                color: "text-blue-600 dark:text-blue-400",
+                bg: "bg-blue-50 dark:bg-blue-900/20",
+                data: activity?.transactions,
+              },
+              {
+                icon: HandCoins,
+                label: "Offers Made",
+                color: "text-[#C4A55A]",
+                bg: "bg-[#F5F0E0] dark:bg-[#C4A55A]/10",
+                data: activity?.offers,
+              },
+            ].map((m) => (
+              <div
+                key={m.label}
+                className="rounded-xl border border-gray-200 dark:border-gray-800 p-4"
+              >
+                <div className="flex items-center gap-2 mb-3">
+                  <div className={`h-8 w-8 rounded-lg ${m.bg} flex items-center justify-center`}>
+                    <m.icon className={`h-4 w-4 ${m.color}`} />
+                  </div>
+                  <p className="text-sm font-medium text-[#1B2B3A] dark:text-white">
+                    {m.label}
+                  </p>
+                </div>
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  <div>
+                    <p className="text-lg font-bold text-[#1B2B3A] dark:text-white">
+                      {m.data?.today ?? 0}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground">Today</p>
+                  </div>
+                  <div>
+                    <p className="text-lg font-bold text-[#1B2B3A] dark:text-white">
+                      {m.data?.this_week ?? 0}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground">This Week</p>
+                    {m.data && <ChangeBadge pct={m.data.week_change_pct} />}
+                  </div>
+                  <div>
+                    <p className="text-lg font-bold text-[#1B2B3A] dark:text-white">
+                      {m.data?.this_month ?? 0}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground">This Month</p>
+                    {m.data && <ChangeBadge pct={m.data.month_change_pct} />}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="h-56">
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart
+                data={(activity?.daily_activity ?? []).map((d) => ({
+                  ...d,
+                  label: new Date(d.date).toLocaleDateString("en-US", {
+                    day: "numeric",
+                    month: "short",
+                  }),
+                }))}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
+                <XAxis dataKey="label" tick={{ fontSize: 10 }} stroke="#9ca3af" />
+                <YAxis tick={{ fontSize: 11 }} stroke="#9ca3af" allowDecimals={false} />
+                <Tooltip content={<ChartTooltip />} />
+                <Legend iconType="circle" wrapperStyle={{ fontSize: 11 }} />
+                <Bar dataKey="transactions" name="Transactions" fill="#6366f1" radius={[3, 3, 0, 0]} />
+                <Line
+                  dataKey="new_users"
+                  name="New Users"
+                  stroke="#2BB5A0"
+                  strokeWidth={2}
+                  dot={{ r: 2, fill: "#2BB5A0" }}
+                />
+                <Line
+                  dataKey="offers"
+                  name="Offers"
+                  stroke="#C4A55A"
+                  strokeWidth={2}
+                  dot={{ r: 2, fill: "#C4A55A" }}
+                />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Row 2: Monthly Trend + Loan Type Mix */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

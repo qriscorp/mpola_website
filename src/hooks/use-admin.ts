@@ -10,6 +10,13 @@ export function useAdminStats() {
   });
 }
 
+export function useAdminActivity() {
+  return useQuery({
+    queryKey: ["admin", "activity"],
+    queryFn: api.getAdminActivity,
+  });
+}
+
 export function useAdminUsers(
   page: number = 1,
   pageSize: number = 20,
