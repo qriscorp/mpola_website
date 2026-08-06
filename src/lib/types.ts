@@ -244,6 +244,8 @@ export interface AdminUser {
   full_name: string | null;
   phone_number: string | null;
   role: string;
+  is_admin: boolean;
+  is_super_admin: boolean;
   is_active: boolean;
   is_verified: boolean;
   is_kyc_verified: boolean;

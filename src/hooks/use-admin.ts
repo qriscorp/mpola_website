@@ -49,6 +49,22 @@ export function useChangeUserRole() {
   });
 }
 
+export function useSetUserAdminAccess() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      username,
+      isAdmin,
+      isSuperAdmin,
+    }: {
+      username: string;
+      isAdmin: boolean;
+      isSuperAdmin?: boolean;
+    }) => api.setUserAdminAccess(username, isAdmin, isSuperAdmin),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "users"] }),
+  });
+}
+
 export function useDeactivateUser() {
   const qc = useQueryClient();
   return useMutation({

@@ -78,7 +78,9 @@ function getPostAuthRoute(role: string): string {
   const phoneVerified = getCookie("lf_phone_verified");
   if (verified !== "true") return "/auth/verify-email";
   if (phoneVerified !== "true") return "/auth/verify-phone";
-  if (role === "admin" || role === "super_admin") return "/admin";
+  const isAdmin =
+    role === "admin" || role === "super_admin" || getCookie("lf_is_admin") === "true";
+  if (isAdmin) return "/admin";
   return role === "lender" ? "/lender" : "/dashboard";
 }
 
@@ -393,8 +395,9 @@ export function useVerifyLoginPhoneOtp(portal?: "borrower" | "lender") {
       code: string;
     }) => api.verifyLoginPhoneOtp(phoneNumber, code, portal),
     onSuccess: (data) => {
-      const role = data.user.role;
-      const isAdmin = role === "admin" || role === "super_admin";
+      const user = data.user!; // login OTP verification always returns a user
+      const role = user.role;
+      const isAdmin = role === "admin" || role === "super_admin" || user.is_admin;
       const isLenderRole = role === "lender" || isAdmin;
 
       // Admins can sign in from either portal — skip portal enforcement for them

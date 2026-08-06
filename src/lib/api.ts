@@ -36,13 +36,16 @@ import type {
 // ─── Real API helpers ────────────────────────────────────
 
 export interface AuthResponse {
-  user: {
+  // Absent on the /auth/refresh response, which only re-issues tokens.
+  user?: {
     id: string;
     username: string;
     email: string;
     full_name: string;
     phone_number: string;
     role: string;
+    is_admin: boolean;
+    is_super_admin: boolean;
     is_active: boolean;
     is_verified: boolean;
     is_phone_verified: boolean;
@@ -245,15 +248,18 @@ async function apiAuthPut<T>(path: string, body: unknown): Promise<T> {
 }
 
 function mapAuthUser(data: AuthResponse): User {
+  // Only called on paths that return a full user payload (sign-in, register,
+  // OTP verification) — never on /auth/refresh, which omits `user`.
+  const user = data.user!;
   return {
-    id: data.user.id,
-    fullName: data.user.full_name || data.user.username,
-    email: data.user.email,
-    phone: data.user.phone_number || "",
+    id: user.id,
+    fullName: user.full_name || user.username,
+    email: user.email,
+    phone: user.phone_number || "",
     nin: "",
     accountType: "individual",
-    kycStatus: (data.user.kyc_status as User["kycStatus"]) || "pending",
-    creditScore: data.user.credit_score ?? 0,
+    kycStatus: (user.kyc_status as User["kycStatus"]) || "pending",
+    creditScore: user.credit_score ?? 0,
     createdAt: new Date().toISOString(),
   };
 }
@@ -295,7 +301,11 @@ function storeTokens(data: AuthResponse) {
   const longAge = 7 * 24 * 60 * 60;
   document.cookie = `lf_token=${data.access_token}; path=/; max-age=${maxAge}; SameSite=Lax`;
   document.cookie = `lf_refresh=${data.refresh_token}; path=/; max-age=${longAge}; SameSite=Lax`;
+  // /auth/refresh only re-issues tokens — no `user` payload — so there's
+  // nothing further to update on that path.
+  if (!data.user) return;
   document.cookie = `lf_role=${data.user.role}; path=/; max-age=${longAge}; SameSite=Lax`;
+  document.cookie = `lf_is_admin=${data.user.is_admin ? "true" : "false"}; path=/; max-age=${longAge}; SameSite=Lax`;
   document.cookie = `lf_verified=${data.user.is_verified}; path=/; max-age=${longAge}; SameSite=Lax`;
   document.cookie = `lf_phone_verified=${data.user.is_phone_verified}; path=/; max-age=${longAge}; SameSite=Lax`;
   document.cookie = `lf_username=${data.user.username}; path=/; max-age=${longAge}; SameSite=Lax`;
@@ -429,9 +439,10 @@ export const api = {
       portal: "lender",
     });
     if (
-      res.user.role !== "lender" &&
-      res.user.role !== "admin" &&
-      res.user.role !== "super_admin"
+      res.user!.role !== "lender" &&
+      res.user!.role !== "admin" &&
+      res.user!.role !== "super_admin" &&
+      !res.user!.is_admin
     ) {
       throw new Error(
         "This portal is for lenders only. Please use the borrower sign-in.",
@@ -451,6 +462,7 @@ export const api = {
     document.cookie = "lf_token=; path=/; max-age=0";
     document.cookie = "lf_refresh=; path=/; max-age=0";
     document.cookie = "lf_role=; path=/; max-age=0";
+    document.cookie = "lf_is_admin=; path=/; max-age=0";
     document.cookie = "lf_verified=; path=/; max-age=0";
     document.cookie = "lf_phone_verified=; path=/; max-age=0";
     document.cookie = "lf_username=; path=/; max-age=0";
@@ -1040,6 +1052,19 @@ export const api = {
     role: string,
   ): Promise<{ success: boolean; new_role: string }> => {
     return apiAuthPatch(`/admin/users/${username}/role`, { role });
+  },
+
+  /** Grants/revokes admin access WITHOUT touching the account's borrower/lender
+   * portal role — e.g. lets an existing lender also use the admin dashboard. */
+  setUserAdminAccess: async (
+    username: string,
+    is_admin: boolean,
+    is_super_admin: boolean = false,
+  ): Promise<{ success: boolean; role: string; is_admin: boolean; is_super_admin: boolean }> => {
+    return apiAuthPatch(`/admin/users/${username}/admin-access`, {
+      is_admin,
+      is_super_admin,
+    });
   },
 
   deactivateUser: async (

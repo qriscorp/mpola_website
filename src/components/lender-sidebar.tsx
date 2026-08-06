@@ -21,6 +21,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { SignOutModal } from "@/components/sign-out-modal";
+import { SwitchToAdminLink } from "@/components/portal-switch-link";
 import { useUser } from "@/hooks/use-dashboard";
 import { useMyOffers, useMarketplace } from "@/hooks/use-lender";
 import { getInitials } from "@/lib/format";
@@ -155,6 +156,10 @@ export function LenderSidebarContent({
 
       {/* ── User footer ── */}
       <div className="p-3 border-t border-white/10">
+        <SwitchToAdminLink
+          onNavigate={onNavigate}
+          className="flex items-center gap-2 px-2 py-2 mb-1 text-sm text-gray-400 hover:text-white transition-colors"
+        />
         <div className="flex items-center gap-3 px-2 py-2 rounded-lg">
           <div className="flex items-center justify-center w-8 h-8 rounded-full bg-[#C4A55A] shrink-0">
             <span className="text-white text-xs font-bold">

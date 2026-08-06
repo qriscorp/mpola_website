@@ -29,12 +29,15 @@ import {
   Trash2,
   Download,
   Eye,
+  ShieldPlus,
+  ShieldMinus,
 } from "lucide-react";
 import {
   useAdminUsers,
   useAdminStats,
   useSuspendUser,
   useDeactivateUser,
+  useSetUserAdminAccess,
 } from "@/hooks/use-admin";
 import { formatCurrency } from "@/lib/format";
 import { downloadCsv } from "@/lib/csv";
@@ -56,6 +59,7 @@ export default function AdminUsersPage() {
   const { data: stats } = useAdminStats();
   const suspend = useSuspendUser();
   const deactivate = useDeactivateUser();
+  const setAdminAccess = useSetUserAdminAccess();
 
   const users = data?.users ?? [];
   const total = data?.total ?? 0;
@@ -77,6 +81,37 @@ export default function AdminUsersPage() {
     deactivate.mutate(
       { username },
       { onSuccess: () => toast.success(`${username} deleted`) },
+    );
+  };
+
+  const handleGrantAdmin = (username: string, isSuperAdmin: boolean) => {
+    const label = isSuperAdmin ? "super admin" : "admin";
+    if (
+      !confirm(
+        `Grant ${label} access to ${username}? They'll keep their current role and can switch between it and the admin dashboard.`,
+      )
+    ) {
+      return;
+    }
+    setAdminAccess.mutate(
+      { username, isAdmin: true, isSuperAdmin },
+      {
+        onSuccess: () => toast.success(`${username} now has ${label} access`),
+        onError: (err: Error) =>
+          toast.error(err.message || `Failed to grant ${label} access`),
+      },
+    );
+  };
+
+  const handleRevokeAdmin = (username: string) => {
+    // is_admin=false also clears is_super_admin on the backend.
+    setAdminAccess.mutate(
+      { username, isAdmin: false },
+      {
+        onSuccess: () => toast.success(`Admin access revoked for ${username}`),
+        onError: (err: Error) =>
+          toast.error(err.message || "Failed to revoke admin access"),
+      },
     );
   };
 
@@ -229,12 +264,22 @@ export default function AdminUsersPage() {
                       </Link>
                     </TableCell>
                     <TableCell className="hidden sm:table-cell">
-                      <Badge
-                        variant="outline"
-                        className={`text-xs capitalize ${user.role === "lender" ? "bg-[#F5F0E0] text-[#C4A55A] dark:bg-[#C4A55A]/10" : "bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400"}`}
-                      >
-                        {user.role}
-                      </Badge>
+                      <div className="flex flex-wrap items-center gap-1">
+                        <Badge
+                          variant="outline"
+                          className={`text-xs capitalize ${user.role === "lender" ? "bg-[#F5F0E0] text-[#C4A55A] dark:bg-[#C4A55A]/10" : "bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400"}`}
+                        >
+                          {user.role}
+                        </Badge>
+                        {user.is_admin && (user.role === "borrower" || user.role === "lender") && (
+                          <Badge
+                            variant="outline"
+                            className="text-xs bg-purple-50 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400"
+                          >
+                            {user.is_super_admin ? "+ super admin" : "+ admin"}
+                          </Badge>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
                       <Badge
@@ -297,6 +342,50 @@ export default function AdminUsersPage() {
                               Reactivate
                             </DropdownMenuItem>
                           )}
+                          {(user.role === "borrower" || user.role === "lender") &&
+                            (user.is_super_admin ? (
+                              <DropdownMenuItem
+                                className="gap-2 text-purple-600"
+                                onClick={() => handleRevokeAdmin(user.username)}
+                              >
+                                <ShieldMinus className="h-4 w-4" />
+                                Revoke Admin Access
+                              </DropdownMenuItem>
+                            ) : user.is_admin ? (
+                              <>
+                                <DropdownMenuItem
+                                  className="gap-2 text-purple-600"
+                                  onClick={() => handleGrantAdmin(user.username, true)}
+                                >
+                                  <ShieldPlus className="h-4 w-4" />
+                                  Upgrade to Super Admin
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  className="gap-2 text-purple-600"
+                                  onClick={() => handleRevokeAdmin(user.username)}
+                                >
+                                  <ShieldMinus className="h-4 w-4" />
+                                  Revoke Admin Access
+                                </DropdownMenuItem>
+                              </>
+                            ) : (
+                              <>
+                                <DropdownMenuItem
+                                  className="gap-2 text-purple-600"
+                                  onClick={() => handleGrantAdmin(user.username, false)}
+                                >
+                                  <ShieldPlus className="h-4 w-4" />
+                                  Grant Admin Access
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  className="gap-2 text-purple-600"
+                                  onClick={() => handleGrantAdmin(user.username, true)}
+                                >
+                                  <ShieldPlus className="h-4 w-4" />
+                                  Grant Super Admin Access
+                                </DropdownMenuItem>
+                              </>
+                            ))}
                           <DropdownMenuItem
                             className="gap-2 text-red-600"
                             onClick={() => handleDelete(user.username)}

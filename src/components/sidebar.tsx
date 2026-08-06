@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SignOutModal } from "@/components/sign-out-modal";
+import { SwitchToAdminLink } from "@/components/portal-switch-link";
 import { useUser, useDashboardStats } from "@/hooks/use-dashboard";
 import { getInitials } from "@/lib/format";
 
@@ -165,6 +166,10 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
       {/* Footer */}
       <div className="p-3 border-t border-white/10 shrink-0">
+        <SwitchToAdminLink
+          onNavigate={onNavigate}
+          className="flex items-center gap-2 px-2 py-2 mb-1 text-sm text-white/60 hover:text-white transition-colors"
+        />
         <div className="flex items-center gap-3 px-2 py-2">
           <div className="h-9 w-9 rounded-full bg-[#2BB5A0] flex items-center justify-center font-bold text-white text-sm shrink-0">
             {user?.fullName ? getInitials(user.fullName) : "?"}

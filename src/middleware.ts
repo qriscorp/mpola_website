@@ -38,15 +38,26 @@ export function middleware(request: NextRequest) {
 
   const token = request.cookies.get("lf_token")?.value;
   const role = request.cookies.get("lf_role")?.value || "borrower";
-  const isAdmin = role === "admin" || role === "super_admin";
+  // Admin access is orthogonal to the borrower/lender portal role — an
+  // account can be BOTH (e.g. a lender who also moderates the platform),
+  // via the is_admin flag, or a legacy pure-admin account (role itself is
+  // "admin"/"super_admin", with no portal identity of its own).
+  const isAdmin =
+    role === "admin" ||
+    role === "super_admin" ||
+    request.cookies.get("lf_is_admin")?.value === "true";
   const isLenderRole = role === "lender";
+  const isBorrowerRole = role === "borrower";
+  // Default landing for this account — admin takes priority since that's
+  // the more privileged view; the sidebar switcher gets them to their
+  // portal dashboard from there.
+  const dest = isAdmin ? "/admin" : isLenderRole ? "/lender" : "/dashboard";
 
   // Redirect logged-in users away from sign-in/register pages to their portal
   if (
     token &&
     AUTH_ONLY_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/"))
   ) {
-    const dest = isAdmin ? "/admin" : isLenderRole ? "/lender" : "/dashboard";
     return NextResponse.redirect(new URL(dest, request.url));
   }
 
@@ -69,30 +80,25 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(signInUrl);
   }
 
-  // Strict role-based path protection — each role is confined to its own portal
-  if (isAdmin) {
-    // Admins → /admin only
-    if (
-      pathname.startsWith("/lender") ||
-      pathname.startsWith("/dashboard") ||
-      pathname.startsWith("/apply")
-    ) {
-      return NextResponse.redirect(new URL("/admin", request.url));
-    }
-  } else if (isLenderRole) {
-    // Lenders → /lender only
-    if (
-      pathname.startsWith("/admin") ||
-      pathname.startsWith("/dashboard") ||
-      pathname.startsWith("/apply")
-    ) {
-      return NextResponse.redirect(new URL("/lender", request.url));
-    }
-  } else {
-    // Borrowers → /dashboard and /apply only
-    if (pathname.startsWith("/admin") || pathname.startsWith("/lender")) {
-      return NextResponse.redirect(new URL("/dashboard", request.url));
-    }
+  // Role-based path protection. Each portal is normally confined to its own
+  // area, but a dual-role account (admin + lender, or admin + borrower) is
+  // allowed into BOTH its admin area and its own portal area — never into a
+  // portal that doesn't match its actual borrower/lender role, though.
+  const canAdmin = isAdmin;
+  const canLender = isLenderRole;
+  const canBorrower = isBorrowerRole || (!isLenderRole && !isAdmin); // default bucket for unset/legacy roles
+
+  if (pathname.startsWith("/admin") && !canAdmin) {
+    return NextResponse.redirect(new URL(dest, request.url));
+  }
+  if (pathname.startsWith("/lender") && !canLender) {
+    return NextResponse.redirect(new URL(dest, request.url));
+  }
+  if (
+    (pathname.startsWith("/dashboard") || pathname.startsWith("/apply")) &&
+    !canBorrower
+  ) {
+    return NextResponse.redirect(new URL(dest, request.url));
   }
 
   // Enforce email verification

@@ -18,6 +18,7 @@ import {
 import { Logo } from "@/components/logo";
 import { Badge } from "@/components/ui/badge";
 import { SignOutModal } from "@/components/sign-out-modal";
+import { SwitchToPortalLink } from "@/components/portal-switch-link";
 import { useUser } from "@/hooks/use-dashboard";
 import { useAdminStats } from "@/hooks/use-admin";
 import { getInitials } from "@/lib/format";
@@ -98,6 +99,7 @@ export function AdminSidebarContent({
             <p className="text-[10px] text-gray-400">{user?.email ?? ""}</p>
           </div>
         </div>
+        <SwitchToPortalLink onNavigate={onNavigate} />
         <Link
           href="/"
           onClick={onNavigate}
