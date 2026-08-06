@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { BorrowerPageHeader } from "@/components/top-nav";
 import { useUser, useUpdateProfile } from "@/hooks/use-dashboard";
 import { CardSkeleton } from "@/components/skeletons";
+import { SessionsSection } from "@/components/sessions-section";
 
 function Toggle({ on, onChange }: { on: boolean; onChange: () => void }) {
   return (
@@ -144,6 +145,8 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
+
+      <SessionsSection />
 
       {/* Danger Zone */}
       <div className="bg-white dark:bg-gray-900 rounded-2xl border-2 border-red-200 dark:border-red-900 p-6">

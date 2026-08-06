@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { BorrowerPageHeader } from "@/components/top-nav";
 import { useApplicationDetail } from "@/hooks/use-lender";
@@ -22,7 +23,7 @@ function initials(name: string | null | undefined): string {
     .slice(0, 2);
 }
 
-export default function OffersReceivedPage() {
+function OffersReceivedContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const applicationId = searchParams.get("applicationId") ?? undefined;
@@ -178,5 +179,13 @@ export default function OffersReceivedPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function OffersReceivedPage() {
+  return (
+    <Suspense fallback={<CardSkeleton count={2} />}>
+      <OffersReceivedContent />
+    </Suspense>
   );
 }

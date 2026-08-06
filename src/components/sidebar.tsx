@@ -17,6 +17,9 @@ import {
   User,
   Settings,
   LogOut,
+  Gift,
+  HelpCircle,
+  AlertTriangle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SignOutModal } from "@/components/sign-out-modal";
@@ -75,6 +78,14 @@ const navGroups = [
   {
     label: "FINANCE",
     items: [{ href: "/dashboard/wallet", label: "Wallet", icon: Wallet }],
+  },
+  {
+    label: "SUPPORT",
+    items: [
+      { href: "/dashboard/referrals", label: "Invite Friends", icon: Gift },
+      { href: "/dashboard/help", label: "Help & Support", icon: HelpCircle },
+      { href: "/dashboard/disputes", label: "Disputes", icon: AlertTriangle },
+    ],
   },
   {
     label: "ACCOUNT",

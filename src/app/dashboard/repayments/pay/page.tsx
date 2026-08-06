@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { BorrowerPageHeader } from "@/components/top-nav";
 import { useLoanDetail, useMakeRepayment } from "@/hooks/use-repayments";
@@ -11,7 +11,7 @@ import { calcPlatformFee } from "@/lib/fees";
 
 type Method = "mobile_money" | "wallet";
 
-export default function MakePaymentPage() {
+function MakePaymentContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const loanId = searchParams.get("loanId") ?? undefined;
@@ -61,6 +61,7 @@ export default function MakePaymentPage() {
       {
         onSuccess: (result) => {
           const params = new URLSearchParams({
+            repaymentId: result.repayment.id,
             txn: result.repayment.transaction_id ?? result.repayment.id,
             amount: String(result.repayment.amount),
             method: result.repayment.payment_method ?? method,
@@ -174,5 +175,13 @@ export default function MakePaymentPage() {
         </button>
       </div>
     </div>
+  );
+}
+
+export default function MakePaymentPage() {
+  return (
+    <Suspense fallback={<FormSkeleton />}>
+      <MakePaymentContent />
+    </Suspense>
   );
 }

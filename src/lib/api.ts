@@ -27,6 +27,10 @@ import type {
   LenderWalletTransaction,
   LenderEarnings,
   LenderOfferTemplate,
+  ReferralInfo,
+  SupportTicket,
+  Dispute,
+  LoginSessionInfo,
 } from "./types";
 
 // ─── Real API helpers ────────────────────────────────────
@@ -107,7 +111,7 @@ async function apiGet<T>(path: string): Promise<T> {
 }
 
 /** Read a cookie by name (client-side only). */
-function getCookie(name: string): string | undefined {
+export function getCookie(name: string): string | undefined {
   return document.cookie
     .split("; ")
     .find((c) => c.startsWith(`${name}=`))
@@ -734,6 +738,24 @@ export const api = {
   getLoanDetail: async (loanId: string): Promise<ActiveLoan> => {
     return apiAuthGet(`/loans/active/${loanId}`);
   },
+  downloadRepaymentReceipt: async (repaymentId: string): Promise<void> => {
+    const token = getCookie("lf_token");
+    const res = await fetch(`${API_BASE_URL}/loans/repayments/${repaymentId}/receipt`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (!res.ok) {
+      throw new Error("Receipt not available");
+    }
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `mpola-receipt-${repaymentId}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+  },
   getMyActiveLoans: async (): Promise<ActiveLoan[]> => {
     const res = await apiAuthGet<{ total: number; loans: ActiveLoan[] }>(
       "/loans/active?limit=100",
@@ -1212,5 +1234,55 @@ export const api = {
   },
   getLenderEarnings: async (): Promise<LenderEarnings> => {
     return apiAuthGet("/loans/earnings");
+  },
+
+  // ─── Referrals ───
+  getReferralInfo: async (): Promise<ReferralInfo> => {
+    return apiAuthGet("/referrals/me");
+  },
+
+  // ─── Support tickets ───
+  createSupportTicket: async (data: {
+    subject: string;
+    category: string;
+    message: string;
+  }): Promise<{ status: number; message: string; ticket: SupportTicket }> => {
+    return apiAuthPost("/support", data);
+  },
+  getMySupportTickets: async (): Promise<SupportTicket[]> => {
+    const res = await apiAuthGet<{ tickets: SupportTicket[] }>("/support/mine");
+    return res.tickets;
+  },
+  getSupportTicket: async (id: string): Promise<SupportTicket> => {
+    const res = await apiAuthGet<{ ticket: SupportTicket }>(`/support/${id}`);
+    return res.ticket;
+  },
+  replySupportTicket: async (
+    id: string,
+    message: string,
+  ): Promise<{ status: number; ticket: SupportTicket }> => {
+    return apiAuthPost(`/support/${id}/messages`, { message });
+  },
+
+  // ─── Disputes ───
+  fileDispute: async (data: {
+    category: string;
+    description: string;
+    loan_id?: string;
+  }): Promise<{ status: number; message: string; dispute: Dispute }> => {
+    return apiAuthPost("/disputes", data);
+  },
+  getMyDisputes: async (): Promise<Dispute[]> => {
+    const res = await apiAuthGet<{ disputes: Dispute[] }>("/disputes/mine");
+    return res.disputes;
+  },
+
+  // ─── Sessions ───
+  getLoginSessions: async (): Promise<LoginSessionInfo[]> => {
+    const res = await apiAuthGet<{ sessions: LoginSessionInfo[] }>("/sessions/");
+    return res.sessions;
+  },
+  signOutEverywhere: async (): Promise<{ status: number; message: string }> => {
+    return apiAuthPost("/sessions/sign-out-everywhere", {});
   },
 };

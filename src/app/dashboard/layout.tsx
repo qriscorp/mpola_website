@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { TopNav } from "@/components/top-nav";
 import { Sidebar } from "@/components/sidebar";
+import { RealtimeProvider } from "@/components/realtime-provider";
 
 export const metadata: Metadata = {
   title: "Dashboard – Mpola Borrower Portal",
@@ -15,6 +16,7 @@ export default function DashboardLayout({
 }) {
   return (
     <div className="flex h-screen overflow-hidden bg-[#F8FAFC] dark:bg-gray-950">
+      <RealtimeProvider />
       <Sidebar />
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
         <TopNav />

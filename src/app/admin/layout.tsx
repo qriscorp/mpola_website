@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { AdminSidebar } from "@/components/admin-sidebar";
 import { AdminTopNav } from "@/components/admin-top-nav";
+import { RealtimeProvider } from "@/components/realtime-provider";
 
 export const metadata: Metadata = {
   title: "Admin Dashboard – Mpola",
@@ -15,6 +16,7 @@ export default function AdminLayout({
 }) {
   return (
     <div className="flex flex-col h-screen bg-gray-50 dark:bg-gray-950">
+      <RealtimeProvider />
       <AdminTopNav />
       <div className="flex flex-1 min-h-0">
         <AdminSidebar />

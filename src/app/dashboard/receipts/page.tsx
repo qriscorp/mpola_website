@@ -126,7 +126,11 @@ function ReceiptContent() {
 
       <div className="flex gap-3 mt-6">
         <button
-          onClick={() => toast.info("Receipt downloads aren't available yet")}
+          onClick={() =>
+            api
+              .downloadRepaymentReceipt(repayment.id)
+              .catch(() => toast.error("Couldn't download the receipt. Please try again."))
+          }
           className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-gray-300 text-sm font-semibold text-gray-700 hover:border-[#2BB5A0] hover:text-[#2BB5A0] transition-colors"
         >
           <Download className="w-4 h-4" /> Download Receipt

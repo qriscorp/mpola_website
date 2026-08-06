@@ -480,3 +480,51 @@ export interface LenderEarnings {
   avg_yield: number;
   monthly_earnings: { month: string; amount: number }[];
 }
+
+// ─── Referrals, Support, Disputes, Sessions ───
+
+export interface ReferralInfo {
+  referral_code: string;
+  referral_link: string;
+  total_referred: number;
+  referred_users: { full_name: string | null; role: string; created_at: string }[];
+}
+
+export interface SupportMessage {
+  id: string;
+  message: string;
+  is_admin: boolean;
+  sender_name: string | null;
+  created_at: string;
+}
+
+export interface SupportTicket {
+  id: string;
+  subject: string;
+  category: string;
+  status: "open" | "in_progress" | "resolved" | "closed";
+  created_at: string;
+  message_count: number;
+  messages?: SupportMessage[];
+}
+
+export interface Dispute {
+  id: string;
+  category: string;
+  description: string;
+  status: "open" | "investigating" | "resolved" | "rejected";
+  loan_id: string | null;
+  resolution_note: string | null;
+  resolved_by: string | null;
+  resolved_at: string | null;
+  created_at: string;
+}
+
+export interface LoginSessionInfo {
+  id: string;
+  device_label: string | null;
+  ip_address: string | null;
+  user_agent: string | null;
+  created_at: string;
+  is_most_recent: boolean;
+}

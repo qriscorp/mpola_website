@@ -1,9 +1,13 @@
 "use client";
 
+import { Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { toast } from "sonner";
 import { BorrowerPageHeader } from "@/components/top-nav";
 import { formatCurrency } from "@/lib/format";
+import { api } from "@/lib/api";
+import { CardSkeleton } from "@/components/skeletons";
 
 function formatDateTime(iso: string | null): string {
   if (!iso) return "—";
@@ -23,8 +27,9 @@ const METHOD_LABEL: Record<string, string> = {
   wallet: "Mpola Wallet",
 };
 
-export default function PaymentConfirmationPage() {
+function PaymentConfirmationContent() {
   const searchParams = useSearchParams();
+  const repaymentId = searchParams.get("repaymentId");
   const txn = searchParams.get("txn") ?? "—";
   const amount = Number(searchParams.get("amount") ?? 0);
   const method = searchParams.get("method") ?? "";
@@ -91,7 +96,18 @@ export default function PaymentConfirmationPage() {
         </div>
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <button className="rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm font-semibold text-[#1B2B3A] transition-colors hover:bg-gray-50">
+          <button
+            onClick={() => {
+              if (!repaymentId) {
+                toast.error("This payment has no receipt on file.");
+                return;
+              }
+              api
+                .downloadRepaymentReceipt(repaymentId)
+                .catch(() => toast.error("Couldn't download the receipt. Please try again."));
+            }}
+            className="rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm font-semibold text-[#1B2B3A] transition-colors hover:bg-gray-50"
+          >
             Download Receipt
           </button>
           <Link
@@ -103,5 +119,13 @@ export default function PaymentConfirmationPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function PaymentConfirmationPage() {
+  return (
+    <Suspense fallback={<CardSkeleton count={1} height="h-96" />}>
+      <PaymentConfirmationContent />
+    </Suspense>
   );
 }

@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { LenderPageHeader } from "@/components/lender-top-nav";
 import { CardSkeleton } from "@/components/skeletons";
 import { useUser, useUpdateProfile } from "@/hooks/use-dashboard";
+import { SessionsSection } from "@/components/sessions-section";
 
 function Toggle({
   label,
@@ -127,6 +128,8 @@ export default function LenderSettingsPage() {
           description="Get alerted when someone logs in to your account"
         />
       </div>
+
+      <SessionsSection />
 
       {/* Danger zone */}
       <div className="bg-white dark:bg-gray-900 rounded-xl border border-red-200 dark:border-red-900 p-5 sm:p-6">

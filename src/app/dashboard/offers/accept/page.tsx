@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -26,7 +26,7 @@ const TERMS = [
 // Matches mpola_api's REQUIRED_ACCEPTED_GUARANTORS (routers/loans.py).
 const REQUIRED_ACCEPTED_GUARANTORS = 2;
 
-export default function AcceptOfferPage() {
+function AcceptOfferContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const offerId = searchParams.get("offerId");
@@ -337,5 +337,13 @@ export default function AcceptOfferPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AcceptOfferPage() {
+  return (
+    <Suspense fallback={<CardSkeleton count={2} />}>
+      <AcceptOfferContent />
+    </Suspense>
   );
 }

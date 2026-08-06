@@ -16,6 +16,9 @@ import {
   ShieldCheck,
   Settings,
   LogOut,
+  Gift,
+  HelpCircle,
+  AlertTriangle,
 } from "lucide-react";
 import { SignOutModal } from "@/components/sign-out-modal";
 import { useUser } from "@/hooks/use-dashboard";
@@ -44,6 +47,12 @@ const lendingNav = [
 const financeNav = [
   { href: "/lender/wallet", label: "Wallet", icon: Wallet },
   { href: "/lender/earnings", label: "Earnings", icon: TrendingUp },
+];
+
+const supportNav = [
+  { href: "/lender/referrals", label: "Invite Friends", icon: Gift },
+  { href: "/lender/help", label: "Help & Support", icon: HelpCircle },
+  { href: "/lender/disputes", label: "Disputes", icon: AlertTriangle },
 ];
 
 const accountNav = [
@@ -136,6 +145,9 @@ export function LenderSidebarContent({
 
         {sectionLabel("Finance")}
         <div className="space-y-0.5">{financeNav.map(navLink)}</div>
+
+        {sectionLabel("Support")}
+        <div className="space-y-0.5">{supportNav.map(navLink)}</div>
 
         {sectionLabel("Account")}
         <div className="space-y-0.5">{accountNav.map(navLink)}</div>

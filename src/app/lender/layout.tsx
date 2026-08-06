@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { LenderSidebar } from "@/components/lender-sidebar";
 import { LenderTopNav } from "@/components/lender-top-nav";
+import { RealtimeProvider } from "@/components/realtime-provider";
 
 export const metadata: Metadata = {
   title: "Lender Portal – Mpola",
@@ -15,6 +16,7 @@ export default function LenderLayout({
 }) {
   return (
     <div className="flex h-screen overflow-hidden bg-[#F8FAFC] dark:bg-gray-950">
+      <RealtimeProvider />
       {/* Desktop sidebar — full height, dark navy */}
       <LenderSidebar />
       {/* Right column */}
