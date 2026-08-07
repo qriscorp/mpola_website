@@ -28,14 +28,21 @@ function ForgotPasswordContent() {
   const searchParams = useSearchParams();
   const from = searchParams.get("from");
   const isLender = from === "lender";
-
-  const backHref = isLender ? "/auth/lender-signin" : "/auth/signin";
   const portalLabel = isLender ? "Lender" : "Borrower";
 
   const [step, setStep] = useState<Step>("request");
   const [method, setMethod] = useState<"email" | "phone">("email");
   const [identifier, setIdentifier] = useState("");
   const [resetToken, setResetToken] = useState("");
+  // The `from` query param is just a display hint before we know who this
+  // is. Once the code is verified, the backend tells us the account's real
+  // role — trust that for the post-reset redirect instead of the param,
+  // which can be wrong or missing if this page was reached any other way.
+  const [verifiedRole, setVerifiedRole] = useState<string | null>(null);
+  const backHref =
+    (verifiedRole ?? (isLender ? "lender" : "borrower")) === "lender"
+      ? "/auth/lender-signin"
+      : "/auth/signin";
   const [code, setCode] = useState(["", "", "", "", "", ""]);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -108,6 +115,7 @@ function ForgotPasswordContent() {
       {
         onSuccess: (res) => {
           setResetToken(res.access_token);
+          if (res.role) setVerifiedRole(res.role);
           setStep("reset");
         },
       },

@@ -152,7 +152,7 @@ export function useRegister() {
         | (RegisterBusinessFormData & { role?: "borrower" | "lender" }),
     ) => api.register(data as unknown as Record<string, unknown>),
     onSuccess: (data) => {
-      const role = getCookie("lf_signup_role") || "borrower";
+      const role = data.draft?.role || getCookie("lf_signup_role") || "borrower";
       if (data.account_created || data.draft?.is_completed) {
         toast.success("Registration started. Please sign in.");
         router.push(role === "lender" ? "/auth/lender-signin" : "/auth/signin");
@@ -198,7 +198,7 @@ export function useLenderRegister() {
     mutationFn: (data: Record<string, unknown>) =>
       api.register({ ...data, role: "lender" }),
     onSuccess: (data) => {
-      const role = getCookie("lf_signup_role") || "lender";
+      const role = data.draft?.role || getCookie("lf_signup_role") || "lender";
       if (data.account_created || data.draft?.is_completed) {
         toast.success("Registration started. Please sign in.");
         router.push(role === "lender" ? "/auth/lender-signin" : "/auth/signin");
@@ -237,7 +237,7 @@ export function useVerifySignupEmailOtp() {
       api.verifySignupEmailOtp(draftId, code),
     onSuccess: (data) => {
       toast.success("Email verified!");
-      const role = getCookie("lf_signup_role") || "borrower";
+      const role = data.draft?.role || getCookie("lf_signup_role") || "borrower";
       if (data.account_created || data.draft?.is_completed) {
         clearSignupDraftCookies();
         router.push(role === "lender" ? "/auth/lender-signin" : "/auth/signin");
@@ -282,7 +282,7 @@ export function useVerifySignupPhoneOtp() {
       code: string;
     }) => api.verifySignupPhoneOtp(draftId, phoneNumber, code),
     onSuccess: (data) => {
-      const role = getCookie("lf_signup_role") || "borrower";
+      const role = data.draft?.role || getCookie("lf_signup_role") || "borrower";
 
       if (data.account_created || data.draft?.is_completed) {
         clearSignupDraftCookies();

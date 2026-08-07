@@ -668,7 +668,12 @@ export const api = {
   verifyPasswordResetCode: async (
     identifier: string,
     code: string,
-  ): Promise<{ status: number; access_token: string; message: string }> => {
+  ): Promise<{
+    status: number;
+    access_token: string;
+    message: string;
+    role?: "borrower" | "lender" | string;
+  }> => {
     return apiPost("/auth/verify_password_reset_code", { identifier, code });
   },
 
