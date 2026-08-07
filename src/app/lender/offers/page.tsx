@@ -117,6 +117,19 @@ export default function MyOffersPage() {
     );
   };
 
+  const handleClearExpiry = (id: string) => {
+    extendExpiry.mutate(
+      { id, validUntil: null },
+      {
+        onSuccess: () => {
+          toast.success("Expiry cleared.");
+          setEditingExpiryId(null);
+        },
+        onError: (err: Error) => toast.error(err.message || "Failed to clear expiry"),
+      },
+    );
+  };
+
   const allOffers = offers ?? [];
   const filtered =
     tab === "All" ? allOffers : allOffers.filter((o) => o.status === tab);
@@ -330,10 +343,7 @@ export default function MyOffersPage() {
                         </button>
                         {t.valid_until && (
                           <button
-                            onClick={() => {
-                              setExpiryValue("");
-                              handleSaveExpiry(t.id);
-                            }}
+                            onClick={() => handleClearExpiry(t.id)}
                             disabled={extendExpiry.isPending}
                             className="text-xs text-gray-400 hover:text-red-500 transition-colors disabled:opacity-50"
                           >
