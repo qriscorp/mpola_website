@@ -660,9 +660,13 @@ export const api = {
   // ─── Forgot-password flow ─────────────────────────────
 
   sendPasswordResetCode: async (
-    identifier: string,
-  ): Promise<{ status: number; message: string }> => {
-    return apiPost("/auth/send_password_reset_code", { identifier });
+    email: string,
+    phoneNumber: string,
+  ): Promise<{ status: number; message: string; channel: "email" | "phone" }> => {
+    return apiPost("/auth/send_password_reset_code", {
+      email,
+      phone_number: normalizePhone(phoneNumber),
+    });
   },
 
   verifyPasswordResetCode: async (

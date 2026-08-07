@@ -3,7 +3,7 @@
 import { Suspense, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Eye, EyeOff, Mail, Phone } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -31,8 +31,8 @@ function ForgotPasswordContent() {
   const portalLabel = isLender ? "Lender" : "Borrower";
 
   const [step, setStep] = useState<Step>("request");
-  const [method, setMethod] = useState<"email" | "phone">("email");
-  const [identifier, setIdentifier] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [resetToken, setResetToken] = useState("");
   // The `from` query param is just a display hint before we know who this
   // is. Once the code is verified, the backend tells us the account's real
@@ -43,6 +43,12 @@ function ForgotPasswordContent() {
     (verifiedRole ?? (isLender ? "lender" : "borrower")) === "lender"
       ? "/auth/lender-signin"
       : "/auth/signin";
+  // Which channel actually delivered the code — set once the account is
+  // confirmed to exist (matching both email AND phone), so it's safe to
+  // be specific here, unlike a single-field lookup.
+  const [sentChannel, setSentChannel] = useState<"email" | "phone" | null>(
+    null,
+  );
   const [code, setCode] = useState(["", "", "", "", "", ""]);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -54,30 +60,24 @@ function ForgotPasswordContent() {
     useVerifyPasswordResetCode();
   const { mutate: resetPw, isPending: isResetting } = useResetPassword();
 
-  function getIdentifierValue() {
-    if (method === "phone") {
-      const digits = identifier.replace(/\D/g, "");
-      if (digits.length === 9) return `256${digits}`;
-      if (digits.startsWith("0") && digits.length === 10)
-        return `256${digits.slice(1)}`;
-      if (digits.startsWith("256") && digits.length === 12) return digits;
-      return digits;
-    }
-    return identifier.trim();
-  }
-
   function handleSend(e: React.FormEvent) {
     e.preventDefault();
-    if (!identifier.trim()) return;
+    if (!email.trim() || !phone.trim()) return;
 
-    sendCode(getIdentifierValue(), {
-      onSuccess: () => {
-        toast.success(
-          "If your account exists, a reset code has been sent — check your email and phone.",
-        );
-        setStep("verify");
+    sendCode(
+      { email: email.trim(), phoneNumber: phone },
+      {
+        onSuccess: (res) => {
+          setSentChannel(res.channel);
+          toast.success(
+            res.channel === "email"
+              ? "Reset code sent to your email."
+              : "Reset code sent via SMS.",
+          );
+          setStep("verify");
+        },
       },
-    });
+    );
   }
 
   function handleDigit(index: number, value: string) {
@@ -111,7 +111,7 @@ function ForgotPasswordContent() {
     if (fullCode.length < 6) return;
 
     verifyCode(
-      { identifier: getIdentifierValue(), code: fullCode },
+      { identifier: email.trim(), code: fullCode },
       {
         onSuccess: (res) => {
           setResetToken(res.access_token);
@@ -215,75 +215,49 @@ function ForgotPasswordContent() {
           {step === "request" && (
             <>
               <p className="mb-5 text-sm text-gray-500">
-                Choose where you want to receive your one-time reset code.
+                Enter the email and phone number on your account. We&apos;ll
+                verify both belong to the same account, then send a one-time
+                reset code.
               </p>
-
-              <div className="mb-5 flex rounded-lg border border-gray-200 p-1">
-                <button
-                  type="button"
-                  onClick={() => setMethod("email")}
-                  className={`flex flex-1 items-center justify-center gap-2 rounded-md py-2 text-sm font-semibold transition-colors ${
-                    method === "email"
-                      ? isLender
-                        ? "bg-[#C4A55A] text-white"
-                        : "bg-[#2BB5A0] text-white"
-                      : "text-gray-500 hover:text-gray-700"
-                  }`}
-                >
-                  <Mail className="h-4 w-4" /> Email
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setMethod("phone")}
-                  className={`flex flex-1 items-center justify-center gap-2 rounded-md py-2 text-sm font-semibold transition-colors ${
-                    method === "phone"
-                      ? isLender
-                        ? "bg-[#C4A55A] text-white"
-                        : "bg-[#2BB5A0] text-white"
-                      : "text-gray-500 hover:text-gray-700"
-                  }`}
-                >
-                  <Phone className="h-4 w-4" /> Phone
-                </button>
-              </div>
 
               <form onSubmit={handleSend} className="space-y-4">
                 <div>
-                  <Label htmlFor="identifier">
-                    {method === "email" ? "Email address" : "Phone number"}
-                  </Label>
-                  {method === "phone" ? (
-                    <div className="mt-1.5 flex">
-                      <span
-                        className={`inline-flex items-center rounded-l-lg border border-r-0 px-3 text-sm font-semibold ${
-                          isLender
-                            ? "border-[#E7D9B7] bg-[#FCF8EE] text-[#9F7F34]"
-                            : "border-[#D5ECE8] bg-[#F2FBF9] text-[#149D8E]"
-                        }`}
-                      >
-                        +256
-                      </span>
-                      <Input
-                        id="identifier"
-                        type="tel"
-                        placeholder="772 843 901"
-                        className="rounded-l-none"
-                        value={identifier}
-                        onChange={(e) => setIdentifier(e.target.value)}
-                        required
-                      />
-                    </div>
-                  ) : (
+                  <Label htmlFor="email">Email address</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="you@example.com"
+                    className="mt-1.5"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="phone">Phone number</Label>
+                  <div className="mt-1.5 flex">
+                    <span
+                      className={`inline-flex items-center rounded-l-lg border border-r-0 px-3 text-sm font-semibold ${
+                        isLender
+                          ? "border-[#E7D9B7] bg-[#FCF8EE] text-[#9F7F34]"
+                          : "border-[#D5ECE8] bg-[#F2FBF9] text-[#149D8E]"
+                      }`}
+                    >
+                      +256
+                    </span>
                     <Input
-                      id="identifier"
-                      type="email"
-                      placeholder="you@example.com"
-                      className="mt-1.5"
-                      value={identifier}
-                      onChange={(e) => setIdentifier(e.target.value)}
+                      id="phone"
+                      type="tel"
+                      placeholder="772 843 901"
+                      className="rounded-l-none"
+                      value={phone}
+                      onChange={(e) =>
+                        setPhone(e.target.value.replace(/\D/g, ""))
+                      }
                       required
                     />
-                  )}
+                  </div>
                 </div>
 
                 <button
@@ -304,8 +278,8 @@ function ForgotPasswordContent() {
           {step === "verify" && (
             <>
               <p className="mb-5 text-sm text-gray-500">
-                Enter the 6-digit verification code we sent to your email or
-                phone.
+                Enter the 6-digit verification code we sent{" "}
+                {sentChannel === "phone" ? "via SMS." : "to your email."}
               </p>
 
               <form onSubmit={handleVerify} className="space-y-6">
