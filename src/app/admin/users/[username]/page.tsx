@@ -13,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ArrowLeft, UserX, UserCheck, Trash2, ShieldCheck, ShieldX, FileText, ExternalLink } from "lucide-react";
+import { ArrowLeft, UserX, UserCheck, Trash2, ShieldCheck, ShieldX, FileText, ExternalLink, Wallet as WalletIcon } from "lucide-react";
 import {
   useAdminUserDetail,
   useSuspendUser,
@@ -25,6 +25,7 @@ import { formatCurrency, formatRate, getInitials } from "@/lib/format";
 import { CardSkeleton } from "@/components/skeletons";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { AdminWalletAdjustModal } from "@/components/admin-wallet-adjust-modal";
 
 const statusColor = (s: string) => {
   switch (s) {
@@ -54,6 +55,7 @@ export default function AdminUserDetailPage({
   const reviewKyc = useReviewKyc(username);
   const verifyKycDocument = useVerifyKycDocument(username);
   const [tab, setTab] = useState<"borrower" | "lender">("borrower");
+  const [adjustModalOpen, setAdjustModalOpen] = useState(false);
 
   if (error) {
     return (
@@ -194,10 +196,23 @@ export default function AdminUserDetailPage({
         </Card>
         <Card className="bg-white dark:bg-gray-900">
           <CardContent className="p-4">
-            <p className="text-xs text-muted-foreground">Wallet Balance</p>
-            <p className="text-lg font-bold text-[#2BB5A0]">
-              {wallet.is_wallet_setup ? formatCurrency(wallet.balance) : "Not set up"}
-            </p>
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <p className="text-xs text-muted-foreground">Wallet Balance</p>
+                <p className="text-lg font-bold text-[#2BB5A0]">
+                  {wallet.is_wallet_setup ? formatCurrency(wallet.balance) : "Not set up"}
+                </p>
+              </div>
+              {wallet.is_wallet_setup && (
+                <button
+                  onClick={() => setAdjustModalOpen(true)}
+                  title="Adjust balance"
+                  className="shrink-0 h-7 w-7 rounded-lg border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-500 hover:border-[#2BB5A0] hover:text-[#2BB5A0] transition-colors"
+                >
+                  <WalletIcon className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
           </CardContent>
         </Card>
         <Card className="bg-white dark:bg-gray-900">
@@ -465,6 +480,13 @@ export default function AdminUserDetailPage({
           )}
         </CardContent>
       </Card>
+
+      <AdminWalletAdjustModal
+        open={adjustModalOpen}
+        onClose={() => setAdjustModalOpen(false)}
+        username={profile.username}
+        currentBalance={wallet.balance}
+      />
     </div>
   );
 }

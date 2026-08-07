@@ -183,6 +183,18 @@ export function useAdminReconciliation(lookbackDays: number = 7) {
   });
 }
 
+export function useAdjustWalletBalance(username: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ amount, reason }: { amount: number; reason: string }) =>
+      api.adjustWalletBalance(username, amount, reason),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin", "user-detail", username] });
+      qc.invalidateQueries({ queryKey: ["admin", "reconciliation"] });
+    },
+  });
+}
+
 export function useAdminSettings() {
   return useQuery({
     queryKey: ["admin", "settings"],

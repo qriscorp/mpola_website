@@ -1251,6 +1251,14 @@ export const api = {
     return apiAuthGet(`/admin/reconciliation?lookback_days=${lookbackDays}`);
   },
 
+  adjustWalletBalance: async (
+    username: string,
+    amount: number,
+    reason: string,
+  ): Promise<{ status: number; message: string; balance_before: number; balance_after: number }> => {
+    return apiAuthPost(`/admin/wallets/${username}/adjust`, { amount, reason });
+  },
+
   updateAdminSetting: async (
     key: string,
     value: string,
