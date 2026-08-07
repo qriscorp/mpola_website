@@ -76,7 +76,7 @@ export function middleware(request: NextRequest) {
       ? "/auth/lender-signin"
       : "/auth/signin";
     const signInUrl = new URL(signInPath, request.url);
-    signInUrl.searchParams.set("redirect", pathname);
+    signInUrl.searchParams.set("redirect", pathname + request.nextUrl.search);
     return NextResponse.redirect(signInUrl);
   }
 

@@ -5,6 +5,7 @@ import { BorrowerPageHeader } from "@/components/top-nav";
 import { useUser, useUpdateProfile } from "@/hooks/use-dashboard";
 import { getInitials } from "@/lib/format";
 import { CardSkeleton } from "@/components/skeletons";
+import { KYCUploadSection } from "@/components/kyc-upload-section";
 
 const kycBadge: Record<string, { label: string; className: string }> = {
   verified: { label: "Verified", className: "bg-teal-50 text-[#2BB5A0]" },
@@ -152,10 +153,13 @@ export default function ProfilePage() {
           </div>
           {user.kycStatus !== "verified" && (
             <p className="mt-3 text-xs text-gray-400">
-              Your account will be reviewed for verification. Contact support
-              if this is taking longer than expected.
+              Upload the documents below — an admin reviews them and you&apos;ll
+              be notified once your account is verified.
             </p>
           )}
+          <div className="mt-4">
+            <KYCUploadSection accent="teal" />
+          </div>
         </div>
       </div>
     </div>

@@ -8,6 +8,7 @@ import { LenderPageHeader } from "@/components/lender-top-nav";
 import { CardSkeleton } from "@/components/skeletons";
 import { useUser, useUpdateProfile } from "@/hooks/use-dashboard";
 import { getInitials } from "@/lib/format";
+import { KYCUploadSection } from "@/components/kyc-upload-section";
 
 const statusBadge: Record<string, { label: string; className: string }> = {
   verified: {
@@ -200,6 +201,20 @@ export default function LenderAccountPage() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* KYC documents */}
+      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
+        <h2 className="font-bold text-[#1B2B3A] dark:text-white text-lg mb-1">
+          KYC Documents
+        </h2>
+        {user.kycStatus !== "verified" && (
+          <p className="text-xs text-gray-400 mb-2">
+            Upload the documents below — an admin reviews them and you&apos;ll
+            be notified once your account is verified.
+          </p>
+        )}
+        <KYCUploadSection accent="gold" />
       </div>
     </div>
   );

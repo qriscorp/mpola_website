@@ -3,6 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
+import type { KYCDocumentType } from "@/lib/types";
 
 export function useUser() {
   return useQuery({
@@ -20,6 +21,26 @@ export function useUpdateProfile() {
       qc.invalidateQueries({ queryKey: ["user"] });
     },
     onError: (err: Error) => toast.error(err.message || "Failed to update profile"),
+  });
+}
+
+export function useMyKycDocuments() {
+  return useQuery({
+    queryKey: ["kyc-documents"],
+    queryFn: api.getMyKycDocuments,
+  });
+}
+
+export function useUploadKycDocument() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ documentType, file }: { documentType: KYCDocumentType; file: File }) =>
+      api.uploadKycDocument(documentType, file),
+    onSuccess: () => {
+      toast.success("Document uploaded");
+      qc.invalidateQueries({ queryKey: ["kyc-documents"] });
+    },
+    onError: (err: Error) => toast.error(err.message || "Failed to upload document"),
   });
 }
 

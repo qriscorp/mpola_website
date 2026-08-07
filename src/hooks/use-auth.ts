@@ -84,6 +84,28 @@ function getPostAuthRoute(role: string): string {
   return role === "lender" ? "/lender" : "/dashboard";
 }
 
+/** The page a 401 (session expiry) or a guarded route sent them away from —
+ * set as `?redirect=` on the sign-in URL. Only ever a same-origin path. */
+function getRedirectParam(): string | null {
+  if (typeof window === "undefined") return null;
+  const redirect = new URLSearchParams(window.location.search).get("redirect");
+  if (redirect && redirect.startsWith("/") && !redirect.startsWith("//")) {
+    return redirect;
+  }
+  return null;
+}
+
+/** Where to actually land after a successful sign-in — honors `?redirect=`
+ * so a session-expiry round trip drops the user back where they were,
+ * but only once required verification steps are out of the way. */
+function resolvePostAuthDestination(role: string): string {
+  const computed = getPostAuthRoute(role);
+  if (computed === "/auth/verify-email" || computed === "/auth/verify-phone") {
+    return computed;
+  }
+  return getRedirectParam() ?? computed;
+}
+
 export function useSignIn() {
   const router = useRouter();
   return useMutation({
@@ -97,7 +119,7 @@ export function useSignIn() {
       if (result.requires2FA) return; // caller shows the 2FA code modal instead
       toast.success("Welcome back!");
       const role = getCookie("lf_role") || "borrower";
-      router.push(getPostAuthRoute(role));
+      router.push(resolvePostAuthDestination(role));
     },
     onError: (error: Error) => {
       toast.error(error.message || "Invalid credentials. Please try again.");
@@ -113,7 +135,7 @@ export function useVerifyLogin2FA() {
     onSuccess: () => {
       toast.success("Welcome back!");
       const role = getCookie("lf_role") || "borrower";
-      router.push(getPostAuthRoute(role));
+      router.push(resolvePostAuthDestination(role));
     },
     onError: (error: Error) => {
       toast.error(error.message || "Invalid code. Please try again.");
@@ -157,7 +179,7 @@ export function useLenderSignIn() {
       if (result.requires2FA) return; // caller shows the 2FA code modal instead
       toast.success("Welcome back!");
       const role = getCookie("lf_role") || "lender";
-      router.push(getPostAuthRoute(role));
+      router.push(resolvePostAuthDestination(role));
     },
     onError: (error: Error) => {
       toast.error(error.message || "Invalid credentials. Please try again.");
@@ -441,7 +463,7 @@ export function useVerifyLoginPhoneOtp(portal?: "borrower" | "lender") {
       }
 
       toast.success("Signed in!");
-      router.push(getPostAuthRoute(role));
+      router.push(resolvePostAuthDestination(role));
     },
     onError: (error: Error) => {
       toast.error(error.message || "Invalid code. Please try again.");

@@ -454,7 +454,14 @@ export default function AdminSettingsPage() {
                       onClick={() =>
                         reviewTemplate.mutate(
                           { id: t.id, action: "approve" },
-                          { onSuccess: () => toast.success("Offer approved") },
+                          {
+                            onSuccess: (res) =>
+                              toast.success(
+                                res.offers_created > 0
+                                  ? `Offer approved — matched ${res.offers_created} pending application${res.offers_created === 1 ? "" : "s"} automatically`
+                                  : "Offer approved",
+                              ),
+                          },
                         )
                       }
                     >

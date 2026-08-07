@@ -13,11 +13,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ArrowLeft, UserX, UserCheck, Trash2 } from "lucide-react";
+import { ArrowLeft, UserX, UserCheck, Trash2, ShieldCheck, ShieldX, FileText, ExternalLink } from "lucide-react";
 import {
   useAdminUserDetail,
   useSuspendUser,
   useDeactivateUser,
+  useReviewKyc,
+  useVerifyKycDocument,
 } from "@/hooks/use-admin";
 import { formatCurrency, formatRate, getInitials } from "@/lib/format";
 import { CardSkeleton } from "@/components/skeletons";
@@ -49,6 +51,8 @@ export default function AdminUserDetailPage({
   const { data, isLoading, error } = useAdminUserDetail(username);
   const suspend = useSuspendUser();
   const deactivate = useDeactivateUser();
+  const reviewKyc = useReviewKyc(username);
+  const verifyKycDocument = useVerifyKycDocument(username);
   const [tab, setTab] = useState<"borrower" | "lender">("borrower");
 
   if (error) {
@@ -70,7 +74,23 @@ export default function AdminUserDetailPage({
     );
   }
 
-  const { profile, loans_as_borrower, loans_as_lender, applications, wallet, transactions } = data;
+  const { profile, loans_as_borrower, loans_as_lender, applications, kyc_documents, wallet, transactions } = data;
+
+  const handleApproveKyc = () => {
+    if (!confirm(`Approve KYC for ${profile.username}?`)) return;
+    reviewKyc.mutate(
+      { status: "verified" },
+      { onSuccess: () => toast.success("KYC approved") },
+    );
+  };
+
+  const handleRejectKyc = () => {
+    const note = window.prompt("Reason for rejection (shown to the user, optional):") ?? undefined;
+    reviewKyc.mutate(
+      { status: "rejected", note },
+      { onSuccess: () => toast.success("KYC rejected") },
+    );
+  };
 
   const handleSuspend = () => {
     suspend.mutate(profile.username, {
@@ -197,6 +217,106 @@ export default function AdminUserDetailPage({
           </CardContent>
         </Card>
       </div>
+
+      {/* KYC review */}
+      <Card className="bg-white dark:bg-gray-900">
+        <CardHeader>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="font-semibold text-[#1B2B3A] dark:text-white">
+                KYC Review
+              </h2>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Current status:{" "}
+                <span
+                  className={`font-semibold capitalize ${
+                    profile.kyc_status === "verified"
+                      ? "text-emerald-600"
+                      : profile.kyc_status === "rejected"
+                        ? "text-red-600"
+                        : "text-amber-600"
+                  }`}
+                >
+                  {profile.kyc_status}
+                </span>
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                className="gap-1.5 bg-emerald-500 hover:bg-emerald-600 text-white"
+                onClick={handleApproveKyc}
+                disabled={reviewKyc.isPending || profile.kyc_status === "verified"}
+              >
+                <ShieldCheck className="h-4 w-4" />
+                Approve
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="gap-1.5 text-red-600 hover:text-red-700"
+                onClick={handleRejectKyc}
+                disabled={reviewKyc.isPending || profile.kyc_status === "rejected"}
+              >
+                <ShieldX className="h-4 w-4" />
+                Reject
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {kyc_documents.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-6">
+              No documents uploaded yet.
+            </p>
+          ) : (
+            <div className="space-y-3">
+              {kyc_documents.map((d) => (
+                <div
+                  key={d.id}
+                  className="flex flex-col sm:flex-row sm:items-center gap-3 p-3 rounded-lg border border-gray-100 dark:border-gray-800"
+                >
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className="h-9 w-9 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center shrink-0">
+                      <FileText className="h-4 w-4 text-gray-500" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-[#1B2B3A] dark:text-white capitalize">
+                        {d.document_type.replace(/_/g, " ")}
+                      </p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {d.file_name ?? "—"}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <a
+                      href={d.file_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 text-xs font-medium text-gray-600 dark:text-gray-300 hover:border-[#2BB5A0] hover:text-[#2BB5A0] transition-colors"
+                    >
+                      <ExternalLink className="h-3.5 w-3.5" />
+                      View
+                    </a>
+                    <Button
+                      size="sm"
+                      variant={d.verified ? "outline" : "default"}
+                      className={d.verified ? "" : "bg-emerald-500 hover:bg-emerald-600 text-white"}
+                      disabled={verifyKycDocument.isPending}
+                      onClick={() =>
+                        verifyKycDocument.mutate({ documentId: d.id, verified: !d.verified })
+                      }
+                    >
+                      {d.verified ? "Verified ✓" : "Mark Verified"}
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Applications */}
       {applications.length > 0 && (

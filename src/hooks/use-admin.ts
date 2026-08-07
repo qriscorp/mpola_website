@@ -82,6 +82,36 @@ export function useAdminUserDetail(username: string) {
   });
 }
 
+export function useReviewKyc(username: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ status, note }: { status: "verified" | "rejected"; note?: string }) =>
+      api.reviewKyc(username, status, note),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin", "user-detail", username] });
+      qc.invalidateQueries({ queryKey: ["admin", "users"] });
+    },
+  });
+}
+
+export function useVerifyDocument(username: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ documentId, verified }: { documentId: string; verified: boolean }) =>
+      api.verifyDocument(documentId, verified),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "user-detail", username] }),
+  });
+}
+
+export function useVerifyKycDocument(username: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ documentId, verified }: { documentId: string; verified: boolean }) =>
+      api.verifyKycDocument(documentId, verified),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "user-detail", username] }),
+  });
+}
+
 export function useAdminAuditLogs(
   page: number = 1,
   pageSize: number = 20,

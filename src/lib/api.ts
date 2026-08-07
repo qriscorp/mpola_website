@@ -31,6 +31,8 @@ import type {
   SupportTicket,
   Dispute,
   LoginSessionInfo,
+  KYCDocument,
+  KYCDocumentType,
 } from "./types";
 
 // ─── Real API helpers ────────────────────────────────────
@@ -136,13 +138,19 @@ export function getCookie(name: string): string | undefined {
     ?.split("=")[1];
 }
 
-/** Send the signed-in user back to the right sign-in page for their portal. */
+/** Send the signed-in user back to the right sign-in page for their portal,
+ * remembering where they were so a fresh login lands them right back there. */
 function redirectToSignIn() {
   if (typeof window === "undefined") return;
   const signInPath = window.location.pathname.startsWith("/lender")
     ? "/auth/lender-signin"
     : "/auth/signin";
-  window.location.href = signInPath;
+  const here = window.location.pathname + window.location.search;
+  const url = new URL(signInPath, window.location.origin);
+  if (here && here !== "/") {
+    url.searchParams.set("redirect", here);
+  }
+  window.location.href = url.toString();
 }
 
 /** GET with the JWT from the lf_token cookie attached — for endpoints that require auth. */
@@ -1007,6 +1015,22 @@ export const api = {
     );
   },
 
+  // ─── Account-level KYC documents (separate from per-application ones above) ───
+  getMyKycDocuments: async (): Promise<KYCDocument[]> => {
+    const res = await apiAuthGet<{ documents: KYCDocument[] }>("/users/me/kyc-documents");
+    return res.documents;
+  },
+
+  uploadKycDocument: async (
+    documentType: KYCDocumentType,
+    file: File,
+  ): Promise<{ status: number; message: string; document: KYCDocument }> => {
+    const formData = new FormData();
+    formData.append("document_type", documentType);
+    formData.append("file", file);
+    return apiAuthUpload("/users/me/kyc-documents", formData);
+  },
+
   // Borrower — offers received across all of my applications
   getOffersReceived: async (): Promise<LoanOffer[]> => {
     const res = await apiAuthGet<{ total: number; offers: LoanOffer[] }>(
@@ -1184,6 +1208,28 @@ export const api = {
     return apiAuthGet(`/admin/users/${username}`);
   },
 
+  reviewKyc: async (
+    username: string,
+    status: "verified" | "rejected",
+    note?: string,
+  ): Promise<{ success: boolean; kyc_status: string; is_kyc_verified: boolean }> => {
+    return apiAuthPatch(`/admin/users/${username}/kyc`, { status, note });
+  },
+
+  verifyDocument: async (
+    documentId: string,
+    verified: boolean,
+  ): Promise<{ success: boolean; document_id: string; verified: boolean }> => {
+    return apiAuthPatch(`/admin/documents/${documentId}/verify`, { verified });
+  },
+
+  verifyKycDocument: async (
+    documentId: string,
+    verified: boolean,
+  ): Promise<{ success: boolean; document_id: string; verified: boolean }> => {
+    return apiAuthPatch(`/admin/kyc-documents/${documentId}/verify`, { verified });
+  },
+
   getAdminAuditLogs: async (
     page: number = 1,
     pageSize: number = 20,
@@ -1215,7 +1261,7 @@ export const api = {
   reviewOfferTemplate: async (
     id: string,
     action: "approve" | "reject",
-  ): Promise<{ success: boolean; status: string }> => {
+  ): Promise<{ success: boolean; status: string; offers_created: number }> => {
     return apiAuthPatch(`/admin/offer-templates/${id}?action=${action}`, {});
   },
 

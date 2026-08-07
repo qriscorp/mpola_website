@@ -410,8 +410,30 @@ export interface AdminUserDetail {
   loans_as_borrower: AdminUserLoanSummary[];
   loans_as_lender: AdminUserLoanSummary[];
   applications: AdminUserApplicationSummary[];
+  documents: AdminUserDocument[];
+  kyc_documents: KYCDocument[];
   wallet: { balance: number; is_wallet_setup: boolean };
   transactions: AdminUserTransactionSummary[];
+}
+
+export interface AdminUserDocument {
+  id: string;
+  application_id: string;
+  document_type: string;
+  file_url: string;
+  file_name: string | null;
+  verified: boolean;
+  created_at: string;
+}
+
+export type KYCDocumentType = "national_id" | "passport" | "profile_photo" | "proof_of_address";
+
+export interface KYCDocument {
+  id: string;
+  document_type: KYCDocumentType | string;
+  file_url: string;
+  file_name: string | null;
+  verified: boolean;
 }
 
 // ─── Lender Portal Types ───
