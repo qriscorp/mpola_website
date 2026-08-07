@@ -12,6 +12,7 @@ import {
   useDeleteOfferTemplate,
   useFreezeMyOfferTemplate,
   useUnfreezeMyOfferTemplate,
+  useExtendOfferTemplateExpiry,
 } from "@/hooks/use-lender";
 import { formatCurrency, formatRate } from "@/lib/format";
 import type { LoanOffer } from "@/lib/types";
@@ -77,6 +78,9 @@ export default function MyOffersPage() {
   const deleteTemplate = useDeleteOfferTemplate();
   const freezeTemplate = useFreezeMyOfferTemplate();
   const unfreezeTemplate = useUnfreezeMyOfferTemplate();
+  const extendExpiry = useExtendOfferTemplateExpiry();
+  const [editingExpiryId, setEditingExpiryId] = useState<string | null>(null);
+  const [expiryValue, setExpiryValue] = useState("");
 
   const handleDelete = (id: string) => {
     if (!confirm("Delete this standing offer? This can't be undone.")) return;
@@ -98,6 +102,19 @@ export default function MyOffersPage() {
       onSuccess: () => toast.success("Unfrozen — it can match again."),
       onError: (err: Error) => toast.error(err.message || "Failed to unfreeze"),
     });
+  };
+
+  const handleSaveExpiry = (id: string) => {
+    extendExpiry.mutate(
+      { id, validUntil: expiryValue ? new Date(expiryValue).toISOString() : null },
+      {
+        onSuccess: () => {
+          toast.success("Expiry updated.");
+          setEditingExpiryId(null);
+        },
+        onError: (err: Error) => toast.error(err.message || "Failed to update expiry"),
+      },
+    );
   };
 
   const allOffers = offers ?? [];
@@ -261,28 +278,86 @@ export default function MyOffersPage() {
                 )}
 
                 {t.status === "approved" && (
-                  <div className="flex items-center gap-3 pt-3 border-t border-gray-100 dark:border-gray-800">
-                    {t.is_frozen ? (
-                      <button
-                        onClick={() => handleUnfreeze(t.id)}
-                        disabled={unfreezeTemplate.isPending || t.frozen_by === "admin"}
-                        className="px-4 py-1.5 rounded-lg bg-[#C4A55A] text-white text-sm font-semibold hover:bg-[#b3944a] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        Unfreeze
-                      </button>
+                  <div className="pt-3 border-t border-gray-100 dark:border-gray-800 space-y-3">
+                    <div className="flex items-center gap-3">
+                      {t.is_frozen ? (
+                        <button
+                          onClick={() => handleUnfreeze(t.id)}
+                          disabled={unfreezeTemplate.isPending || t.frozen_by === "admin"}
+                          className="px-4 py-1.5 rounded-lg bg-[#C4A55A] text-white text-sm font-semibold hover:bg-[#b3944a] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          Unfreeze
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => handleFreeze(t.id)}
+                          disabled={freezeTemplate.isPending}
+                          className="px-4 py-1.5 rounded-lg border border-gray-300 text-sm font-medium text-gray-600 hover:border-blue-300 hover:text-blue-600 transition-colors disabled:opacity-50"
+                        >
+                          Freeze
+                        </button>
+                      )}
+                      {t.is_frozen && t.frozen_by === "admin" && (
+                        <p className="text-xs text-gray-400">
+                          Frozen by an admin — only they can unfreeze it.
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Expiry — the one thing editable post-approval, since an
+                        expired offer otherwise stops matching forever with no
+                        way to revive it short of a whole new submission. */}
+                    {editingExpiryId === t.id ? (
+                      <div className="flex flex-wrap items-center gap-2">
+                        <input
+                          type="date"
+                          value={expiryValue}
+                          onChange={(e) => setExpiryValue(e.target.value)}
+                          className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-[#1B2B3A] outline-none focus:ring-2 focus:ring-[#C4A55A]/30"
+                        />
+                        <button
+                          onClick={() => handleSaveExpiry(t.id)}
+                          disabled={extendExpiry.isPending}
+                          className="px-3 py-1.5 rounded-lg bg-[#C4A55A] text-white text-xs font-semibold hover:bg-[#b3944a] transition-colors disabled:opacity-50"
+                        >
+                          {extendExpiry.isPending ? "Saving…" : "Save"}
+                        </button>
+                        <button
+                          onClick={() => setEditingExpiryId(null)}
+                          className="px-3 py-1.5 rounded-lg border border-gray-300 text-xs font-medium text-gray-600 hover:border-gray-400 transition-colors"
+                        >
+                          Cancel
+                        </button>
+                        {t.valid_until && (
+                          <button
+                            onClick={() => {
+                              setExpiryValue("");
+                              handleSaveExpiry(t.id);
+                            }}
+                            disabled={extendExpiry.isPending}
+                            className="text-xs text-gray-400 hover:text-red-500 transition-colors disabled:opacity-50"
+                          >
+                            Clear expiry
+                          </button>
+                        )}
+                      </div>
                     ) : (
-                      <button
-                        onClick={() => handleFreeze(t.id)}
-                        disabled={freezeTemplate.isPending}
-                        className="px-4 py-1.5 rounded-lg border border-gray-300 text-sm font-medium text-gray-600 hover:border-blue-300 hover:text-blue-600 transition-colors disabled:opacity-50"
-                      >
-                        Freeze
-                      </button>
-                    )}
-                    {t.is_frozen && t.frozen_by === "admin" && (
-                      <p className="text-xs text-gray-400">
-                        Frozen by an admin — only they can unfreeze it.
-                      </p>
+                      <div className="flex items-center gap-2 text-xs text-gray-500">
+                        <span>
+                          {t.valid_until
+                            ? `Valid until ${new Date(t.valid_until).toLocaleDateString()}`
+                            : "No expiry set"}
+                        </span>
+                        <button
+                          onClick={() => {
+                            setExpiryValue(t.valid_until ? t.valid_until.slice(0, 10) : "");
+                            setEditingExpiryId(t.id);
+                          }}
+                          className="text-[#C4A55A] font-medium hover:underline"
+                        >
+                          {t.valid_until ? "Change" : "Set expiry"}
+                        </button>
+                      </div>
                     )}
                   </div>
                 )}

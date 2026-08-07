@@ -238,30 +238,6 @@ async function apiAuthUpload<T>(path: string, formData: FormData): Promise<T> {
   return res.json();
 }
 
-/** PATCH with the JWT from the lf_token cookie attached — for endpoints that require auth. */
-async function apiAuthPatch<T>(path: string, body: unknown): Promise<T> {
-  const token = getCookie("lf_token");
-  const res = await fetch(`${API_BASE_URL}${path}`, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-    body: JSON.stringify(body),
-  });
-  if (res.status === 401) {
-    redirectToSignIn();
-    throw new Error("Session expired");
-  }
-  if (!res.ok) {
-    const err = await res
-      .json()
-      .catch(() => ({ detail: "Request failed", message: "Request failed" }));
-    throw new Error(extractErrorMessage(err, res.status));
-  }
-  return res.json();
-}
-
 async function apiAuthDelete<T>(path: string): Promise<T> {
   const token = getCookie("lf_token");
   const res = await fetch(`${API_BASE_URL}${path}`, {
@@ -931,7 +907,7 @@ export const api = {
     offerId: string,
     status: "accepted" | "declined",
   ): Promise<{ status: number; message: string }> => {
-    return apiAuthPatch(`/loans/offers/${offerId}`, { status });
+    return apiAuthPut(`/loans/offers/${offerId}`, { status });
   },
 
   // Repayments
@@ -1137,7 +1113,7 @@ export const api = {
   },
 
   markNotificationRead: async (id: string): Promise<void> => {
-    await apiAuthPatch(`/notifications/${id}/read`, {});
+    await apiAuthPut(`/notifications/${id}/read`, {});
   },
 
   markAllNotificationsRead: async (): Promise<void> => {
@@ -1174,14 +1150,14 @@ export const api = {
   suspendUser: async (
     username: string,
   ): Promise<{ success: boolean; is_active: boolean; action: string }> => {
-    return apiAuthPatch(`/admin/users/${username}/suspend`, {});
+    return apiAuthPut(`/admin/users/${username}/suspend`, {});
   },
 
   changeUserRole: async (
     username: string,
     role: string,
   ): Promise<{ success: boolean; new_role: string }> => {
-    return apiAuthPatch(`/admin/users/${username}/role`, { role });
+    return apiAuthPut(`/admin/users/${username}/role`, { role });
   },
 
   /** Grants/revokes admin access WITHOUT touching the account's borrower/lender
@@ -1191,7 +1167,7 @@ export const api = {
     is_admin: boolean,
     is_super_admin: boolean = false,
   ): Promise<{ success: boolean; role: string; is_admin: boolean; is_super_admin: boolean }> => {
-    return apiAuthPatch(`/admin/users/${username}/admin-access`, {
+    return apiAuthPut(`/admin/users/${username}/admin-access`, {
       is_admin,
       is_super_admin,
     });
@@ -1235,7 +1211,7 @@ export const api = {
     id: string,
     action: "approve" | "reject",
   ): Promise<{ success: boolean; status: string }> => {
-    return apiAuthPatch(`/admin/applications/${id}?action=${action}`, {});
+    return apiAuthPut(`/admin/applications/${id}?action=${action}`, {});
   },
 
   getAdminPayments: async (
@@ -1286,21 +1262,21 @@ export const api = {
     status: "verified" | "rejected",
     note?: string,
   ): Promise<{ success: boolean; kyc_status: string; is_kyc_verified: boolean }> => {
-    return apiAuthPatch(`/admin/users/${username}/kyc`, { status, note });
+    return apiAuthPut(`/admin/users/${username}/kyc`, { status, note });
   },
 
   verifyDocument: async (
     documentId: string,
     verified: boolean,
   ): Promise<{ success: boolean; document_id: string; verified: boolean }> => {
-    return apiAuthPatch(`/admin/documents/${documentId}/verify`, { verified });
+    return apiAuthPut(`/admin/documents/${documentId}/verify`, { verified });
   },
 
   verifyKycDocument: async (
     documentId: string,
     verified: boolean,
   ): Promise<{ success: boolean; document_id: string; verified: boolean }> => {
-    return apiAuthPatch(`/admin/kyc-documents/${documentId}/verify`, { verified });
+    return apiAuthPut(`/admin/kyc-documents/${documentId}/verify`, { verified });
   },
 
   getAdminAuditLogs: async (
@@ -1335,7 +1311,7 @@ export const api = {
     id: string,
     action: "approve" | "reject",
   ): Promise<{ success: boolean; status: string; offers_created: number }> => {
-    return apiAuthPatch(`/admin/offer-templates/${id}?action=${action}`, {});
+    return apiAuthPut(`/admin/offer-templates/${id}?action=${action}`, {});
   },
   freezeOfferTemplate: async (id: string): Promise<{ status: number; message: string }> => {
     return apiAuthPost(`/admin/offer-templates/${id}/freeze`, {});
@@ -1425,7 +1401,7 @@ export const api = {
       max_concurrent_loans: number;
     }>,
   ): Promise<{ status: number; message: string; template: LenderOfferTemplate }> => {
-    return apiAuthPatch(`/loans/offer-templates/${id}`, data);
+    return apiAuthPut(`/loans/offer-templates/${id}`, data);
   },
   deleteOfferTemplate: async (id: string): Promise<{ status: number; message: string }> => {
     return apiAuthDelete(`/loans/offer-templates/${id}`);
@@ -1439,6 +1415,12 @@ export const api = {
     id: string,
   ): Promise<{ status: number; message: string; template: LenderOfferTemplate }> => {
     return apiAuthPost(`/loans/offer-templates/${id}/unfreeze`, {});
+  },
+  extendOfferTemplateExpiry: async (
+    id: string,
+    validUntil: string | null,
+  ): Promise<{ status: number; message: string; template: LenderOfferTemplate }> => {
+    return apiAuthPut(`/loans/offer-templates/${id}/expiry`, { valid_until: validUntil });
   },
   getLenderWallet: async (): Promise<Wallet> => {
     return api.getWallet();

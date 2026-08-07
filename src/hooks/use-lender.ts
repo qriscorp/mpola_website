@@ -119,6 +119,16 @@ export function useUnfreezeMyOfferTemplate() {
   });
 }
 
+export function useExtendOfferTemplateExpiry() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, validUntil }: { id: string; validUntil: string | null }) =>
+      api.extendOfferTemplateExpiry(id, validUntil),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["lender", "offer-templates"] }),
+    onError: (err: Error) => toast.error(err.message || "Failed to update expiry"),
+  });
+}
+
 export function useOfferTemplates() {
   return useQuery({
     queryKey: ["lender", "offer-templates"],
