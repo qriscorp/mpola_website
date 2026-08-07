@@ -348,6 +348,9 @@ export default function MyOffersPage() {
                             ? `Valid until ${new Date(t.valid_until).toLocaleDateString()}`
                             : "No expiry set"}
                         </span>
+                        {t.valid_until && new Date(t.valid_until) < new Date() && (
+                          <span className="text-red-500 font-medium">Expired</span>
+                        )}
                         <button
                           onClick={() => {
                             setExpiryValue(t.valid_until ? t.valid_until.slice(0, 10) : "");

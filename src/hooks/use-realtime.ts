@@ -48,6 +48,7 @@ export function useRealtimeNotifications() {
           queryClient.invalidateQueries({ queryKey: ["applications"] });
           queryClient.invalidateQueries({ queryKey: ["active-loan"] });
           queryClient.invalidateQueries({ queryKey: ["lender", "active-loans"] });
+          queryClient.invalidateQueries({ queryKey: ["lender", "offer-templates"] });
 
           if (msg.type === "loan_pending_disbursement") {
             toast.warning(msg.title, {
@@ -60,6 +61,15 @@ export function useRealtimeNotifications() {
             });
           } else if (msg.type === "loan_disbursed") {
             toast.success(msg.title, { description: msg.message });
+          } else if (msg.type === "offer_template_expired") {
+            toast.warning(msg.title, {
+              description: msg.message,
+              duration: 15000,
+              action: {
+                label: "Update",
+                onClick: () => router.push("/lender/offers"),
+              },
+            });
           } else if (msg.title) {
             toast.info(msg.title, { description: msg.message });
           }
