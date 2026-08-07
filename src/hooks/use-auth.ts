@@ -415,11 +415,15 @@ export function useVerifyLoginPhoneOtp(portal?: "borrower" | "lender") {
     onSuccess: (data) => {
       const user = data.user!; // login OTP verification always returns a user
       const role = user.role;
-      const isAdmin = role === "admin" || role === "super_admin" || user.is_admin;
-      const isLenderRole = role === "lender" || isAdmin;
+      // Only a legacy pure-admin account (role itself is admin/super_admin,
+      // no real borrower/lender identity) is exempt from this check. A
+      // dual-role account (e.g. borrower + admin) still has exactly one true
+      // portal and must sign in through the matching form — is_admin does
+      // NOT bypass that (matches backend _enforce_portal_role).
+      const isPureAdmin = role === "admin" || role === "super_admin";
+      const isLenderRole = role === "lender";
 
-      // Admins can sign in from either portal — skip portal enforcement for them
-      if (!isAdmin) {
+      if (!isPureAdmin) {
         if (portal === "borrower" && isLenderRole) {
           api.signOut();
           toast.error(

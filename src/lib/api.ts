@@ -469,11 +469,13 @@ export const api = {
     if ("requires_2fa" in res) {
       return { requires2FA: true, username: res.username };
     }
+    // Backend already rejects a mismatched portal with a 403 before this
+    // point (is_admin does NOT bypass that — a dual-role account still has
+    // exactly one true portal). This is just a defensive client-side mirror.
     if (
       res.user!.role !== "lender" &&
       res.user!.role !== "admin" &&
-      res.user!.role !== "super_admin" &&
-      !res.user!.is_admin
+      res.user!.role !== "super_admin"
     ) {
       throw new Error(
         "This portal is for lenders only. Please use the borrower sign-in.",
