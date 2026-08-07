@@ -56,6 +56,17 @@ export default function LenderEarningsPage() {
     <div className="max-w-6xl space-y-6">
       <LenderPageHeader title="Earnings Summary" />
 
+      {earnings?.concentration_warning && (
+        <div className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          <span className="font-semibold">{earnings.concentration_warning.pct}%</span> of your
+          active lending is concentrated in{" "}
+          {earnings.concentration_warning.type === "borrower"
+            ? `one borrower (${earnings.concentration_warning.label})`
+            : `one loan type (${earnings.concentration_warning.label})`}
+          {" "}— consider diversifying to spread your risk.
+        </div>
+      )}
+
       <StaggerList className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {stats.map((stat) => (
           <StaggerItem

@@ -13,6 +13,7 @@ import {
   TrendingUp,
   Settings,
   ShieldAlert,
+  ShieldCheck,
   LogOut,
 } from "lucide-react";
 import { SignOutModal } from "@/components/sign-out-modal";
@@ -40,6 +41,7 @@ const platformNav = [
 
 const insightsNav = [
   { href: "/admin/revenue", label: "Revenue", icon: TrendingUp },
+  { href: "/admin/reconciliation", label: "Reconciliation", icon: ShieldCheck },
   { href: "/admin/audit-logs", label: "Audit Log", icon: ShieldAlert },
 ];
 

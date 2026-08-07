@@ -176,6 +176,13 @@ export function useAdminRevenue(page: number = 1, pageSize: number = 20, categor
   });
 }
 
+export function useAdminReconciliation(lookbackDays: number = 7) {
+  return useQuery({
+    queryKey: ["admin", "reconciliation", lookbackDays],
+    queryFn: () => api.getAdminReconciliation(lookbackDays),
+  });
+}
+
 export function useAdminSettings() {
   return useQuery({
     queryKey: ["admin", "settings"],

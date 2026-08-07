@@ -21,6 +21,7 @@ import type {
   AdminPaymentTx,
   AdminRevenue,
   AdminSetting,
+  AdminReconciliation,
   AdminOfferTemplate,
   AdminAuditLog,
   AdminUserDetail,
@@ -1244,6 +1245,10 @@ export const api = {
 
   getAdminSettings: async (): Promise<Record<string, AdminSetting>> => {
     return apiAuthGet("/admin/settings");
+  },
+
+  getAdminReconciliation: async (lookbackDays: number = 7): Promise<AdminReconciliation> => {
+    return apiAuthGet(`/admin/reconciliation?lookback_days=${lookbackDays}`);
   },
 
   updateAdminSetting: async (

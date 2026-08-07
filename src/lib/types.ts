@@ -338,6 +338,25 @@ export interface AdminSetting {
   description: string | null;
 }
 
+export interface AdminReconciliation {
+  wallet_drift: {
+    user_id: string;
+    username: string | null;
+    stored_balance: number;
+    ledger_balance: number;
+    delta: number;
+  }[];
+  gateway_mismatches: {
+    transaction_id: string;
+    reference: string;
+    type: string;
+    our_status: string;
+    gateway_status: string;
+  }[];
+  checked_count: number;
+  generated_at: string;
+}
+
 export interface AdminOfferTemplate {
   id: string;
   lender_id: string;
@@ -515,6 +534,7 @@ export interface LenderEarnings {
   this_month_earned: number;
   avg_yield: number;
   monthly_earnings: { month: string; amount: number }[];
+  concentration_warning: { type: "borrower" | "loan_type"; label: string; pct: number } | null;
 }
 
 // ─── Referrals, Support, Disputes, Sessions ───

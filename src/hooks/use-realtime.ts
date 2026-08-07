@@ -44,6 +44,7 @@ export function useRealtimeNotifications() {
 
           queryClient.invalidateQueries({ queryKey: ["notifications"] });
           queryClient.invalidateQueries({ queryKey: ["wallet"] });
+          queryClient.invalidateQueries({ queryKey: ["dashboard-stats"] });
           queryClient.invalidateQueries({ queryKey: ["lender", "wallet"] });
           queryClient.invalidateQueries({ queryKey: ["applications"] });
           queryClient.invalidateQueries({ queryKey: ["active-loan"] });
@@ -68,6 +69,15 @@ export function useRealtimeNotifications() {
               action: {
                 label: "Update",
                 onClick: () => router.push("/lender/offers"),
+              },
+            });
+          } else if (msg.type === "low_wallet_balance") {
+            toast.warning(msg.title, {
+              description: msg.message,
+              duration: 15000,
+              action: {
+                label: "Top up",
+                onClick: () => router.push("/lender/wallet"),
               },
             });
           } else if (msg.title) {
