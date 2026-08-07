@@ -79,11 +79,17 @@ export default function VerifyPhonePage() {
         queueMicrotask(() => {
           setDraftId(status.draft?.draft_id || draft);
           setPhone(toLocalDisplay(status.draft?.phone_number || fallbackPhone));
+          // A code was already sent during registration (or a prior visit
+          // to this page) for the signup-draft path — go straight to the
+          // code-entry UI instead of showing a redundant "Send" button that
+          // would silently invalidate the code already texted.
+          setCodeSent(true);
         });
       } catch {
         queueMicrotask(() => {
           setDraftId(draft);
           setPhone(toLocalDisplay(fallbackPhone));
+          setCodeSent(true);
         });
       }
     };
@@ -192,8 +198,9 @@ export default function VerifyPhonePage() {
               Verify your phone
             </h1>
             <p className="text-gray-500 text-sm mt-2 leading-relaxed">
-              We&apos;ll send a verification code via SMS to confirm your
-              Ugandan phone number.
+              {codeSent
+                ? "We sent a verification code via SMS to confirm your Ugandan phone number."
+                : "We'll send a verification code via SMS to confirm your Ugandan phone number."}
             </p>
           </div>
 

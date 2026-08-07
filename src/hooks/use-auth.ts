@@ -152,14 +152,19 @@ export function useRegister() {
         | (RegisterBusinessFormData & { role?: "borrower" | "lender" }),
     ) => api.register(data as unknown as Record<string, unknown>),
     onSuccess: (data) => {
-      toast.success("Registration started. Please verify your email.");
       const role = getCookie("lf_signup_role") || "borrower";
       if (data.account_created || data.draft?.is_completed) {
+        toast.success("Registration started. Please sign in.");
         router.push(role === "lender" ? "/auth/lender-signin" : "/auth/signin");
         return;
       }
-      // Email-first signup UX.
-      router.push("/auth/verify-email");
+      const dest = resolveSignupDraftRoute(data.draft, role);
+      toast.success(
+        dest === "/auth/verify-phone"
+          ? "Registration started. Please verify your phone."
+          : "Registration started. Please verify your email.",
+      );
+      router.push(dest);
     },
     onError: (error: Error) => {
       toast.error(error.message || "Registration failed. Please try again.");
@@ -193,14 +198,19 @@ export function useLenderRegister() {
     mutationFn: (data: Record<string, unknown>) =>
       api.register({ ...data, role: "lender" }),
     onSuccess: (data) => {
-      toast.success("Registration started. Please verify your email.");
       const role = getCookie("lf_signup_role") || "lender";
       if (data.account_created || data.draft?.is_completed) {
+        toast.success("Registration started. Please sign in.");
         router.push(role === "lender" ? "/auth/lender-signin" : "/auth/signin");
         return;
       }
-      // Email-first signup UX.
-      router.push("/auth/verify-email");
+      const dest = resolveSignupDraftRoute(data.draft, role);
+      toast.success(
+        dest === "/auth/verify-phone"
+          ? "Registration started. Please verify your phone."
+          : "Registration started. Please verify your email.",
+      );
+      router.push(dest);
     },
     onError: (error: Error) => {
       toast.error(error.message || "Registration failed. Please try again.");

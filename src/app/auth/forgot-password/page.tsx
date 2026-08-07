@@ -66,9 +66,7 @@ function ForgotPasswordContent() {
     sendCode(getIdentifierValue(), {
       onSuccess: () => {
         toast.success(
-          method === "email"
-            ? "Reset code sent to your email."
-            : "Reset code sent via SMS.",
+          "If your account exists, a reset code has been sent — check your email and phone.",
         );
         setStep("verify");
       },
@@ -298,8 +296,8 @@ function ForgotPasswordContent() {
           {step === "verify" && (
             <>
               <p className="mb-5 text-sm text-gray-500">
-                Enter the 6-digit verification code sent to your{" "}
-                {method === "email" ? "email" : "phone"}.
+                Enter the 6-digit verification code we sent to your email or
+                phone.
               </p>
 
               <form onSubmit={handleVerify} className="space-y-6">
