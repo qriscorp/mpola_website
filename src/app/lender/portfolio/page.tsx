@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { toast } from "sonner";
 import { LenderPageHeader } from "@/components/lender-top-nav";
 import { TableSkeleton } from "@/components/skeletons";
-import { useLenderActiveLoans } from "@/hooks/use-lender";
+import { useLenderActiveLoans, useApproveDisbursement } from "@/hooks/use-lender";
 import { formatCurrency, formatRate } from "@/lib/format";
 import type { ActiveLoan } from "@/lib/types";
 import { FadeSwap } from "@/components/motion/fade-swap";
@@ -13,6 +14,7 @@ type LoanStatus = ActiveLoan["status"];
 
 const tabs: Array<"All" | LoanStatus> = [
   "All",
+  "pending_disbursement",
   "active",
   "overdue",
   "completed",
@@ -21,6 +23,7 @@ const tabs: Array<"All" | LoanStatus> = [
 
 const tabLabel: Record<"All" | LoanStatus, string> = {
   All: "All",
+  pending_disbursement: "Awaiting Approval",
   active: "On Track",
   overdue: "Overdue",
   completed: "Completed",
@@ -28,6 +31,12 @@ const tabLabel: Record<"All" | LoanStatus, string> = {
 };
 
 function statBadge(s: LoanStatus) {
+  if (s === "pending_disbursement")
+    return (
+      <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-600 border border-amber-200">
+        Awaiting Approval
+      </span>
+    );
   if (s === "active")
     return (
       <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-200">
@@ -56,6 +65,14 @@ function statBadge(s: LoanStatus) {
 export default function LenderPortfolioPage() {
   const [tab, setTab] = useState<"All" | LoanStatus>("All");
   const { data: loans, isLoading } = useLenderActiveLoans();
+  const approveDisbursement = useApproveDisbursement();
+
+  const handleApprove = (loanId: string) => {
+    approveDisbursement.mutate(loanId, {
+      onSuccess: () => toast.success("Disbursed — funds sent to the borrower's wallet."),
+      onError: (err: Error) => toast.error(err.message || "Failed to approve disbursement"),
+    });
+  };
 
   const allLoans = loans ?? [];
   const filtered = tab === "All" ? allLoans : allLoans.filter((l) => l.status === tab);
@@ -172,7 +189,11 @@ export default function LenderPortfolioPage() {
                       {formatRate(loan.interest_rate)}
                     </td>
                     <td className="py-4 pr-4 min-w-30">
-                      {loan.status === "overdue" ? (
+                      {loan.status === "pending_disbursement" ? (
+                        <p className="text-xs text-amber-600 font-medium">
+                          Not disbursed yet
+                        </p>
+                      ) : loan.status === "overdue" ? (
                         <p className="text-xs text-red-500 font-medium">
                           Overdue
                         </p>
@@ -207,12 +228,22 @@ export default function LenderPortfolioPage() {
                     </td>
                     <td className="py-4 pr-4">{statBadge(loan.status)}</td>
                     <td className="py-4">
-                      <Link
-                        href={`/lender/loan-detail?loanId=${loan.id}`}
-                        className="text-xs px-3 py-1.5 rounded-lg bg-[#C4A55A] text-white font-semibold hover:bg-[#b3944a] transition-colors"
-                      >
-                        View
-                      </Link>
+                      {loan.status === "pending_disbursement" ? (
+                        <button
+                          onClick={() => handleApprove(loan.id)}
+                          disabled={approveDisbursement.isPending}
+                          className="text-xs px-3 py-1.5 rounded-lg bg-emerald-500 text-white font-semibold hover:bg-emerald-600 transition-colors disabled:opacity-50 whitespace-nowrap"
+                        >
+                          {approveDisbursement.isPending ? "Approving…" : "Approve Disbursement"}
+                        </button>
+                      ) : (
+                        <Link
+                          href={`/lender/loan-detail?loanId=${loan.id}`}
+                          className="text-xs px-3 py-1.5 rounded-lg bg-[#C4A55A] text-white font-semibold hover:bg-[#b3944a] transition-colors"
+                        >
+                          View
+                        </Link>
+                      )}
                     </td>
                   </tr>
                 ))}

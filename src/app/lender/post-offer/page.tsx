@@ -1,13 +1,17 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LenderPageHeader } from "@/components/lender-top-nav";
-import { useCreateOfferTemplate } from "@/hooks/use-lender";
+import {
+  useCreateOfferTemplate,
+  useUpdateOfferTemplate,
+  useOfferTemplates,
+} from "@/hooks/use-lender";
 
 const LOAN_TYPES = [
   "Business",
@@ -36,7 +40,20 @@ const DURATIONS = [
 ];
 
 export default function PostOfferPage() {
+  return (
+    <Suspense fallback={null}>
+      <PostOfferContent />
+    </Suspense>
+  );
+}
+
+function PostOfferContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const editId = searchParams.get("edit");
+  const { data: templates } = useOfferTemplates();
+  const editingTemplate = editId ? templates?.find((t) => t.id === editId) : undefined;
+
   const [selectedTypes, setSelectedTypes] = useState<string[]>([
     "Business",
     "Personal",
@@ -54,8 +71,45 @@ export default function PostOfferPage() {
   const [description, setDescription] = useState("");
   const [validUntil, setValidUntil] = useState("");
   const [maxConcurrent, setMaxConcurrent] = useState("10");
+  const [prefilled, setPrefilled] = useState(false);
 
   const createTemplate = useCreateOfferTemplate();
+  const updateTemplate = useUpdateOfferTemplate();
+  // Based on URL intent, not on whether the template data has loaded yet —
+  // otherwise the page briefly renders as "create" before flipping to "edit"
+  // once the templates list finishes fetching.
+  const isEditing = !!editId;
+  const editDataLoading = isEditing && !editingTemplate;
+
+  useEffect(() => {
+    if (!editingTemplate || prefilled) return;
+    setMaxAmount(String(editingTemplate.max_amount));
+    setMinAmount(String(editingTemplate.min_amount));
+    setRate(String(editingTemplate.interest_rate));
+    setDuration(
+      editingTemplate.max_duration === 1
+        ? "1 month"
+        : `${editingTemplate.max_duration} months`,
+    );
+    setSelectedTypes(
+      LOAN_TYPES.filter((t) =>
+        editingTemplate.accepted_loan_types.includes(t.toLowerCase()),
+      ),
+    );
+    setSelectedDocs(
+      DOCUMENTS.filter((d) => editingTemplate.required_documents.includes(d)),
+    );
+    setDescription(editingTemplate.description ?? "");
+    setValidUntil(
+      editingTemplate.valid_until ? editingTemplate.valid_until.slice(0, 10) : "",
+    );
+    setMaxConcurrent(
+      editingTemplate.max_concurrent_loans != null
+        ? String(editingTemplate.max_concurrent_loans)
+        : "",
+    );
+    setPrefilled(true);
+  }, [editingTemplate, prefilled]);
 
   function toggle(arr: string[], setArr: (v: string[]) => void, val: string) {
     setArr(arr.includes(val) ? arr.filter((x) => x !== val) : [...arr, val]);
@@ -80,19 +134,33 @@ export default function PostOfferPage() {
 
   function handlePost(draft: boolean) {
     const monthsMatch = duration.match(/\d+/);
+    const fields = {
+      max_amount: Number(maxAmount),
+      min_amount: Number(minAmount),
+      interest_rate: Number(rate),
+      max_duration: monthsMatch ? Number(monthsMatch[0]) : 6,
+      accepted_loan_types: selectedTypes.map((t) => t.toLowerCase()),
+      required_documents: selectedDocs,
+      description: description || undefined,
+      valid_until: validUntil || undefined,
+      max_concurrent_loans: maxConcurrent ? Number(maxConcurrent) : undefined,
+    };
+
+    if (isEditing && editingTemplate) {
+      updateTemplate.mutate(
+        { id: editingTemplate.id, data: fields },
+        {
+          onSuccess: () => {
+            toast.success("Offer updated.");
+            router.push("/lender/offers");
+          },
+        },
+      );
+      return;
+    }
+
     createTemplate.mutate(
-      {
-        max_amount: Number(maxAmount),
-        min_amount: Number(minAmount),
-        interest_rate: Number(rate),
-        max_duration: monthsMatch ? Number(monthsMatch[0]) : 6,
-        accepted_loan_types: selectedTypes.map((t) => t.toLowerCase()),
-        required_documents: selectedDocs,
-        description: description || undefined,
-        valid_until: validUntil || undefined,
-        max_concurrent_loans: maxConcurrent ? Number(maxConcurrent) : undefined,
-        is_draft: draft,
-      },
+      { ...fields, is_draft: draft },
       {
         onSuccess: () => {
           toast.success(
@@ -108,17 +176,18 @@ export default function PostOfferPage() {
 
   return (
     <div className="space-y-6 max-w-4xl">
-      <LenderPageHeader title="Post an Offer" />
+      <LenderPageHeader title={isEditing ? "Edit Offer" : "Post an Offer"} />
 
       <Card className="bg-white dark:bg-gray-900">
         <CardContent className="p-6 sm:p-8 space-y-8">
           <div>
             <h2 className="text-xl font-bold text-[#1B2B3A] dark:text-white">
-              Post a New Lending Offer
+              {isEditing ? "Edit Your Standing Offer" : "Post a New Lending Offer"}
             </h2>
             <p className="text-sm text-gray-500 mt-1">
-              Set your terms once. Borrowers apply to you — you review and
-              approve who gets funded.
+              {isEditing
+                ? "Update your terms — changes apply once you save."
+                : "Set your terms once. Borrowers apply to you — you review and approve who gets funded."}
             </p>
           </div>
 
@@ -254,27 +323,45 @@ export default function PostOfferPage() {
             </div>
           </div>
 
-          <p className="text-xs text-gray-400">
-            Submitted offers are reviewed before going live on the
-            marketplace.
-          </p>
+          {!isEditing && (
+            <p className="text-xs text-gray-400">
+              Submitted offers are reviewed before going live on the
+              marketplace.
+            </p>
+          )}
 
           {/* Actions */}
           <div className="flex justify-end gap-3 pt-2 border-t border-gray-100">
-            <button
-              onClick={() => handlePost(true)}
-              disabled={createTemplate.isPending}
-              className="px-5 py-2 rounded-lg border border-gray-300 text-sm font-semibold text-gray-700 hover:border-gray-400 transition-colors disabled:opacity-50"
-            >
-              {createTemplate.isPending ? "Saving…" : "Save Draft"}
-            </button>
-            <button
-              onClick={() => handlePost(false)}
-              disabled={createTemplate.isPending}
-              className="px-5 py-2 rounded-lg bg-[#C4A55A] text-white text-sm font-semibold hover:bg-[#b3944a] transition-colors disabled:opacity-50"
-            >
-              {createTemplate.isPending ? "Posting…" : "Post Offer"}
-            </button>
+            {isEditing ? (
+              <button
+                onClick={() => handlePost(false)}
+                disabled={updateTemplate.isPending || editDataLoading}
+                className="px-5 py-2 rounded-lg bg-[#C4A55A] text-white text-sm font-semibold hover:bg-[#b3944a] transition-colors disabled:opacity-50"
+              >
+                {editDataLoading
+                  ? "Loading…"
+                  : updateTemplate.isPending
+                    ? "Saving…"
+                    : "Save Changes"}
+              </button>
+            ) : (
+              <>
+                <button
+                  onClick={() => handlePost(true)}
+                  disabled={createTemplate.isPending}
+                  className="px-5 py-2 rounded-lg border border-gray-300 text-sm font-semibold text-gray-700 hover:border-gray-400 transition-colors disabled:opacity-50"
+                >
+                  {createTemplate.isPending ? "Saving…" : "Save Draft"}
+                </button>
+                <button
+                  onClick={() => handlePost(false)}
+                  disabled={createTemplate.isPending}
+                  className="px-5 py-2 rounded-lg bg-[#C4A55A] text-white text-sm font-semibold hover:bg-[#b3944a] transition-colors disabled:opacity-50"
+                >
+                  {createTemplate.isPending ? "Posting…" : "Post Offer"}
+                </button>
+              </>
+            )}
           </div>
         </CardContent>
       </Card>

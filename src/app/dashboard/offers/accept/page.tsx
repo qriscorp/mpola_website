@@ -197,11 +197,12 @@ function AcceptOfferContent() {
                   3. Disbursement
                 </h4>
                 <p className="mb-3">
-                  Funds are transferred wallet-to-wallet: the full{" "}
-                  {formatCurrency(offer.amount)} will be credited to the
-                  Borrower&apos;s Mpola wallet upon acceptance. The Lender
-                  covers Mpola&apos;s 0.5% platform fee on top of the loan
-                  amount — the Borrower receives the exact amount agreed.
+                  Funds are transferred wallet-to-wallet. Once you accept, the
+                  Lender is notified to approve and release the full{" "}
+                  {formatCurrency(offer.amount)} — this is typically fast, but
+                  not instant. The Lender covers Mpola&apos;s 0.5% platform
+                  fee on top of the loan amount — the Borrower receives the
+                  exact amount agreed.
                 </p>
                 <h4 className="mb-1 font-semibold text-foreground">
                   4. Early Repayment

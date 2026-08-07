@@ -208,3 +208,19 @@ export function useReviewOfferTemplate() {
       qc.invalidateQueries({ queryKey: ["admin", "offer-templates"] }),
   });
 }
+
+export function useFreezeOfferTemplate() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.freezeOfferTemplate(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "offer-templates"] }),
+  });
+}
+
+export function useUnfreezeOfferTemplate() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.unfreezeOfferTemplate(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "offer-templates"] }),
+  });
+}

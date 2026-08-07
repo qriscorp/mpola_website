@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { API_BASE_URL } from "@/lib/constants";
 import { getCookie } from "@/lib/api";
@@ -17,6 +18,7 @@ function wsUrl(token: string): string {
  */
 export function useRealtimeNotifications() {
   const queryClient = useQueryClient();
+  const router = useRouter();
   const retryRef = useRef(0);
   const closedByUsRef = useRef(false);
 
@@ -45,8 +47,20 @@ export function useRealtimeNotifications() {
           queryClient.invalidateQueries({ queryKey: ["lender", "wallet"] });
           queryClient.invalidateQueries({ queryKey: ["applications"] });
           queryClient.invalidateQueries({ queryKey: ["active-loan"] });
+          queryClient.invalidateQueries({ queryKey: ["lender", "active-loans"] });
 
-          if (msg.title) {
+          if (msg.type === "loan_pending_disbursement") {
+            toast.warning(msg.title, {
+              description: msg.message,
+              duration: 15000,
+              action: {
+                label: "Review",
+                onClick: () => router.push("/lender/portfolio"),
+              },
+            });
+          } else if (msg.type === "loan_disbursed") {
+            toast.success(msg.title, { description: msg.message });
+          } else if (msg.title) {
             toast.info(msg.title, { description: msg.message });
           }
         } catch {

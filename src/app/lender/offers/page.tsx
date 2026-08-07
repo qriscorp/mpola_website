@@ -2,10 +2,17 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
 import { LenderPageHeader } from "@/components/lender-top-nav";
 import { CardSkeleton } from "@/components/skeletons";
-import { useMyOffers, useOfferTemplates } from "@/hooks/use-lender";
+import {
+  useMyOffers,
+  useOfferTemplates,
+  useDeleteOfferTemplate,
+  useFreezeMyOfferTemplate,
+  useUnfreezeMyOfferTemplate,
+} from "@/hooks/use-lender";
 import { formatCurrency, formatRate } from "@/lib/format";
 import type { LoanOffer } from "@/lib/types";
 import { FadeSwap } from "@/components/motion/fade-swap";
@@ -67,6 +74,31 @@ export default function MyOffersPage() {
   const [tab, setTab] = useState<"All" | OfferStatus>("All");
   const { data: offers, isLoading } = useMyOffers();
   const { data: templates } = useOfferTemplates();
+  const deleteTemplate = useDeleteOfferTemplate();
+  const freezeTemplate = useFreezeMyOfferTemplate();
+  const unfreezeTemplate = useUnfreezeMyOfferTemplate();
+
+  const handleDelete = (id: string) => {
+    if (!confirm("Delete this standing offer? This can't be undone.")) return;
+    deleteTemplate.mutate(id, {
+      onSuccess: () => toast.success("Deleted."),
+      onError: (err: Error) => toast.error(err.message || "Failed to delete"),
+    });
+  };
+
+  const handleFreeze = (id: string) => {
+    freezeTemplate.mutate(id, {
+      onSuccess: () => toast.success("Frozen — it'll stop matching new applications."),
+      onError: (err: Error) => toast.error(err.message || "Failed to freeze"),
+    });
+  };
+
+  const handleUnfreeze = (id: string) => {
+    unfreezeTemplate.mutate(id, {
+      onSuccess: () => toast.success("Unfrozen — it can match again."),
+      onError: (err: Error) => toast.error(err.message || "Failed to unfreeze"),
+    });
+  };
 
   const allOffers = offers ?? [];
   const filtered =
@@ -183,7 +215,7 @@ export default function MyOffersPage() {
           {templates.map((t) => (
             <StaggerItem key={t.id}>
             <Card className="bg-white dark:bg-gray-900">
-              <CardContent className="p-5 sm:p-6">
+              <CardContent className="p-5 sm:p-6 space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                   <div className="flex-1 min-w-0">
                     <p className="text-lg font-bold text-[#1B2B3A] dark:text-white">
@@ -196,12 +228,64 @@ export default function MyOffersPage() {
                       {t.accepted_loan_types.join(", ") || "Any loan type"}
                     </p>
                   </div>
-                  <span
-                    className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border shrink-0 ${templateStatusClass[t.status] ?? templateStatusClass.pending_review}`}
-                  >
-                    {templateStatusLabel[t.status] ?? t.status}
-                  </span>
+                  <div className="flex flex-col items-end gap-1.5 shrink-0">
+                    <span
+                      className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border ${templateStatusClass[t.status] ?? templateStatusClass.pending_review}`}
+                    >
+                      {templateStatusLabel[t.status] ?? t.status}
+                    </span>
+                    {t.is_frozen && (
+                      <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold border bg-blue-50 text-blue-600 border-blue-200">
+                        Frozen ({t.frozen_by === "admin" ? "by admin" : "by you"})
+                      </span>
+                    )}
+                  </div>
                 </div>
+
+                {t.status === "pending_review" && (
+                  <div className="flex gap-3 pt-3 border-t border-gray-100 dark:border-gray-800">
+                    <Link
+                      href={`/lender/post-offer?edit=${t.id}`}
+                      className="px-4 py-1.5 rounded-lg border border-gray-300 text-sm font-medium text-gray-600 hover:border-[#C4A55A] hover:text-[#C4A55A] transition-colors"
+                    >
+                      Edit
+                    </Link>
+                    <button
+                      onClick={() => handleDelete(t.id)}
+                      disabled={deleteTemplate.isPending}
+                      className="px-4 py-1.5 rounded-lg border border-gray-300 text-sm font-medium text-gray-600 hover:border-red-300 hover:text-red-600 transition-colors disabled:opacity-50"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                )}
+
+                {t.status === "approved" && (
+                  <div className="flex items-center gap-3 pt-3 border-t border-gray-100 dark:border-gray-800">
+                    {t.is_frozen ? (
+                      <button
+                        onClick={() => handleUnfreeze(t.id)}
+                        disabled={unfreezeTemplate.isPending || t.frozen_by === "admin"}
+                        className="px-4 py-1.5 rounded-lg bg-[#C4A55A] text-white text-sm font-semibold hover:bg-[#b3944a] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Unfreeze
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handleFreeze(t.id)}
+                        disabled={freezeTemplate.isPending}
+                        className="px-4 py-1.5 rounded-lg border border-gray-300 text-sm font-medium text-gray-600 hover:border-blue-300 hover:text-blue-600 transition-colors disabled:opacity-50"
+                      >
+                        Freeze
+                      </button>
+                    )}
+                    {t.is_frozen && t.frozen_by === "admin" && (
+                      <p className="text-xs text-gray-400">
+                        Frozen by an admin — only they can unfreeze it.
+                      </p>
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
             </StaggerItem>

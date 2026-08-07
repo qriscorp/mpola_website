@@ -3,11 +3,13 @@
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, XCircle } from "lucide-react";
+import { CheckCircle, XCircle, Snowflake, Sun } from "lucide-react";
 import { toast } from "sonner";
 import {
   useOfferTemplatesForReview,
   useReviewOfferTemplate,
+  useFreezeOfferTemplate,
+  useUnfreezeOfferTemplate,
 } from "@/hooks/use-admin";
 import { formatCurrency } from "@/lib/format";
 import { CardSkeleton } from "@/components/skeletons";
@@ -43,6 +45,8 @@ export default function AdminOfferTemplatesPage() {
     tab === "all" ? undefined : tab,
   );
   const review = useReviewOfferTemplate();
+  const freeze = useFreezeOfferTemplate();
+  const unfreeze = useUnfreezeOfferTemplate();
 
   const handleReview = (id: string, action: "approve" | "reject") => {
     review.mutate(
@@ -62,6 +66,20 @@ export default function AdminOfferTemplatesPage() {
         onError: (err: Error) => toast.error(err.message || "Failed to review offer"),
       },
     );
+  };
+
+  const handleFreeze = (id: string) => {
+    freeze.mutate(id, {
+      onSuccess: () => toast.success("Frozen — it'll stop matching new applications."),
+      onError: (err: Error) => toast.error(err.message || "Failed to freeze offer"),
+    });
+  };
+
+  const handleUnfreeze = (id: string) => {
+    unfreeze.mutate(id, {
+      onSuccess: () => toast.success("Unfrozen — it can match again."),
+      onError: (err: Error) => toast.error(err.message || "Failed to unfreeze offer"),
+    });
   };
 
   const list = templates ?? [];
@@ -130,11 +148,18 @@ export default function AdminOfferTemplatesPage() {
                           {t.interest_rate}%/month · Max {t.max_duration} months
                         </p>
                       </div>
-                      <span
-                        className={`px-2.5 py-1 rounded-full text-xs font-semibold border shrink-0 ${statusClass[t.status] ?? statusClass.pending_review}`}
-                      >
-                        {statusLabel[t.status] ?? t.status}
-                      </span>
+                      <div className="flex flex-col items-end gap-1.5 shrink-0">
+                        <span
+                          className={`px-2.5 py-1 rounded-full text-xs font-semibold border ${statusClass[t.status] ?? statusClass.pending_review}`}
+                        >
+                          {statusLabel[t.status] ?? t.status}
+                        </span>
+                        {t.is_frozen && (
+                          <span className="px-2.5 py-1 rounded-full text-xs font-semibold border bg-blue-50 text-blue-600 border-blue-200">
+                            Frozen ({t.frozen_by === "admin" ? "by admin" : "by lender"})
+                          </span>
+                        )}
+                      </div>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
@@ -209,6 +234,31 @@ export default function AdminOfferTemplatesPage() {
                           <XCircle className="h-4 w-4" />
                           Reject
                         </Button>
+                      </div>
+                    )}
+
+                    {t.status === "approved" && (
+                      <div className="flex gap-3 pt-2 border-t border-gray-100 dark:border-gray-800">
+                        {t.is_frozen ? (
+                          <Button
+                            onClick={() => handleUnfreeze(t.id)}
+                            disabled={unfreeze.isPending}
+                            className="gap-2 bg-[#2BB5A0] hover:bg-[#239E8C] text-white"
+                          >
+                            <Sun className="h-4 w-4" />
+                            Unfreeze
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="outline"
+                            onClick={() => handleFreeze(t.id)}
+                            disabled={freeze.isPending}
+                            className="gap-2 hover:border-blue-300 hover:text-blue-600"
+                          >
+                            <Snowflake className="h-4 w-4" />
+                            Freeze
+                          </Button>
+                        )}
                       </div>
                     )}
                   </CardContent>

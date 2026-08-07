@@ -40,7 +40,6 @@ export default function PostRequestPage() {
   function handlePost() {
     const months = parseInt(duration, 10) || 3;
     const purposeParts = [description.trim()].filter(Boolean);
-    if (maxRate) purposeParts.push(`Max acceptable rate: ${maxRate}%/month`);
     if (validUntil) purposeParts.push(`Request valid until: ${validUntil}`);
 
     submitApplication.mutate(
@@ -49,6 +48,7 @@ export default function PostRequestPage() {
         duration: months,
         loan_type: selectedType.toLowerCase(),
         purpose: purposeParts.join(". ") || undefined,
+        max_interest_rate: maxRate ? Number(maxRate) : undefined,
       },
       {
         onSuccess: (res) => {

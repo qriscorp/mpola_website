@@ -262,6 +262,27 @@ async function apiAuthPatch<T>(path: string, body: unknown): Promise<T> {
   return res.json();
 }
 
+async function apiAuthDelete<T>(path: string): Promise<T> {
+  const token = getCookie("lf_token");
+  const res = await fetch(`${API_BASE_URL}${path}`, {
+    method: "DELETE",
+    headers: {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+  });
+  if (res.status === 401) {
+    redirectToSignIn();
+    throw new Error("Session expired");
+  }
+  if (!res.ok) {
+    const err = await res
+      .json()
+      .catch(() => ({ detail: "Request failed", message: "Request failed" }));
+    throw new Error(extractErrorMessage(err, res.status));
+  }
+  return res.json();
+}
+
 async function apiAuthPut<T>(path: string, body: unknown): Promise<T> {
   const token = getCookie("lf_token");
   const res = await fetch(`${API_BASE_URL}${path}`, {
@@ -861,6 +882,11 @@ export const api = {
     );
     return res.loans;
   },
+  approveDisbursement: async (
+    loanId: string,
+  ): Promise<{ status: number; message: string; loan: ActiveLoan }> => {
+    return apiAuthPost(`/loans/active/${loanId}/approve-disbursement`, {});
+  },
   getApplications: async (): Promise<LoanApplication[]> => {
     const res = await apiAuthGet<{
       total: number;
@@ -1004,6 +1030,7 @@ export const api = {
     duration: number;
     loan_type: string;
     purpose?: string;
+    max_interest_rate?: number;
   }): Promise<{
     status: number;
     message: string;
@@ -1310,6 +1337,12 @@ export const api = {
   ): Promise<{ success: boolean; status: string; offers_created: number }> => {
     return apiAuthPatch(`/admin/offer-templates/${id}?action=${action}`, {});
   },
+  freezeOfferTemplate: async (id: string): Promise<{ status: number; message: string }> => {
+    return apiAuthPost(`/admin/offer-templates/${id}/freeze`, {});
+  },
+  unfreezeOfferTemplate: async (id: string): Promise<{ status: number; message: string }> => {
+    return apiAuthPost(`/admin/offer-templates/${id}/unfreeze`, {});
+  },
 
   changePassword: async (
     oldPassword: string,
@@ -1377,6 +1410,35 @@ export const api = {
       "/loans/offer-templates/mine",
     );
     return res.templates;
+  },
+  updateOfferTemplate: async (
+    id: string,
+    data: Partial<{
+      max_amount: number;
+      min_amount: number;
+      interest_rate: number;
+      max_duration: number;
+      accepted_loan_types: string[];
+      required_documents: string[];
+      description: string;
+      valid_until: string;
+      max_concurrent_loans: number;
+    }>,
+  ): Promise<{ status: number; message: string; template: LenderOfferTemplate }> => {
+    return apiAuthPatch(`/loans/offer-templates/${id}`, data);
+  },
+  deleteOfferTemplate: async (id: string): Promise<{ status: number; message: string }> => {
+    return apiAuthDelete(`/loans/offer-templates/${id}`);
+  },
+  freezeMyOfferTemplate: async (
+    id: string,
+  ): Promise<{ status: number; message: string; template: LenderOfferTemplate }> => {
+    return apiAuthPost(`/loans/offer-templates/${id}/freeze`, {});
+  },
+  unfreezeMyOfferTemplate: async (
+    id: string,
+  ): Promise<{ status: number; message: string; template: LenderOfferTemplate }> => {
+    return apiAuthPost(`/loans/offer-templates/${id}/unfreeze`, {});
   },
   getLenderWallet: async (): Promise<Wallet> => {
     return api.getWallet();

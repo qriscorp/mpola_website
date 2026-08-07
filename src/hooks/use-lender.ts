@@ -82,6 +82,43 @@ export function useCreateOfferTemplate() {
   });
 }
 
+export function useUpdateOfferTemplate() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Parameters<typeof api.updateOfferTemplate>[1] }) =>
+      api.updateOfferTemplate(id, data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["lender", "offer-templates"] }),
+    onError: (err: Error) => toast.error(err.message || "Failed to update offer"),
+  });
+}
+
+export function useDeleteOfferTemplate() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.deleteOfferTemplate(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["lender", "offer-templates"] }),
+    onError: (err: Error) => toast.error(err.message || "Failed to delete offer"),
+  });
+}
+
+export function useFreezeMyOfferTemplate() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.freezeMyOfferTemplate(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["lender", "offer-templates"] }),
+    onError: (err: Error) => toast.error(err.message || "Failed to freeze offer"),
+  });
+}
+
+export function useUnfreezeMyOfferTemplate() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.unfreezeMyOfferTemplate(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["lender", "offer-templates"] }),
+    onError: (err: Error) => toast.error(err.message || "Failed to unfreeze offer"),
+  });
+}
+
 export function useOfferTemplates() {
   return useQuery({
     queryKey: ["lender", "offer-templates"],
@@ -114,6 +151,20 @@ export function useLenderActiveLoans() {
   return useQuery({
     queryKey: ["lender", "active-loans"],
     queryFn: api.getMyActiveLoans,
+  });
+}
+
+export function useApproveDisbursement() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (loanId: string) => api.approveDisbursement(loanId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["lender", "active-loans"] });
+      qc.invalidateQueries({ queryKey: ["lender", "earnings"] });
+      qc.invalidateQueries({ queryKey: ["lender", "wallet"] });
+      qc.invalidateQueries({ queryKey: ["lender", "transactions"] });
+    },
+    onError: (err: Error) => toast.error(err.message || "Failed to approve disbursement"),
   });
 }
 

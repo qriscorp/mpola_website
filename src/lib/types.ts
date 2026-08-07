@@ -40,6 +40,7 @@ export interface LoanApplication {
   interest_rate: number | null;
   monthly_payment: number | null;
   total_repayable: number | null;
+  max_interest_rate: number | null;
   created_at: string;
   borrower: ApplicationBorrower | null;
   offers_count: number;
@@ -92,7 +93,7 @@ export interface ActiveLoan {
   total_instalments: number;
   next_payment_date: string | null;
   next_payment_amount: number | null;
-  status: "active" | "completed" | "overdue" | "defaulted";
+  status: "pending_disbursement" | "active" | "completed" | "overdue" | "defaulted";
   disbursed_at: string | null;
   created_at: string;
   repayments?: LoanRepayment[];
@@ -351,6 +352,8 @@ export interface AdminOfferTemplate {
   valid_until: string | null;
   max_concurrent_loans: number | null;
   status: "pending_review" | "draft" | "approved" | "rejected";
+  is_frozen: boolean;
+  frozen_by: "lender" | "admin" | null;
   created_at: string;
 }
 
@@ -499,6 +502,8 @@ export interface LenderOfferTemplate {
   valid_until: string | null;
   max_concurrent_loans: number | null;
   status: "pending_review" | "draft" | "approved" | "rejected";
+  is_frozen: boolean;
+  frozen_by: "lender" | "admin" | null;
   created_at: string;
 }
 

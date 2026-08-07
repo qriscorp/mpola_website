@@ -148,6 +148,8 @@ function Step1({
   setLoanType,
   purpose,
   setPurpose,
+  maxInterestRate,
+  setMaxInterestRate,
 }: {
   amount: number;
   setAmount: (v: number) => void;
@@ -157,6 +159,8 @@ function Step1({
   setLoanType: (v: string) => void;
   purpose: string;
   setPurpose: (v: string) => void;
+  maxInterestRate: string;
+  setMaxInterestRate: (v: string) => void;
 }) {
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_420px]">
@@ -240,6 +244,20 @@ function Step1({
               placeholder="Briefly describe what you need the loan for..."
               rows={4}
               className="w-full resize-none rounded-lg border border-gray-300 px-4 py-3 text-sm text-[#1B2B3A] outline-none focus:ring-2 focus:ring-[#2BB5A0]"
+            />
+          </div>
+
+          <div>
+            <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-gray-500">
+              Max Interest Rate (%/month, optional)
+            </label>
+            <input
+              type="number"
+              step="0.1"
+              value={maxInterestRate}
+              onChange={(e) => setMaxInterestRate(e.target.value)}
+              placeholder="e.g. 3 — leave blank to accept any rate"
+              className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm text-[#1B2B3A] outline-none focus:ring-2 focus:ring-[#2BB5A0]"
             />
           </div>
         </CardContent>
@@ -563,6 +581,7 @@ export default function ApplyPage() {
   const [duration, setDuration] = useState(3);
   const [loanType, setLoanType] = useState("business");
   const [purpose, setPurpose] = useState("");
+  const [maxInterestRate, setMaxInterestRate] = useState("");
   const [guarantors, setGuarantors] = useState<GuarantorInput[]>([]);
   const [files, setFiles] = useState<Record<string, File>>({});
 
@@ -591,6 +610,7 @@ export default function ApplyPage() {
         duration,
         loan_type: loanType,
         purpose: purpose || undefined,
+        max_interest_rate: maxInterestRate ? Number(maxInterestRate) : undefined,
       });
       await Promise.all([
         ...guarantors.map((g) =>
@@ -664,6 +684,8 @@ export default function ApplyPage() {
                   setLoanType={setLoanType}
                   purpose={purpose}
                   setPurpose={setPurpose}
+                  maxInterestRate={maxInterestRate}
+                  setMaxInterestRate={setMaxInterestRate}
                 />
               )}
               {currentStep === 2 && (
