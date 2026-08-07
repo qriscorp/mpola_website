@@ -388,8 +388,15 @@ export function useVerifyPhoneOtp() {
 
 export function useSendPasswordResetCode() {
   return useMutation({
-    mutationFn: ({ email, phoneNumber }: { email: string; phoneNumber: string }) =>
-      api.sendPasswordResetCode(email, phoneNumber),
+    mutationFn: ({
+      email,
+      phoneNumber,
+      portal,
+    }: {
+      email: string;
+      phoneNumber: string;
+      portal?: "borrower" | "lender";
+    }) => api.sendPasswordResetCode(email, phoneNumber, portal),
     onError: (error: Error) => {
       toast.error(error.message || "Failed to send reset code.");
     },

@@ -103,6 +103,21 @@ export interface SignupDraftStatusResponse {
   draft?: SignupDraftPayload;
 }
 
+/** FastAPI's `detail` is a plain string for HTTPException, but an array of
+ * {loc, msg, type} objects for Pydantic validation (422) errors — coercing
+ * that array straight into an Error's message renders as "[object Object]". */
+function extractErrorMessage(err: unknown, status: number): string {
+  const detail = (err as { detail?: unknown; message?: unknown })?.detail
+    ?? (err as { message?: unknown })?.message;
+  if (typeof detail === "string") return detail;
+  if (Array.isArray(detail) && detail.length > 0) {
+    const first = detail[0] as { loc?: unknown[]; msg?: string };
+    const field = Array.isArray(first?.loc) ? first.loc.at(-1) : undefined;
+    return field ? `${field}: ${first.msg || "Invalid value"}` : first?.msg || "Invalid request";
+  }
+  return `HTTP ${status}`;
+}
+
 async function apiPost<T>(path: string, body: unknown): Promise<T> {
   const res = await fetch(`${API_BASE_URL}${path}`, {
     method: "POST",
@@ -111,7 +126,7 @@ async function apiPost<T>(path: string, body: unknown): Promise<T> {
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: "Request failed" }));
-    throw new Error(err.detail || `HTTP ${res.status}`);
+    throw new Error(extractErrorMessage(err, res.status));
   }
   return res.json();
 }
@@ -125,7 +140,7 @@ async function apiGet<T>(path: string): Promise<T> {
     const err = await res
       .json()
       .catch(() => ({ detail: "Request failed", message: "Request failed" }));
-    throw new Error(err.detail || err.message || `HTTP ${res.status}`);
+    throw new Error(extractErrorMessage(err, res.status));
   }
   return res.json();
 }
@@ -171,7 +186,7 @@ async function apiAuthGet<T>(path: string): Promise<T> {
     const err = await res
       .json()
       .catch(() => ({ detail: "Request failed", message: "Request failed" }));
-    throw new Error(err.detail || err.message || `HTTP ${res.status}`);
+    throw new Error(extractErrorMessage(err, res.status));
   }
   return res.json();
 }
@@ -195,7 +210,7 @@ async function apiAuthPost<T>(path: string, body: unknown): Promise<T> {
     const err = await res
       .json()
       .catch(() => ({ detail: "Request failed", message: "Request failed" }));
-    throw new Error(err.detail || err.message || `HTTP ${res.status}`);
+    throw new Error(extractErrorMessage(err, res.status));
   }
   return res.json();
 }
@@ -218,7 +233,7 @@ async function apiAuthUpload<T>(path: string, formData: FormData): Promise<T> {
     const err = await res
       .json()
       .catch(() => ({ detail: "Request failed", message: "Request failed" }));
-    throw new Error(err.detail || err.message || `HTTP ${res.status}`);
+    throw new Error(extractErrorMessage(err, res.status));
   }
   return res.json();
 }
@@ -242,7 +257,7 @@ async function apiAuthPatch<T>(path: string, body: unknown): Promise<T> {
     const err = await res
       .json()
       .catch(() => ({ detail: "Request failed", message: "Request failed" }));
-    throw new Error(err.detail || err.message || `HTTP ${res.status}`);
+    throw new Error(extractErrorMessage(err, res.status));
   }
   return res.json();
 }
@@ -265,7 +280,7 @@ async function apiAuthPut<T>(path: string, body: unknown): Promise<T> {
     const err = await res
       .json()
       .catch(() => ({ detail: "Request failed", message: "Request failed" }));
-    throw new Error(err.detail || err.message || `HTTP ${res.status}`);
+    throw new Error(extractErrorMessage(err, res.status));
   }
   return res.json();
 }
@@ -662,10 +677,12 @@ export const api = {
   sendPasswordResetCode: async (
     email: string,
     phoneNumber: string,
+    portal?: "borrower" | "lender",
   ): Promise<{ status: number; message: string; channel: "email" | "phone" }> => {
     return apiPost("/auth/send_password_reset_code", {
       email,
       phone_number: normalizePhone(phoneNumber),
+      portal,
     });
   },
 

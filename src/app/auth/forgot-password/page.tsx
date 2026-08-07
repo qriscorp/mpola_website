@@ -65,7 +65,11 @@ function ForgotPasswordContent() {
     if (!email.trim() || !phone.trim()) return;
 
     sendCode(
-      { email: email.trim(), phoneNumber: phone },
+      {
+        email: email.trim(),
+        phoneNumber: phone,
+        portal: isLender ? "lender" : "borrower",
+      },
       {
         onSuccess: (res) => {
           setSentChannel(res.channel);
