@@ -28,7 +28,7 @@ export default function PostRequestPage() {
   const [amount, setAmount] = useState("8000000");
   const [duration, setDuration] = useState(durations[2]);
   const [description, setDescription] = useState("");
-  const [maxRate, setMaxRate] = useState("8");
+  const [maxRate, setMaxRate] = useState("2");
   const [validUntil, setValidUntil] = useState("");
 
   const submitApplication = useSubmitApplication();
@@ -40,7 +40,7 @@ export default function PostRequestPage() {
   function handlePost() {
     const months = parseInt(duration, 10) || 3;
     const purposeParts = [description.trim()].filter(Boolean);
-    if (maxRate) purposeParts.push(`Max acceptable rate: ${maxRate}% p.a.`);
+    if (maxRate) purposeParts.push(`Max acceptable rate: ${maxRate}%/month`);
     if (validUntil) purposeParts.push(`Request valid until: ${validUntil}`);
 
     submitApplication.mutate(
@@ -209,7 +209,7 @@ export default function PostRequestPage() {
           {/* Max Rate */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1.5">
-              Max Interest Rate (% p.a.)
+              Max Interest Rate (%/month)
             </label>
             <input
               type="number"

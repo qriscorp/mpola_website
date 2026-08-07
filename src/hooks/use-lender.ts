@@ -17,6 +17,17 @@ export function useMarketplace(
   });
 }
 
+export function useSkipApplication() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (applicationId: string) => api.skipApplication(applicationId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["lender", "marketplace"] });
+    },
+    onError: (err: Error) => toast.error(err.message || "Failed to hide application"),
+  });
+}
+
 export function useApplicationDetail(id: string) {
   return useQuery({
     queryKey: ["application", id],

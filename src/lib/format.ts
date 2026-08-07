@@ -5,7 +5,7 @@ export function formatCurrency(amount: number): string {
 }
 
 export function formatRate(rate: number): string {
-  return `${rate}% p.a.`;
+  return `${rate}%/month`;
 }
 
 export function getInitials(name: string): string {

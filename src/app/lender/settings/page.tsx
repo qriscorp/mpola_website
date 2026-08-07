@@ -85,25 +85,43 @@ export default function LenderSettingsPage() {
           Notifications
         </h3>
         <p className="text-xs text-gray-400 mb-4">
-          Choose which alerts you want to receive — saved to this device only
-          for now.
+          Choose which alerts you want to receive.
         </p>
         <Toggle
           label="New Application Alerts"
           description="When a borrower applies to your offer"
+          on={user.notifNewApplication ?? true}
+          onToggle={() =>
+            updateProfile({ notifNewApplication: !user.notifNewApplication })
+          }
         />
         <Toggle
           label="Repayment Received"
           description="When a borrower makes a payment"
+          on={user.notifRepaymentReceived ?? true}
+          onToggle={() =>
+            updateProfile({
+              notifRepaymentReceived: !user.notifRepaymentReceived,
+            })
+          }
         />
         <Toggle
           label="Overdue Loan Alerts"
           description="When a repayment is missed"
+          on={user.notifLoanOverdue ?? true}
+          onToggle={() =>
+            updateProfile({ notifLoanOverdue: !user.notifLoanOverdue })
+          }
         />
         <Toggle
           label="Weekly Portfolio Digest"
           description="Summary email every Monday"
-          defaultOn={false}
+          on={user.notifPortfolioDigest ?? false}
+          onToggle={() =>
+            updateProfile({
+              notifPortfolioDigest: !user.notifPortfolioDigest,
+            })
+          }
         />
       </div>
 
@@ -126,6 +144,10 @@ export default function LenderSettingsPage() {
         <Toggle
           label="Login Notifications"
           description="Get alerted when someone logs in to your account"
+          on={user.notifLoginAlerts ?? true}
+          onToggle={() =>
+            updateProfile({ notifLoginAlerts: !user.notifLoginAlerts })
+          }
         />
       </div>
 

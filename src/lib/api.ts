@@ -312,6 +312,11 @@ interface RawUserProfile {
   profile_pic: string | null;
   kyc_status: string;
   two_factor_enabled?: boolean;
+  notif_new_application?: boolean;
+  notif_repayment_received?: boolean;
+  notif_loan_overdue?: boolean;
+  notif_portfolio_digest?: boolean;
+  notif_login_alerts?: boolean;
   credit_score?: number | null;
   created_at: string;
 }
@@ -325,6 +330,11 @@ function mapUserProfile(u: RawUserProfile): User {
     nin: u.nin ?? "",
     accountType: u.account_type as User["accountType"],
     twoFactorEnabled: u.two_factor_enabled ?? false,
+    notifNewApplication: u.notif_new_application ?? true,
+    notifRepaymentReceived: u.notif_repayment_received ?? true,
+    notifLoanOverdue: u.notif_loan_overdue ?? true,
+    notifPortfolioDigest: u.notif_portfolio_digest ?? false,
+    notifLoginAlerts: u.notif_login_alerts ?? true,
     profilePic: u.profile_pic ?? undefined,
     kycStatus: u.kyc_status as User["kycStatus"],
     creditScore: u.credit_score ?? 0,
@@ -759,12 +769,22 @@ export const api = {
     phone?: string;
     nin?: string;
     twoFactorEnabled?: boolean;
+    notifNewApplication?: boolean;
+    notifRepaymentReceived?: boolean;
+    notifLoanOverdue?: boolean;
+    notifPortfolioDigest?: boolean;
+    notifLoginAlerts?: boolean;
   }): Promise<User> => {
     const u = await apiAuthPut<RawUserProfile>("/users/me", {
       full_name: data.fullName,
       phone_number: data.phone,
       nin: data.nin,
       two_factor_enabled: data.twoFactorEnabled,
+      notif_new_application: data.notifNewApplication,
+      notif_repayment_received: data.notifRepaymentReceived,
+      notif_loan_overdue: data.notifLoanOverdue,
+      notif_portfolio_digest: data.notifPortfolioDigest,
+      notif_login_alerts: data.notifLoginAlerts,
     });
     return mapUserProfile(u);
   },
@@ -1318,6 +1338,11 @@ export const api = {
     if (filters?.min_amount) params.set("min_amount", String(filters.min_amount));
     if (filters?.max_amount) params.set("max_amount", String(filters.max_amount));
     return apiAuthGet(`/loans/marketplace?${params.toString()}`);
+  },
+  skipApplication: async (
+    applicationId: string,
+  ): Promise<{ status: number; message: string }> => {
+    return apiAuthPost(`/loans/marketplace/${applicationId}/skip`, {});
   },
   getMyOffers: async (): Promise<LoanOffer[]> => {
     const res = await apiAuthGet<{ total: number; offers: LoanOffer[] }>(

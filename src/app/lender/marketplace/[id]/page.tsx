@@ -35,7 +35,7 @@ export default function ApplicationDetailPage({
 
   const [showOfferForm, setShowOfferForm] = useState(false);
   const [amount, setAmount] = useState("");
-  const [interestRate, setInterestRate] = useState("15");
+  const [interestRate, setInterestRate] = useState("3");
   const [duration, setDuration] = useState("");
 
   if (isLoading) {
@@ -64,7 +64,7 @@ export default function ApplicationDetailPage({
   const numAmount = Number(amount) || 0;
   const numRate = Number(interestRate) || 0;
   const numDuration = Number(duration) || 0;
-  const totalInterest = numAmount * (numRate / 100) * (numDuration / 12);
+  const totalInterest = numAmount * (numRate / 100) * numDuration;
   const totalRepayable = numAmount + totalInterest;
   const monthlyPayment = numDuration > 0 ? totalRepayable / numDuration : 0;
 
@@ -168,7 +168,7 @@ export default function ApplicationDetailPage({
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs font-bold uppercase tracking-wider text-gray-500">
-                  Interest Rate (% p.a.)
+                  Interest Rate (%/month)
                 </Label>
                 <Input
                   type="number"

@@ -23,8 +23,8 @@ const LOAN_TYPES = [
   { label: "Emergency", value: "emergency" },
 ];
 
-// Matches mpola_api's default platform rate (routers/loans.py: rate = 15.0, annual %).
-const PLATFORM_RATE_PA = 15;
+// Matches mpola_api's default platform rate (routers/loans.py: rate = 3.0, % per month).
+const PLATFORM_RATE_PER_MONTH = 3;
 
 interface GuarantorInput {
   name: string;
@@ -82,7 +82,7 @@ function LoanCalculator({
   amount: number;
   duration: number;
 }) {
-  const totalInterest = amount * (PLATFORM_RATE_PA / 100) * (duration / 12);
+  const totalInterest = amount * (PLATFORM_RATE_PER_MONTH / 100) * duration;
   const totalRepayable = amount + totalInterest;
   const monthly = duration > 0 ? totalRepayable / duration : 0;
 
@@ -100,7 +100,7 @@ function LoanCalculator({
           <div className="flex justify-between">
             <span className="text-gray-500">Interest Rate</span>
             <span className="font-semibold text-[#1B2B3A]">
-              {PLATFORM_RATE_PA}% p.a.
+              {PLATFORM_RATE_PER_MONTH}%/month
             </span>
           </div>
           <div className="flex justify-between">
@@ -460,7 +460,7 @@ function Step4({
   loanType: string;
   guarantors: GuarantorInput[];
 }) {
-  const totalInterest = amount * (PLATFORM_RATE_PA / 100) * (duration / 12);
+  const totalInterest = amount * (PLATFORM_RATE_PER_MONTH / 100) * duration;
   const totalRepayable = amount + totalInterest;
   const loanTypeLabel =
     LOAN_TYPES.find((t) => t.value === loanType)?.label ?? loanType;
@@ -481,7 +481,7 @@ function Step4({
             ["Amount", formatCurrency(amount)],
             ["Type", loanTypeLabel],
             ["Duration", `${duration} months`],
-            ["Rate", `${PLATFORM_RATE_PA}% p.a.`],
+            ["Rate", `${PLATFORM_RATE_PER_MONTH}%/month`],
             ["Total Repayable", formatCurrency(Math.round(totalRepayable))],
             [
               "Guarantors",

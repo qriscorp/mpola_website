@@ -59,7 +59,7 @@ const DEFAULTS: Record<string, string> = {
   licence_number: "",
   min_loan_amount: "500000",
   max_loan_amount: "100000000",
-  max_interest_rate: "25",
+  max_interest_rate: "10",
   // These four map directly to the keys the collections engine (scheduler.py)
   // actually reads — see its module docstring for the exact semantics.
   reminder_days_before_due: "3",
@@ -243,7 +243,7 @@ export default function AdminSettingsPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label>Max Interest Rate (% p.a.)</Label>
+              <Label>Max Interest Rate (%/month)</Label>
               <Input
                 type="number"
                 value={form.max_interest_rate}

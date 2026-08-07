@@ -50,7 +50,7 @@ export default function PostOfferPage() {
   const [duration, setDuration] = useState("6 months");
   const [maxAmount, setMaxAmount] = useState("50000000");
   const [minAmount, setMinAmount] = useState("1000000");
-  const [rate, setRate] = useState("5");
+  const [rate, setRate] = useState("2");
   const [description, setDescription] = useState("");
   const [validUntil, setValidUntil] = useState("");
   const [maxConcurrent, setMaxConcurrent] = useState("10");
@@ -162,10 +162,10 @@ export default function PostOfferPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div className="space-y-1.5">
               <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                Interest Rate (% p.a.)
+                Interest Rate (%/month)
               </Label>
               <Input
-                placeholder="5"
+                placeholder="2"
                 value={rate}
                 onChange={(e) => setRate(e.target.value)}
               />

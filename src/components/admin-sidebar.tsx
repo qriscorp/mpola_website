@@ -8,31 +8,51 @@ import {
   Users,
   FileText,
   CreditCard,
+  ClipboardCheck,
   Wallet,
   TrendingUp,
   Settings,
   ShieldAlert,
   LogOut,
-  ChevronLeft,
 } from "lucide-react";
-import { Logo } from "@/components/logo";
-import { Badge } from "@/components/ui/badge";
 import { SignOutModal } from "@/components/sign-out-modal";
 import { SwitchToPortalLink } from "@/components/portal-switch-link";
 import { useUser } from "@/hooks/use-dashboard";
 import { useAdminStats } from "@/hooks/use-admin";
 import { getInitials } from "@/lib/format";
 
-const adminNav = [
-  { icon: LayoutDashboard, label: "Overview", href: "/admin" },
-  { icon: Users, label: "Users", href: "/admin/users" },
-  { icon: FileText, label: "Applications", href: "/admin/applications" },
-  { icon: CreditCard, label: "Loans", href: "/admin/loans" },
-  { icon: Wallet, label: "Wallet & Payments", href: "/admin/payments" },
-  { icon: TrendingUp, label: "Revenue", href: "/admin/revenue" },
-  { icon: ShieldAlert, label: "Audit Log", href: "/admin/audit-logs" },
-  { icon: Settings, label: "Settings", href: "/admin/settings", badgeKey: "pendingOfferTemplates" as const },
+const overviewNav = [
+  { href: "/admin", label: "Overview", icon: LayoutDashboard },
 ];
+
+const platformNav = [
+  { href: "/admin/users", label: "Users", icon: Users },
+  { href: "/admin/applications", label: "Applications", icon: FileText },
+  { href: "/admin/loans", label: "Loans", icon: CreditCard },
+  {
+    href: "/admin/offer-templates",
+    label: "Standing Offers",
+    icon: ClipboardCheck,
+    badgeKey: "pendingOfferTemplates" as const,
+  },
+  { href: "/admin/payments", label: "Wallet & Payments", icon: Wallet },
+];
+
+const insightsNav = [
+  { href: "/admin/revenue", label: "Revenue", icon: TrendingUp },
+  { href: "/admin/audit-logs", label: "Audit Log", icon: ShieldAlert },
+];
+
+const accountNav = [
+  { href: "/admin/settings", label: "Settings", icon: Settings },
+];
+
+type NavItem = {
+  href: string;
+  label: string;
+  icon: React.ElementType;
+  badgeKey?: "pendingOfferTemplates";
+};
 
 export function AdminSidebarContent({
   onNavigate,
@@ -45,79 +65,101 @@ export function AdminSidebarContent({
   const { data: stats } = useAdminStats();
   const pendingOfferTemplates = stats?.platform.pending_offer_templates ?? 0;
 
+  const navLink = (item: NavItem) => {
+    const badge =
+      item.badgeKey === "pendingOfferTemplates" ? pendingOfferTemplates : undefined;
+    const isActive =
+      pathname === item.href ||
+      (item.href !== "/admin" && pathname.startsWith(item.href));
+    return (
+      <Link
+        key={item.href}
+        href={item.href}
+        onClick={onNavigate}
+        className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors relative ${
+          isActive
+            ? "text-[#2BB5A0] bg-white/5 before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:h-5 before:w-0.75 before:bg-[#2BB5A0] before:rounded-full"
+            : "text-gray-300 hover:text-white hover:bg-white/5"
+        }`}
+      >
+        <item.icon className="w-4 h-4 shrink-0" />
+        <span className="flex-1 truncate">{item.label}</span>
+        {!!badge && (
+          <span className="inline-flex items-center justify-center h-5 min-w-5 px-1.5 rounded-full bg-[#C4A55A] text-white text-[10px] font-bold leading-none">
+            {badge}
+          </span>
+        )}
+      </Link>
+    );
+  };
+
+  const sectionLabel = (label: string) => (
+    <p className="px-3 pt-4 pb-1 text-[10px] font-semibold text-gray-500 uppercase tracking-widest select-none">
+      {label}
+    </p>
+  );
+
   return (
-    <div className="flex flex-col h-full bg-[#1B2B3A] text-white">
-      {/* Logo */}
-      <div className="p-6 border-b border-white/10">
-        <div className="flex items-center gap-3">
-          <Logo variant="light" />
-          <Badge className="bg-[#C4A55A] text-[#1B2B3A] text-[10px] font-bold">
-            ADMIN
-          </Badge>
+    <div className="flex flex-col h-full bg-[#1B2B3A]">
+      {/* ── Logo ── */}
+      <div className="flex items-center gap-3 px-4 py-5 border-b border-white/10">
+        <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-[#2BB5A0] shrink-0">
+          <span className="text-white font-black text-base leading-none">
+            M
+          </span>
+        </div>
+        <div className="leading-tight">
+          <p className="text-white font-bold text-base leading-none">Mpola</p>
+          <p className="text-[#2BB5A0] text-[10px] font-semibold tracking-widest uppercase mt-0.5">
+            Admin Portal
+          </p>
         </div>
       </div>
 
-      {/* Nav */}
-      <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
-        {adminNav.map((item) => {
-          const isActive =
-            pathname === item.href ||
-            (item.href !== "/admin" && pathname.startsWith(item.href));
-          const badge =
-            item.badgeKey === "pendingOfferTemplates" ? pendingOfferTemplates : 0;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={onNavigate}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                isActive
-                  ? "bg-[#2BB5A0] text-white"
-                  : "text-gray-300 hover:bg-white/10 hover:text-white"
-              }`}
-            >
-              <item.icon className="h-4 w-4" />
-              <span className="flex-1">{item.label}</span>
-              {badge > 0 && (
-                <span className="inline-flex items-center justify-center h-5 min-w-5 px-1.5 rounded-full bg-[#C4A55A] text-white text-[10px] font-bold">
-                  {badge}
-                </span>
-              )}
-            </Link>
-          );
-        })}
+      {/* ── Nav ── */}
+      <nav className="flex-1 overflow-y-auto py-2 px-2">
+        {sectionLabel("Overview")}
+        <div className="space-y-0.5">{overviewNav.map(navLink)}</div>
+
+        {sectionLabel("Platform")}
+        <div className="space-y-0.5">{platformNav.map(navLink)}</div>
+
+        {sectionLabel("Insights")}
+        <div className="space-y-0.5">{insightsNav.map(navLink)}</div>
+
+        {sectionLabel("Account")}
+        <div className="space-y-0.5">{accountNav.map(navLink)}</div>
       </nav>
 
-      {/* Footer */}
-      <div className="p-4 border-t border-white/10 space-y-2">
-        <div className="flex items-center gap-3 px-3 py-2">
-          <div className="h-8 w-8 rounded-full bg-[#2BB5A0] flex items-center justify-center text-xs font-bold">
-            {user?.fullName ? getInitials(user.fullName) : "AD"}
+      {/* ── User footer ── */}
+      <div className="p-3 border-t border-white/10">
+        <SwitchToPortalLink
+          onNavigate={onNavigate}
+          className="flex items-center gap-2 px-2 py-2 mb-1 text-sm text-gray-400 hover:text-white transition-colors"
+        />
+        <div className="flex items-center gap-3 px-2 py-2 rounded-lg">
+          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-[#2BB5A0] shrink-0">
+            <span className="text-white text-xs font-bold">
+              {user?.fullName ? getInitials(user.fullName) : "?"}
+            </span>
           </div>
-          <div>
-            <p className="text-sm font-medium">{user?.fullName ?? "Admin"}</p>
-            <p className="text-[10px] text-gray-400">{user?.email ?? ""}</p>
+          <div className="flex-1 min-w-0">
+            <p className="text-white text-sm font-medium leading-tight truncate">
+              {user?.fullName ?? "Loading…"}
+            </p>
+            <p className="text-[#2BB5A0] text-[11px] leading-tight">Admin</p>
           </div>
+          <button
+            onClick={() => setSignOutOpen(true)}
+            title="Sign out"
+            className="text-gray-400 hover:text-red-400 transition-colors p-1 rounded"
+          >
+            <LogOut className="w-4 h-4" />
+          </button>
         </div>
-        <SwitchToPortalLink onNavigate={onNavigate} />
-        <Link
-          href="/"
-          onClick={onNavigate}
-          className="flex items-center gap-2 px-3 py-2 text-sm text-gray-400 hover:text-white transition-colors"
-        >
-          <ChevronLeft className="h-4 w-4" />
-          Back to Portal
-        </Link>
-        <button
-          onClick={() => setSignOutOpen(true)}
-          className="flex items-center gap-2 px-3 py-2 text-sm text-gray-400 hover:text-red-400 transition-colors w-full"
-        >
-          <LogOut className="h-4 w-4" />
-          Sign Out
-        </button>
-
-        <SignOutModal open={signOutOpen} onOpenChange={setSignOutOpen} />
       </div>
+
+      <SignOutModal open={signOutOpen} onOpenChange={setSignOutOpen} />
     </div>
   );
 }

@@ -13,6 +13,11 @@ export interface User {
   kycStatus: "pending" | "verified" | "rejected";
   location?: string;
   twoFactorEnabled?: boolean;
+  notifNewApplication?: boolean;
+  notifRepaymentReceived?: boolean;
+  notifLoanOverdue?: boolean;
+  notifPortfolioDigest?: boolean;
+  notifLoginAlerts?: boolean;
   creditScore: number;
   createdAt: string;
 }

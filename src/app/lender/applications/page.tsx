@@ -10,6 +10,7 @@ import {
   useMarketplace,
   useMyOffers,
   useMakeOffer,
+  useSkipApplication,
 } from "@/hooks/use-lender";
 import { formatCurrency, formatRate, getInitials } from "@/lib/format";
 import type { MarketplaceApplication } from "@/lib/types";
@@ -40,11 +41,12 @@ export default function ApplicationsPage() {
   const [offerModal, setOfferModal] = useState<MarketplaceApplication | null>(
     null,
   );
-  const [rate, setRate] = useState("15");
+  const [rate, setRate] = useState("3");
 
   const { data: marketplace, isLoading } = useMarketplace();
   const { data: myOffers } = useMyOffers();
   const makeOffer = useMakeOffer();
+  const skipApplication = useSkipApplication();
 
   const applications = marketplace?.applications ?? [];
   const pendingOffersCount = (myOffers ?? []).filter(
@@ -174,11 +176,15 @@ export default function ApplicationsPage() {
                 </button>
                 <button
                   onClick={() =>
-                    toast.info(
-                      "Declining isn't tracked yet — this request stays visible to other lenders.",
-                    )
+                    skipApplication.mutate(app.id, {
+                      onSuccess: () =>
+                        toast.success(
+                          "Hidden from your marketplace — still visible to other lenders.",
+                        ),
+                    })
                   }
-                  className="px-3 py-1.5 rounded-lg border border-gray-300 text-xs font-medium text-gray-600 hover:border-red-300 hover:text-red-600 transition-colors"
+                  disabled={skipApplication.isPending}
+                  className="px-3 py-1.5 rounded-lg border border-gray-300 text-xs font-medium text-gray-600 hover:border-red-300 hover:text-red-600 transition-colors disabled:opacity-50"
                 >
                   Decline
                 </button>
@@ -219,7 +225,7 @@ export default function ApplicationsPage() {
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-gray-500">Your Rate (% p.a.)</span>
+                <span className="text-gray-500">Your Rate (%/month)</span>
                 <input
                   type="number"
                   min={0.1}

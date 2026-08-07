@@ -2,11 +2,13 @@
 
 import { Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { toast } from "sonner";
 import { LenderPageHeader } from "@/components/lender-top-nav";
 import { CardSkeleton } from "@/components/skeletons";
 import {
   useApplicationDetail,
   useApplicationDocuments,
+  useSkipApplication,
 } from "@/hooks/use-lender";
 import { formatCurrency, getInitials } from "@/lib/format";
 
@@ -33,6 +35,7 @@ function ApplicantContent() {
 
   const { data: application, isLoading, error } = useApplicationDetail(applicationId);
   const { data: documents } = useApplicationDocuments(applicationId);
+  const skipApplication = useSkipApplication();
 
   if (!applicationId || error) {
     return (
@@ -89,8 +92,18 @@ function ApplicantContent() {
                       Approve
                     </button>
                     <button
-                      onClick={() => router.push("/lender/applications")}
-                      className="px-4 py-1.5 rounded-lg border border-gray-300 text-sm font-medium text-gray-600 hover:border-red-300 hover:text-red-500 transition-colors"
+                      onClick={() =>
+                        skipApplication.mutate(application.id, {
+                          onSuccess: () => {
+                            toast.success(
+                              "Hidden from your marketplace — still visible to other lenders.",
+                            );
+                            router.push("/lender/applications");
+                          },
+                        })
+                      }
+                      disabled={skipApplication.isPending}
+                      className="px-4 py-1.5 rounded-lg border border-gray-300 text-sm font-medium text-gray-600 hover:border-red-300 hover:text-red-500 transition-colors disabled:opacity-50"
                     >
                       Decline
                     </button>
