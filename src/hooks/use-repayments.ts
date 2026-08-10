@@ -1,7 +1,6 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { api } from "@/lib/api";
 
 export function useLoanDetail(loanId: string | undefined) {
@@ -22,15 +21,13 @@ export function useMakeRepayment() {
       phone_number?: string;
       carrier?: string;
     }) => api.makeRepayment(data),
+    // No toasts here — the pay page navigates to a dedicated
+    // success/failure confirmation screen for both outcomes instead.
     onSuccess: (_result, variables) => {
-      toast.success("Payment successful!");
       queryClient.invalidateQueries({ queryKey: ["active-loan"] });
       queryClient.invalidateQueries({ queryKey: ["loan", variables.loan_id] });
       queryClient.invalidateQueries({ queryKey: ["wallet"] });
       queryClient.invalidateQueries({ queryKey: ["transactions"] });
-    },
-    onError: (err: Error) => {
-      toast.error(err.message || "Payment failed. Please try again.");
     },
   });
 }

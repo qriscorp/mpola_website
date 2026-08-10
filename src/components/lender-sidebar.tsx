@@ -8,9 +8,7 @@ import {
   PlusCircle,
   FileText,
   Activity,
-  User,
   Briefcase,
-  FileSearch,
   Wallet,
   TrendingUp,
   ShieldCheck,
@@ -40,9 +38,7 @@ const lendingNav = [
     icon: Activity,
     badgeKey: "openApplications" as const,
   },
-  { href: "/lender/applicant", label: "Applicant Profile", icon: User },
   { href: "/lender/portfolio", label: "Portfolio", icon: Briefcase },
-  { href: "/lender/loan-detail", label: "Loan Detail", icon: FileSearch },
 ];
 
 const financeNav = [

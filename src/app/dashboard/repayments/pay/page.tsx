@@ -61,12 +61,23 @@ function MakePaymentContent() {
       {
         onSuccess: (result) => {
           const params = new URLSearchParams({
+            status: "success",
             repaymentId: result.repayment.id,
             txn: result.repayment.transaction_id ?? result.repayment.id,
             amount: String(result.repayment.amount),
             method: result.repayment.payment_method ?? method,
             loanRef: loan.id,
             date: result.repayment.created_at,
+          });
+          router.push(`/dashboard/repayments/pay/confirmation?${params}`);
+        },
+        onError: (err: Error) => {
+          const params = new URLSearchParams({
+            status: "failed",
+            reason: err.message || "Payment failed. Please try again.",
+            amount: String(effectiveAmount),
+            method,
+            loanRef: loan.id,
           });
           router.push(`/dashboard/repayments/pay/confirmation?${params}`);
         },
