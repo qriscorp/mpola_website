@@ -7,7 +7,6 @@ import { LenderPageHeader } from "@/components/lender-top-nav";
 import { CardSkeleton } from "@/components/skeletons";
 import {
   useApplicationDetail,
-  useApplicationDocuments,
   useSkipApplication,
 } from "@/hooks/use-lender";
 import { formatCurrency, getInitials } from "@/lib/format";
@@ -34,7 +33,6 @@ function ApplicantContent() {
   const applicationId = searchParams.get("applicationId") ?? "";
 
   const { data: application, isLoading, error } = useApplicationDetail(applicationId);
-  const { data: documents } = useApplicationDocuments(applicationId);
   const skipApplication = useSkipApplication();
 
   if (!applicationId || error) {
@@ -148,52 +146,6 @@ function ApplicantContent() {
           </div>
         </div>
 
-        {/* Documents card */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <h3 className="font-bold text-[#1B2B3A] text-lg mb-4">Documents</h3>
-          {!documents || documents.length === 0 ? (
-            <p className="text-sm text-gray-400">
-              No documents uploaded for this application yet.
-            </p>
-          ) : (
-            <div className="space-y-3">
-              {documents.map((doc) => (
-                <div
-                  key={doc.id}
-                  className="flex items-center justify-between p-3 rounded-lg border border-gray-100 bg-gray-50"
-                >
-                  <div>
-                    <p className="text-sm font-semibold text-[#1B2B3A] capitalize">
-                      {doc.document_type.replace(/_/g, " ")}
-                    </p>
-                    <p className="text-xs text-gray-400 mt-0.5">
-                      {doc.file_name ?? "—"}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border ${
-                        doc.verified
-                          ? "bg-emerald-50 text-emerald-600 border-emerald-200"
-                          : "bg-gray-100 text-gray-500 border-gray-200"
-                      }`}
-                    >
-                      {doc.verified ? "Verified" : "Uploaded"}
-                    </span>
-                    <a
-                      href={doc.file_url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="px-3 py-1 rounded-lg border border-gray-300 text-xs font-medium text-gray-600 hover:border-[#C4A55A] hover:text-[#C4A55A] transition-colors"
-                    >
-                      View
-                    </a>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
       </div>
 
       {/* RIGHT: 1/3 */}

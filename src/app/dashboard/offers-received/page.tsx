@@ -148,6 +148,11 @@ function OffersReceivedContent() {
                       {formatCurrency(offer.total_repayable ?? 0)} · Status:{" "}
                       <span className="capitalize">{offer.status}</span>
                     </p>
+                    {offer.required_documents.length > 0 && (
+                      <p className="mt-1 text-xs text-gray-400">
+                        Requires: {offer.required_documents.join(", ")}
+                      </p>
+                    )}
                   </div>
                   {offer.status === "pending" && (
                     <div className="flex gap-2 shrink-0">

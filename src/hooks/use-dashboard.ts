@@ -3,7 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
-import type { KYCDocumentType } from "@/lib/types";
+import type { KYCDocumentType, BorrowerDocumentType } from "@/lib/types";
 
 export function useUser() {
   return useQuery({
@@ -39,6 +39,30 @@ export function useUploadKycDocument() {
     onSuccess: () => {
       toast.success("Document uploaded");
       qc.invalidateQueries({ queryKey: ["kyc-documents"] });
+    },
+    onError: (err: Error) => toast.error(err.message || "Failed to upload document"),
+  });
+}
+
+export function useMyBorrowerDocuments() {
+  return useQuery({
+    queryKey: ["borrower-documents"],
+    queryFn: api.getMyBorrowerDocuments,
+  });
+}
+
+export function useUploadBorrowerDocument() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ documentType, file }: { documentType: BorrowerDocumentType; file: File }) =>
+      api.uploadBorrowerDocument(documentType, file),
+    onSuccess: () => {
+      toast.success("Document uploaded");
+      qc.invalidateQueries({ queryKey: ["borrower-documents"] });
+      // A newly-uploaded document can be exactly what an already-received
+      // offer was waiting on — refresh so its accept-gate re-evaluates.
+      qc.invalidateQueries({ queryKey: ["borrower", "offers-received"] });
+      qc.invalidateQueries({ queryKey: ["application"] });
     },
     onError: (err: Error) => toast.error(err.message || "Failed to upload document"),
   });

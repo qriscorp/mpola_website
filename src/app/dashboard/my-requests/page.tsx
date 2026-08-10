@@ -395,6 +395,25 @@ function ApplicationActions({ app }: { app: LoanApplication }) {
   );
 }
 
+function DiscardDraftLink({ applicationId }: { applicationId: string }) {
+  const deleteApplication = useDeleteApplication();
+  const handleDiscard = () => {
+    if (!confirm("Discard this unfinished request? This can't be undone.")) return;
+    deleteApplication.mutate(applicationId, {
+      onSuccess: () => toast.success("Draft discarded"),
+    });
+  };
+  return (
+    <button
+      onClick={handleDiscard}
+      disabled={deleteApplication.isPending}
+      className="mt-3 text-xs font-medium text-gray-400 hover:text-red-500 disabled:opacity-50"
+    >
+      Discard draft
+    </button>
+  );
+}
+
 export default function MyRequestsPage() {
   const { data: applications, isLoading } = useApplications();
   const [activeTab, setActiveTab] = useState<Tab>("All");
@@ -444,54 +463,97 @@ export default function MyRequestsPage() {
         </div>
       ) : (
         <StaggerList className="space-y-4">
-          {filtered.map((app) => (
-            <StaggerItem
-              key={app.id}
-              className="bg-white rounded-2xl border border-gray-200 p-6"
-            >
-              <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-1">
-                    <span className="text-2xl sm:text-3xl leading-none font-black text-[#1B2B3A]">
-                      {formatCurrency(app.amount)}
-                    </span>
-                    <span
-                      className={`px-2 py-0.5 rounded-full text-xs font-semibold ${getStatusColor(app.status)}`}
+          {filtered.map((app) => {
+            // The apply wizard now creates the real application at step 1
+            // and only attaches guarantors at the very end — so a request
+            // that's "awaiting_guarantors" with literally none attached
+            // yet isn't waiting on anyone, it's just an unfinished wizard
+            // session. Shown distinctly so it doesn't look like a broken
+            // submitted request with no guarantors listed.
+            const isDraft = app.status === "awaiting_guarantors" && (!app.guarantors || app.guarantors.length === 0);
+
+            if (isDraft) {
+              return (
+                <StaggerItem
+                  key={app.id}
+                  className="bg-white rounded-2xl border border-dashed border-gray-300 p-6"
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-1">
+                        <span className="text-2xl sm:text-3xl leading-none font-black text-[#1B2B3A]">
+                          {formatCurrency(app.amount)}
+                        </span>
+                        <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-500">
+                          Draft
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-500 capitalize">
+                        {app.loan_type} · {app.duration} months
+                      </p>
+                      <p className="text-xs text-gray-400 mt-1">Not yet submitted.</p>
+                    </div>
+                    <Link
+                      href="/dashboard/apply"
+                      className="px-5 py-2 rounded-xl bg-[#2BB5A0] text-white text-sm font-semibold hover:bg-[#239E8C] transition-colors whitespace-nowrap shrink-0"
                     >
-                      {getStatusLabel(app.status)}
-                    </span>
+                      Continue Application
+                    </Link>
                   </div>
-                  <p className="text-sm text-gray-500 capitalize">
-                    {app.loan_type} · {app.duration} months · #{app.id}
-                    {expiryNote(app.valid_until, app.status) && (
-                      <> · <span className="text-amber-600 font-medium">{expiryNote(app.valid_until, app.status)}</span></>
-                    )}
-                  </p>
-                  {app.status === "awaiting_guarantors" && (
-                    <p className="text-xs text-amber-600 mt-1">
-                      Waiting on your guarantors to approve before lenders can see this request.
+                  <DiscardDraftLink applicationId={app.id} />
+                </StaggerItem>
+              );
+            }
+
+            return (
+              <StaggerItem
+                key={app.id}
+                className="bg-white rounded-2xl border border-gray-200 p-6"
+              >
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-1">
+                      <span className="text-2xl sm:text-3xl leading-none font-black text-[#1B2B3A]">
+                        {formatCurrency(app.amount)}
+                      </span>
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-xs font-semibold ${getStatusColor(app.status)}`}
+                      >
+                        {getStatusLabel(app.status)}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-500 capitalize">
+                      {app.loan_type} · {app.duration} months · #{app.id}
+                      {expiryNote(app.valid_until, app.status) && (
+                        <> · <span className="text-amber-600 font-medium">{expiryNote(app.valid_until, app.status)}</span></>
+                      )}
                     </p>
+                    {app.status === "awaiting_guarantors" && (
+                      <p className="text-xs text-amber-600 mt-1">
+                        Waiting on your guarantors to approve before lenders can see this request.
+                      </p>
+                    )}
+                  </div>
+                  {app.status === "pending" && (
+                    <Link
+                      href={`/dashboard/offers-received?applicationId=${app.id}`}
+                      className="px-5 py-2 rounded-xl bg-[#2BB5A0] text-white text-sm font-semibold hover:bg-[#239E8C] transition-colors whitespace-nowrap shrink-0"
+                    >
+                      View Offers
+                    </Link>
                   )}
                 </div>
-                {app.status === "pending" && (
-                  <Link
-                    href={`/dashboard/offers-received?applicationId=${app.id}`}
-                    className="px-5 py-2 rounded-xl bg-[#2BB5A0] text-white text-sm font-semibold hover:bg-[#239E8C] transition-colors whitespace-nowrap shrink-0"
-                  >
-                    View Offers
-                  </Link>
+
+                {app.status === "awaiting_guarantors" && app.guarantors && app.guarantors.length > 0 && (
+                  <GuarantorStatusList applicationId={app.id} guarantors={app.guarantors} />
                 )}
-              </div>
 
-              {app.status === "awaiting_guarantors" && app.guarantors && app.guarantors.length > 0 && (
-                <GuarantorStatusList applicationId={app.id} guarantors={app.guarantors} />
-              )}
-
-              {(app.status === "awaiting_guarantors" || app.status === "pending") && (
-                <ApplicationActions app={app} />
-              )}
-            </StaggerItem>
-          ))}
+                {(app.status === "awaiting_guarantors" || app.status === "pending") && (
+                  <ApplicationActions app={app} />
+                )}
+              </StaggerItem>
+            );
+          })}
         </StaggerList>
       )}
 

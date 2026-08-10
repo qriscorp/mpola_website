@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { LenderPageHeader } from "@/components/lender-top-nav";
@@ -9,6 +9,7 @@ import { useLenderActiveLoans, useApproveDisbursement } from "@/hooks/use-lender
 import { formatCurrency, formatRate } from "@/lib/format";
 import type { ActiveLoan } from "@/lib/types";
 import { FadeSwap } from "@/components/motion/fade-swap";
+import { RequiredDocumentsChecklist } from "@/components/required-documents-checklist";
 
 type LoanStatus = ActiveLoan["status"];
 
@@ -64,6 +65,7 @@ function statBadge(s: LoanStatus) {
 
 export default function LenderPortfolioPage() {
   const [tab, setTab] = useState<"All" | LoanStatus>("All");
+  const [expandedLoanId, setExpandedLoanId] = useState<string | null>(null);
   const { data: loans, isLoading } = useLenderActiveLoans();
   const approveDisbursement = useApproveDisbursement();
 
@@ -173,7 +175,8 @@ export default function LenderPortfolioPage() {
               </thead>
               <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
                 {filtered.map((loan) => (
-                  <tr key={loan.id}>
+                  <Fragment key={loan.id}>
+                  <tr>
                     <td className="py-4 pr-4">
                       <p className="font-bold text-[#1B2B3A] dark:text-white">
                         {loan.borrower_name ?? "—"}
@@ -229,13 +232,25 @@ export default function LenderPortfolioPage() {
                     <td className="py-4 pr-4">{statBadge(loan.status)}</td>
                     <td className="py-4">
                       {loan.status === "pending_disbursement" ? (
-                        <button
-                          onClick={() => handleApprove(loan.id)}
-                          disabled={approveDisbursement.isPending}
-                          className="text-xs px-3 py-1.5 rounded-lg bg-emerald-500 text-white font-semibold hover:bg-emerald-600 transition-colors disabled:opacity-50 whitespace-nowrap"
-                        >
-                          {approveDisbursement.isPending ? "Approving…" : "Approve Disbursement"}
-                        </button>
+                        <div className="flex flex-col items-start gap-1.5">
+                          <button
+                            onClick={() => handleApprove(loan.id)}
+                            disabled={approveDisbursement.isPending}
+                            className="text-xs px-3 py-1.5 rounded-lg bg-emerald-500 text-white font-semibold hover:bg-emerald-600 transition-colors disabled:opacity-50 whitespace-nowrap"
+                          >
+                            {approveDisbursement.isPending ? "Approving…" : "Approve Disbursement"}
+                          </button>
+                          {loan.required_documents.length > 0 && (
+                            <button
+                              onClick={() =>
+                                setExpandedLoanId(expandedLoanId === loan.id ? null : loan.id)
+                              }
+                              className="text-xs font-medium text-gray-400 hover:text-[#C4A55A] underline whitespace-nowrap"
+                            >
+                              {expandedLoanId === loan.id ? "Hide documents" : "Review documents"}
+                            </button>
+                          )}
+                        </div>
                       ) : (
                         <Link
                           href={`/lender/loan-detail?loanId=${loan.id}`}
@@ -246,6 +261,17 @@ export default function LenderPortfolioPage() {
                       )}
                     </td>
                   </tr>
+                  {expandedLoanId === loan.id && loan.status === "pending_disbursement" && (
+                    <tr>
+                      <td colSpan={7} className="bg-gray-50 dark:bg-gray-950 px-4 py-4">
+                        <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-400">
+                          Documents this offer required — verify before releasing funds
+                        </p>
+                        <RequiredDocumentsChecklist items={loan.required_documents_status} readOnly />
+                      </td>
+                    </tr>
+                  )}
+                  </Fragment>
                 ))}
               </tbody>
             </table>

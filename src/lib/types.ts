@@ -67,6 +67,8 @@ export interface LoanOffer {
   monthly_payment: number | null;
   total_repayable: number | null;
   status: "pending" | "accepted" | "declined" | "expired";
+  required_documents: string[];
+  required_documents_status: RequiredDocumentStatus[];
   created_at: string;
 }
 
@@ -99,6 +101,8 @@ export interface ActiveLoan {
   status: "pending_disbursement" | "active" | "completed" | "overdue" | "defaulted";
   disbursed_at: string | null;
   created_at: string;
+  required_documents: string[];
+  required_documents_status: RequiredDocumentStatus[];
   repayments?: LoanRepayment[];
 }
 
@@ -478,6 +482,30 @@ export interface KYCDocument {
   id: string;
   document_type: KYCDocumentType | string;
   file_url: string;
+  file_name: string | null;
+  verified: boolean;
+}
+
+// Account-wide, reusable supporting documents (bank statement, payslip/
+// business proof, land title, URA TIN) — separate from KYCDocument
+// (identity) and satisfy a lender's required_documents once uploaded, for
+// every current and future offer that asks for the same thing.
+export type BorrowerDocumentType = "bank_statement" | "business_proof" | "land_title" | "ura_tin";
+
+export interface BorrowerDocument {
+  id: string;
+  document_type: BorrowerDocumentType | string;
+  file_url: string;
+  file_name: string | null;
+  verified: boolean;
+}
+
+export interface RequiredDocumentStatus {
+  label: string;
+  type: string | null;
+  source: "kyc" | "borrower_doc" | null;
+  satisfied: boolean;
+  file_url: string | null;
   file_name: string | null;
   verified: boolean;
 }

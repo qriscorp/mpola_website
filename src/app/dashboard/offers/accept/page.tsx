@@ -14,6 +14,7 @@ import { useApplicationDetail } from "@/hooks/use-lender";
 import { useRespondToOffer } from "@/hooks/use-offers";
 import { useWallet } from "@/hooks/use-wallet";
 import { CardSkeleton } from "@/components/skeletons";
+import { RequiredDocumentsChecklist } from "@/components/required-documents-checklist";
 
 const TERMS = [
   "I have read and understood the full loan agreement terms.",
@@ -48,6 +49,8 @@ function AcceptOfferContent() {
   ).length;
   const guarantorsReady = acceptedGuarantors >= REQUIRED_ACCEPTED_GUARANTORS;
   const walletReady = wallet?.is_wallet_setup ?? false;
+  const requiredDocs = offer?.required_documents_status ?? [];
+  const documentsReady = requiredDocs.every((d) => d.satisfied);
 
   if (!offerId || !applicationId) {
     return (
@@ -157,6 +160,23 @@ function AcceptOfferContent() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Documents Required */}
+          {requiredDocs.length > 0 && (
+            <Card>
+              <CardHeader>
+                <h2 className="font-semibold text-[#1B2B3A] dark:text-white">
+                  Documents This Lender Requires
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  Provide these before signing — already-uploaded ones (KYC or from a past offer) count automatically.
+                </p>
+              </CardHeader>
+              <CardContent>
+                <RequiredDocumentsChecklist items={requiredDocs} />
+              </CardContent>
+            </Card>
+          )}
 
           {/* Agreement Terms */}
           <Card>
@@ -292,10 +312,16 @@ function AcceptOfferContent() {
                 </p>
               )}
 
+              {!isSuccess && !documentsReady && (
+                <p className="text-xs text-amber-600 bg-amber-50 rounded-lg px-3 py-2">
+                  Provide the documents this lender requires (above) before signing.
+                </p>
+              )}
+
               {!isSuccess && (
                 <Button
                   className="w-full bg-[#2BB5A0] hover:bg-[#239E8C] text-white"
-                  disabled={!allAccepted || !guarantorsReady || !walletReady || isPending}
+                  disabled={!allAccepted || !guarantorsReady || !walletReady || !documentsReady || isPending}
                   onClick={handleSign}
                 >
                   {isPending ? (

@@ -34,6 +34,8 @@ import type {
   LoginSessionInfo,
   KYCDocument,
   KYCDocumentType,
+  BorrowerDocument,
+  BorrowerDocumentType,
   GuarantorRequest,
 } from "./types";
 
@@ -1055,71 +1057,13 @@ export const api = {
   // that exists but hasn't had its guarantors attached yet is by
   // definition an unfinished draft (see GET /loans/applications/draft).
   getDraftApplication: async (): Promise<
-    | (LoanApplication & {
-        documents: { id: string; document_type: string; file_url: string; file_name: string | null; verified: boolean }[];
-      })
-    | null
+    LoanApplication | null
   > => {
-    const res = await apiAuthGet<{
-      draft:
-        | (LoanApplication & {
-            documents: { id: string; document_type: string; file_url: string; file_name: string | null; verified: boolean }[];
-          })
-        | null;
-    }>("/loans/applications/draft");
+    const res = await apiAuthGet<{ draft: LoanApplication | null }>("/loans/applications/draft");
     return res.draft;
   },
 
-  // Lender/borrower — list documents on an application
-  getApplicationDocuments: async (
-    applicationId: string,
-  ): Promise<
-    {
-      id: string;
-      document_type: string;
-      file_url: string;
-      file_name: string | null;
-      verified: boolean;
-    }[]
-  > => {
-    const res = await apiAuthGet<{
-      documents: {
-        id: string;
-        document_type: string;
-        file_url: string;
-        file_name: string | null;
-        verified: boolean;
-      }[];
-    }>(`/loans/applications/${applicationId}/documents`);
-    return res.documents;
-  },
-
-  // Upload
-  uploadDocument: async (
-    applicationId: string,
-    file: File,
-    documentType: string,
-  ): Promise<{
-    status: number;
-    message: string;
-    document: {
-      id: string;
-      document_type: string;
-      file_url: string;
-      file_name: string | null;
-      verified: boolean;
-    };
-  }> => {
-    const formData = new FormData();
-    formData.append("document_type", documentType);
-    formData.append("file", file);
-    return apiAuthUpload(
-      `/loans/applications/${applicationId}/documents`,
-      formData,
-    );
-  },
-
-  // ─── Account-level KYC documents (separate from per-application ones above) ───
+  // ─── Account-level KYC documents ───
   getMyKycDocuments: async (): Promise<KYCDocument[]> => {
     const res = await apiAuthGet<{ documents: KYCDocument[] }>("/users/me/kyc-documents");
     return res.documents;
@@ -1133,6 +1077,24 @@ export const api = {
     formData.append("document_type", documentType);
     formData.append("file", file);
     return apiAuthUpload("/users/me/kyc-documents", formData);
+  },
+
+  // ─── Account-wide reusable supporting documents (bank statement, payslip/
+  // business proof, land title, URA TIN) — what a lender's required_documents
+  // actually resolves against, besides KYC ───
+  getMyBorrowerDocuments: async (): Promise<BorrowerDocument[]> => {
+    const res = await apiAuthGet<{ documents: BorrowerDocument[] }>("/users/me/documents");
+    return res.documents;
+  },
+
+  uploadBorrowerDocument: async (
+    documentType: BorrowerDocumentType,
+    file: File,
+  ): Promise<{ status: number; message: string; document: BorrowerDocument }> => {
+    const formData = new FormData();
+    formData.append("document_type", documentType);
+    formData.append("file", file);
+    return apiAuthUpload("/users/me/documents", formData);
   },
 
   // Borrower — offers received across all of my applications

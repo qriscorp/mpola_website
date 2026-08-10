@@ -36,13 +36,6 @@ export function useApplicationDetail(id: string) {
   });
 }
 
-export function useApplicationDocuments(id: string) {
-  return useQuery({
-    queryKey: ["application", id, "documents"],
-    queryFn: () => api.getApplicationDocuments(id),
-    enabled: !!id,
-  });
-}
 
 export function useMyOffers() {
   return useQuery({

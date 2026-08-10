@@ -83,20 +83,3 @@ export function useUnfreezeApplication() {
     },
   });
 }
-
-export function useUploadDocument() {
-  return useMutation({
-    mutationFn: ({
-      applicationId,
-      file,
-      documentType,
-    }: {
-      applicationId: string;
-      file: File;
-      documentType: string;
-    }) => api.uploadDocument(applicationId, file, documentType),
-    onError: (err: Error) => {
-      toast.error(err.message || "Upload failed. Please try again.");
-    },
-  });
-}
