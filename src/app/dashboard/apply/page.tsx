@@ -441,7 +441,7 @@ function Step3({
       <CardContent className="space-y-6 p-6">
         <h2 className="flex items-center gap-2 text-2xl font-black text-[#1B2B3A]">
           Add Guarantors
-          <InfoTip text="If one declines, you can search for a replacement from My Requests after submitting. And if you ever edit the amount, duration, or type later, both guarantors are asked to approve again — their approval only ever covers the exact terms they saw." />
+          <InfoTip text="If one declines, you can search for a replacement from My Requests after submitting. You can still edit the amount, duration, or type later — but only until a guarantor actually approves; once someone has committed to these exact terms, editing locks and you'd need to withdraw and resubmit instead." />
         </h2>
         <p className="text-sm text-gray-500">
           Add exactly 2 guarantors — they must already have a Mpola account.

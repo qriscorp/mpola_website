@@ -184,10 +184,6 @@ function EditApplicationForm({ app, onDone }: { app: LoanApplication; onDone: ()
   const [validUntil, setValidUntil] = useState(app.valid_until ? app.valid_until.slice(0, 10) : "");
   const update = useUpdateApplication();
 
-  const hadGuarantorResponse = (app.guarantors ?? []).some((g) => g.status !== "pending");
-  const termsChanged =
-    Number(amount) !== app.amount || duration !== app.duration || loanType !== app.loan_type;
-
   const handleSave = () => {
     update.mutate(
       {
@@ -217,12 +213,6 @@ function EditApplicationForm({ app, onDone }: { app: LoanApplication; onDone: ()
 
   return (
     <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-800 space-y-3">
-      {termsChanged && hadGuarantorResponse && (
-        <div className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-700">
-          Changing the amount, duration, or type resets any guarantor who already responded — they&apos;ll
-          need to review and approve the new terms again.
-        </div>
-      )}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500">
@@ -329,6 +319,12 @@ function ApplicationActions({ app }: { app: LoanApplication }) {
   const freeze = useFreezeApplication();
   const unfreeze = useUnfreezeApplication();
 
+  // A guarantor's acceptance covers the exact terms they saw — once one has
+  // committed, the borrower can still pause or withdraw the request, but
+  // editing amount/duration/type/etc. is locked (matches the backend guard
+  // in PUT /loans/applications/{id}).
+  const editLocked = (app.guarantors ?? []).some((g) => g.status === "accepted");
+
   const handleWithdraw = () => {
     if (!confirm("Withdraw this loan request? This can't be undone.")) return;
     deleteApplication.mutate(app.id, {
@@ -350,12 +346,14 @@ function ApplicationActions({ app }: { app: LoanApplication }) {
 
   return (
     <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-800 flex flex-wrap items-center gap-3">
-      <button
-        onClick={() => setEditing(true)}
-        className="px-3 py-1.5 rounded-lg border border-gray-300 text-xs font-medium text-gray-600 hover:border-[#2BB5A0] hover:text-[#2BB5A0] transition-colors"
-      >
-        Edit
-      </button>
+      {!editLocked && (
+        <button
+          onClick={() => setEditing(true)}
+          className="px-3 py-1.5 rounded-lg border border-gray-300 text-xs font-medium text-gray-600 hover:border-[#2BB5A0] hover:text-[#2BB5A0] transition-colors"
+        >
+          Edit
+        </button>
+      )}
       {app.is_frozen ? (
         <button
           onClick={handleUnfreeze}
@@ -388,6 +386,11 @@ function ApplicationActions({ app }: { app: LoanApplication }) {
       {app.is_frozen && app.frozen_by === "admin" && (
         <p className="text-xs text-gray-400">Frozen by an admin — only they can unfreeze it.</p>
       )}
+      {editLocked && (
+        <p className="text-xs text-gray-400">
+          A guarantor has already approved — editing is locked, but you can still freeze or withdraw.
+        </p>
+      )}
     </div>
   );
 }
@@ -413,7 +416,7 @@ export default function MyRequestsPage() {
       <BorrowerPageHeader title="My Requests" />
       <p className="-mt-4 flex items-center gap-1.5 text-sm text-gray-500">
         Awaiting Guarantors → Pending → Funded
-        <InfoTip text="Awaiting Guarantors: waiting on your 2 chosen guarantors to approve. Pending: both approved, visible to lenders on the marketplace. Funded: you accepted an offer. You can edit, freeze, or withdraw a request any time before it's funded." />
+        <InfoTip text="Awaiting Guarantors: waiting on your 2 chosen guarantors to approve. Pending: both approved, visible to lenders on the marketplace. Funded: you accepted an offer. You can freeze or withdraw a request any time before it's funded — editing is only possible until a guarantor actually approves, since their approval covers the exact terms they saw." />
       </p>
 
       {/* Tabs */}
