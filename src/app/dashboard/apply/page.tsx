@@ -146,9 +146,13 @@ function LoanCalculator({
   );
 }
 
+const MIN_AMOUNT = 1000;
+const MAX_AMOUNT = 50000000;
+
 function Step1({
   amount,
   setAmount,
+  amountError,
   duration,
   setDuration,
   loanType,
@@ -160,8 +164,9 @@ function Step1({
   validUntil,
   setValidUntil,
 }: {
-  amount: number;
-  setAmount: (v: number) => void;
+  amount: string;
+  setAmount: (v: string) => void;
+  amountError: string | null;
   duration: number;
   setDuration: (v: number) => void;
   loanType: string;
@@ -186,17 +191,33 @@ function Step1({
             <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-gray-500">
               How much do you need?
             </label>
-            <div className="flex items-center overflow-hidden rounded-lg border border-gray-300 focus-within:ring-2 focus-within:ring-[#2BB5A0]">
+            <div
+              className={`flex items-center overflow-hidden rounded-lg border focus-within:ring-2 ${
+                amountError
+                  ? "border-red-300 focus-within:ring-red-300"
+                  : "border-gray-300 focus-within:ring-[#2BB5A0]"
+              }`}
+            >
               <span className="border-r border-gray-300 bg-gray-50 px-4 py-3 text-sm font-medium text-gray-500">
                 UGX
               </span>
               <input
                 type="number"
+                min={MIN_AMOUNT}
+                max={MAX_AMOUNT}
                 value={amount}
-                onChange={(e) => setAmount(Number(e.target.value))}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder={`e.g. ${MIN_AMOUNT.toLocaleString()}`}
                 className="flex-1 px-4 py-3 text-sm font-medium text-[#1B2B3A] outline-none"
               />
             </div>
+            {amountError ? (
+              <p className="mt-1.5 text-xs text-red-500">{amountError}</p>
+            ) : (
+              <p className="mt-1.5 text-xs text-gray-400">
+                Between {formatCurrency(MIN_AMOUNT)} and {formatCurrency(MAX_AMOUNT)}.
+              </p>
+            )}
           </div>
 
           <div>
@@ -294,7 +315,7 @@ function Step1({
         </CardContent>
       </Card>
 
-      <LoanCalculator amount={amount} duration={duration} />
+      <LoanCalculator amount={Number(amount) || 0} duration={duration} />
     </div>
   );
 }
@@ -570,13 +591,14 @@ export default function ApplyPage() {
   const [resuming, setResuming] = useState(true);
   const hydratedRef = useRef(false);
 
-  const [amount, setAmount] = useState(8000000);
+  const [amount, setAmount] = useState("");
   const [duration, setDuration] = useState(3);
   const [loanType, setLoanType] = useState("business");
   const [purpose, setPurpose] = useState("");
   const [maxInterestRate, setMaxInterestRate] = useState("");
   const [validUntil, setValidUntil] = useState("");
   const [guarantors, setGuarantors] = useState<GuarantorInput[]>([]);
+  const [amountError, setAmountError] = useState<string | null>(null);
 
   const { data: draft, isLoading: draftLoading } = useDraftApplication();
   const submitApplication = useSubmitApplication();
@@ -598,7 +620,7 @@ export default function ApplyPage() {
       setApplicationId(draft.id);
       setReferenceNumber(draft.reference_number);
       setResumedFromDraft(true);
-      setAmount(draft.amount);
+      setAmount(String(draft.amount));
       setDuration(draft.duration);
       setLoanType(draft.loan_type);
       setPurpose(draft.purpose ?? "");
@@ -621,13 +643,33 @@ export default function ApplyPage() {
     "Submit Application",
   ];
 
+  const validateStep1 = () => {
+    const numAmount = Number(amount);
+    if (!amount.trim() || Number.isNaN(numAmount)) {
+      setAmountError("Enter an amount");
+      return false;
+    }
+    if (numAmount < 1000) {
+      setAmountError("Minimum loan is UGX 1,000");
+      return false;
+    }
+    if (numAmount > 50000000) {
+      setAmountError("Maximum loan is UGX 50,000,000");
+      return false;
+    }
+    setAmountError(null);
+    return true;
+  };
+
   const handleStep1Next = async () => {
+    if (!validateStep1()) return;
+    const numAmount = Number(amount);
     try {
       if (applicationId) {
         await updateApplication.mutateAsync({
           id: applicationId,
           data: {
-            amount,
+            amount: numAmount,
             duration,
             loan_type: loanType,
             purpose,
@@ -637,7 +679,7 @@ export default function ApplyPage() {
         });
       } else {
         const res = await submitApplication.mutateAsync({
-          amount,
+          amount: numAmount,
           duration,
           loan_type: loanType,
           purpose: purpose || undefined,
@@ -697,13 +739,14 @@ export default function ApplyPage() {
       setApplicationId(null);
       setReferenceNumber(null);
       setResumedFromDraft(false);
-      setAmount(8000000);
+      setAmount("");
       setDuration(3);
       setLoanType("business");
       setPurpose("");
       setMaxInterestRate("");
       setValidUntil("");
       setGuarantors([]);
+      setAmountError(null);
       setCurrentStep(1);
       toast.success("Started a fresh request");
     } catch {
@@ -713,6 +756,7 @@ export default function ApplyPage() {
 
   const isSubmitting =
     submitApplication.isPending || updateApplication.isPending || attachGuarantors.isPending;
+  const step1AmountValid = Number(amount) >= 1000 && Number(amount) <= 50000000;
 
   if (resuming) {
     return (
@@ -765,7 +809,8 @@ export default function ApplyPage() {
               {currentStep === 1 && (
                 <Step1
                   amount={amount}
-                  setAmount={setAmount}
+                  setAmount={(v) => { setAmount(v); if (amountError) setAmountError(null); }}
+                  amountError={amountError}
                   duration={duration}
                   setDuration={setDuration}
                   loanType={loanType}
@@ -789,7 +834,7 @@ export default function ApplyPage() {
               )}
               {currentStep === 3 && (
                 <Step3
-                  amount={amount}
+                  amount={Number(amount) || 0}
                   duration={duration}
                   loanType={loanType}
                   guarantors={guarantors}
@@ -810,7 +855,11 @@ export default function ApplyPage() {
             </Button>
             <Button
               onClick={handleNext}
-              disabled={isSubmitting || (currentStep === 2 && guarantors.length < 2)}
+              disabled={
+                isSubmitting ||
+                (currentStep === 1 && !step1AmountValid) ||
+                (currentStep === 2 && guarantors.length < 2)
+              }
               className="bg-[#2BB5A0] text-white hover:bg-[#239E8C]"
             >
               {isSubmitting ? "Submitting…" : nextLabels[currentStep - 1]}
