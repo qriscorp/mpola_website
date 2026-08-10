@@ -7,7 +7,6 @@ import {
   LayoutDashboard,
   Search,
   FileText,
-  MessageSquare,
   ListOrdered,
   Activity,
   Calendar,
@@ -41,11 +40,6 @@ const navGroups = [
         icon: Search,
       },
       { href: "/dashboard/apply", label: "Apply for a Loan", icon: FileText },
-      {
-        href: "/dashboard/post-request",
-        label: "Post a Request",
-        icon: MessageSquare,
-      },
       {
         href: "/dashboard/my-requests",
         label: "My Requests",
