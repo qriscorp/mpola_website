@@ -1,16 +1,20 @@
 "use client";
 
-import { useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, Upload } from "lucide-react";
+import { Check, Upload, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { BorrowerPageHeader } from "@/components/top-nav";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { KYCUploadSection } from "@/components/kyc-upload-section";
 import { InfoTip } from "@/components/info-tip";
 import {
+  useDraftApplication,
   useSubmitApplication,
+  useUpdateApplication,
+  useDeleteApplication,
   useUploadDocument,
 } from "@/hooks/use-application";
 import { useSearchGuarantorCandidate, useAttachGuarantors } from "@/hooks/use-guarantors";
@@ -275,7 +279,7 @@ function Step1({
 
           <div>
             <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-gray-500">
-              Need it by (optional)
+              Valid Until (optional)
             </label>
             <input
               type="date"
@@ -297,21 +301,45 @@ function Step1({
   );
 }
 
+interface DocSlotState {
+  status: "idle" | "uploading" | "uploaded" | "error";
+  fileName?: string;
+  error?: string;
+}
+
 function UploadZone({
-  file,
+  state,
   onSelect,
 }: {
-  file: File | null;
+  state: DocSlotState;
   onSelect: (file: File) => void;
 }) {
   const inputId = useId();
+
+  // Uploads happen immediately on selection now (not staged for a final
+  // batch submit) — once one lands, there's a real LoanDocument row on the
+  // backend, so re-selecting here would just create a duplicate row rather
+  // than replace it. Simplest correct behavior: once uploaded, this slot is
+  // done — no more click target.
+  if (state.status === "uploaded") {
+    return (
+      <div className="rounded-lg border-2 border-[#2BB5A0] bg-[#E6F4F2] p-6 text-center">
+        <Check className="mx-auto h-8 w-8 text-[#2BB5A0]" />
+        <p className="mt-2 text-sm font-medium text-[#1B2B3A]">{state.fileName ?? "Uploaded"}</p>
+        <p className="text-xs text-[#149D8E]">Uploaded</p>
+      </div>
+    );
+  }
+
   return (
     <label
       htmlFor={inputId}
-      className={`block cursor-pointer rounded-lg border-2 border-dashed p-6 text-center transition-colors ${
-        file
-          ? "border-[#2BB5A0] bg-[#E6F4F2]"
-          : "border-gray-300 bg-gray-50 hover:border-[#2BB5A0]"
+      className={`block rounded-lg border-2 border-dashed p-6 text-center transition-colors ${
+        state.status === "uploading"
+          ? "cursor-wait border-gray-300 bg-gray-50 opacity-70"
+          : state.status === "error"
+            ? "cursor-pointer border-red-300 bg-red-50 hover:border-red-400"
+            : "cursor-pointer border-gray-300 bg-gray-50 hover:border-[#2BB5A0]"
       }`}
     >
       <input
@@ -319,76 +347,72 @@ function UploadZone({
         type="file"
         accept=".pdf,.jpg,.jpeg,.png"
         className="hidden"
+        disabled={state.status === "uploading"}
         onChange={(e) => {
           const f = e.target.files?.[0];
           if (f) onSelect(f);
+          e.target.value = ""; // allow re-selecting the same filename after an error
         }}
       />
       <div className="space-y-2">
-        <Upload
-          className={`mx-auto h-8 w-8 ${file ? "text-[#2BB5A0]" : "text-gray-400"}`}
-        />
+        <Upload className={`mx-auto h-8 w-8 ${state.status === "error" ? "text-red-400" : "text-gray-400"}`} />
         <p className="text-sm font-medium text-[#1B2B3A]">
-          {file ? file.name : "Drop file or click to upload"}
+          {state.status === "uploading"
+            ? "Uploading…"
+            : state.status === "error"
+              ? "Upload failed — click to retry"
+              : "Drop file or click to upload"}
         </p>
+        {state.error && <p className="text-xs text-red-500">{state.error}</p>}
         <p className="text-xs text-gray-400">PDF, JPG, PNG · Max 10MB</p>
       </div>
     </label>
   );
 }
 
-// Genuinely loan-specific paperwork — NOT identity documents, so unrelated
-// to KYC. Identity (national_id, passport, profile_photo, proof_of_address)
-// is handled entirely by KYCUploadSection below, reusing whatever the
-// borrower already has on file from their account KYC instead of asking
-// them to re-upload the same thing here.
+// Genuinely loan-specific paperwork — NOT identity documents. Identity
+// (national_id, passport, profile_photo, proof_of_address) lives entirely
+// on the account-level KYC page (/dashboard/profile) — the apply wizard
+// just points there if it's missing, rather than duplicating that upload
+// UI here, since KYC is a one-time, account-wide thing, not per-loan.
 const DOCUMENT_SLOTS = [
   { key: "bank_statement", label: "Bank Statement (3 months)" },
   { key: "business_registration", label: "Business Registration" },
 ];
 
 function Step2({
-  files,
+  docs,
   onSelect,
 }: {
-  files: Record<string, File>;
+  docs: Record<string, DocSlotState>;
   onSelect: (key: string, file: File) => void;
 }) {
   return (
     <div className="space-y-6">
       <Card className="border border-gray-200 bg-white">
-        <CardContent className="space-y-2 p-6">
-          <h2 className="flex items-center gap-2 text-2xl font-black text-[#1B2B3A]">
-            Identity Documents
-            <InfoTip text="These are account-wide, not per-loan — once verified here, you won't need to upload them again for future loan requests." />
-          </h2>
-          <p className="text-sm text-gray-500">
-            Pulled from your account KYC — already verified documents are used
-            automatically, nothing to re-upload. Anything missing or still
-            pending review needs uploading here once.
-          </p>
-          <div className="pt-2">
-            <KYCUploadSection accent="teal" />
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card className="border border-gray-200 bg-white">
         <CardContent className="space-y-6 p-6">
           <div>
             <h2 className="text-2xl font-black text-[#1B2B3A]">Loan Documents</h2>
             <p className="text-sm text-gray-500">
-              Optional for now — not required to submit your application.
+              Required to submit your application.
             </p>
+          </div>
+
+          <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700">
+            Haven&apos;t completed identity verification (KYC) yet?{" "}
+            <Link href="/dashboard/profile" className="font-semibold underline">
+              Upload it from your Profile
+            </Link>
+            . Otherwise, continue below with the documents required for this loan.
           </div>
 
           {DOCUMENT_SLOTS.map((slot) => (
             <div key={slot.key}>
               <label className="mb-2 block text-lg font-bold text-[#1B2B3A]">
-                {slot.label}
+                {slot.label} <span className="text-red-500">*</span>
               </label>
               <UploadZone
-                file={files[slot.key] ?? null}
+                state={docs[slot.key] ?? { status: "idle" }}
                 onSelect={(file) => onSelect(slot.key, file)}
               />
             </div>
@@ -566,7 +590,7 @@ function Step4({
             ["Rate", `${PLATFORM_RATE_PER_MONTH}%/month`],
             ["Total Repayable", formatCurrency(Math.round(totalRepayable))],
             [
-              "Needed By",
+              "Valid Until",
               validUntil
                 ? new Date(validUntil).toLocaleDateString(undefined, {
                     year: "numeric",
@@ -651,6 +675,20 @@ export default function ApplyPage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [reference, setReference] = useState<string | null>(null);
 
+  // Once step 1 completes, this is a REAL application id — every step after
+  // that saves directly against it, so leaving and coming back resumes from
+  // real, persisted data instead of a client-only draft that a refresh
+  // would wipe out.
+  const [applicationId, setApplicationId] = useState<string | null>(null);
+  const [referenceNumber, setReferenceNumber] = useState<string | null>(null);
+  const [resumedFromDraft, setResumedFromDraft] = useState(false);
+  // True until the resume check has actually finished running (not just
+  // until the query resolves) — otherwise the wizard would paint a blank
+  // Step 1 for one frame before the hydration effect fires and jumps to
+  // the real step, since effects run after paint.
+  const [resuming, setResuming] = useState(true);
+  const hydratedRef = useRef(false);
+
   const [amount, setAmount] = useState(8000000);
   const [duration, setDuration] = useState(3);
   const [loanType, setLoanType] = useState("business");
@@ -658,11 +696,45 @@ export default function ApplyPage() {
   const [maxInterestRate, setMaxInterestRate] = useState("");
   const [validUntil, setValidUntil] = useState("");
   const [guarantors, setGuarantors] = useState<GuarantorInput[]>([]);
-  const [files, setFiles] = useState<Record<string, File>>({});
+  const [docs, setDocs] = useState<Record<string, DocSlotState>>({});
 
+  const { data: draft, isLoading: draftLoading } = useDraftApplication();
   const submitApplication = useSubmitApplication();
+  const updateApplication = useUpdateApplication();
+  const deleteApplication = useDeleteApplication();
   const attachGuarantors = useAttachGuarantors();
   const uploadDocument = useUploadDocument();
+
+  // Resume-where-you-left-off: runs once, the first time the draft check
+  // resolves. An application that exists but has no guarantors attached
+  // yet is, by definition, an unfinished draft (see GET
+  // /loans/applications/draft) — everything about it is already real,
+  // persisted data, so resuming is just loading it into the form.
+  useEffect(() => {
+    if (draftLoading || hydratedRef.current) return;
+    hydratedRef.current = true;
+    if (draft) {
+      setApplicationId(draft.id);
+      setReferenceNumber(draft.reference_number);
+      setResumedFromDraft(true);
+      setAmount(draft.amount);
+      setDuration(draft.duration);
+      setLoanType(draft.loan_type);
+      setPurpose(draft.purpose ?? "");
+      setMaxInterestRate(draft.max_interest_rate != null ? String(draft.max_interest_rate) : "");
+      setValidUntil(draft.valid_until ? draft.valid_until.slice(0, 10) : "");
+
+      const restoredDocs: Record<string, DocSlotState> = {};
+      for (const d of draft.documents) {
+        restoredDocs[d.document_type] = { status: "uploaded", fileName: d.file_name ?? undefined };
+      }
+      setDocs(restoredDocs);
+
+      const docsComplete = DOCUMENT_SLOTS.every((s) => restoredDocs[s.key]?.status === "uploaded");
+      setCurrentStep(docsComplete ? 3 : 2);
+    }
+    setResuming(false);
+  }, [draft, draftLoading]);
 
   const stepTitles = [
     "Apply - Loan Details",
@@ -678,36 +750,75 @@ export default function ApplyPage() {
     "Submit Application",
   ];
 
-  const handleSubmit = async () => {
+  const documentsComplete = DOCUMENT_SLOTS.every((slot) => docs[slot.key]?.status === "uploaded");
+
+  const handleStep1Next = async () => {
     try {
-      const res = await submitApplication.mutateAsync({
-        amount,
-        duration,
-        loan_type: loanType,
-        purpose: purpose || undefined,
-        max_interest_rate: maxInterestRate ? Number(maxInterestRate) : undefined,
-        valid_until: validUntil || undefined,
-      });
-      await Promise.all([
-        attachGuarantors.mutateAsync({
-          applicationId: res.application.id,
-          guarantorUserIds: guarantors.map((g) => g.user_id),
-        }),
-        ...Object.entries(files).map(([documentType, file]) =>
-          uploadDocument.mutateAsync({
-            applicationId: res.application.id,
-            file,
-            documentType,
-          }),
-        ),
-      ]);
-      setReference(res.application.reference_number);
+      if (applicationId) {
+        await updateApplication.mutateAsync({
+          id: applicationId,
+          data: {
+            amount,
+            duration,
+            loan_type: loanType,
+            purpose,
+            max_interest_rate: maxInterestRate ? Number(maxInterestRate) : null,
+            valid_until: validUntil || null,
+          },
+        });
+      } else {
+        const res = await submitApplication.mutateAsync({
+          amount,
+          duration,
+          loan_type: loanType,
+          purpose: purpose || undefined,
+          max_interest_rate: maxInterestRate ? Number(maxInterestRate) : undefined,
+          valid_until: validUntil || undefined,
+        });
+        setApplicationId(res.application.id);
+        setReferenceNumber(res.application.reference_number);
+      }
+      setCurrentStep(2);
     } catch {
       // errors are surfaced via toast in the mutation hooks
     }
   };
 
-  const handleNext = () => {
+  const handleDocSelect = async (key: string, file: File) => {
+    if (!applicationId) return;
+    setDocs((prev) => ({ ...prev, [key]: { status: "uploading" } }));
+    try {
+      await uploadDocument.mutateAsync({ applicationId, file, documentType: key });
+      setDocs((prev) => ({ ...prev, [key]: { status: "uploaded", fileName: file.name } }));
+    } catch (e) {
+      setDocs((prev) => ({
+        ...prev,
+        [key]: { status: "error", error: e instanceof Error ? e.message : "Upload failed" },
+      }));
+    }
+  };
+
+  const handleFinalSubmit = async () => {
+    if (!applicationId) return;
+    try {
+      await attachGuarantors.mutateAsync({
+        applicationId,
+        guarantorUserIds: guarantors.map((g) => g.user_id),
+      });
+      setReference(referenceNumber ?? applicationId);
+    } catch {
+      // errors are surfaced via toast in the mutation hooks
+    }
+  };
+
+  const handleNext = async () => {
+    if (currentStep === 1) {
+      await handleStep1Next();
+      return;
+    }
+    if (currentStep === 2 && !documentsComplete) {
+      return; // button is disabled in this state too — belt and suspenders
+    }
     if (currentStep === 3 && guarantors.length < 2) {
       return; // button is disabled in this state too — belt and suspenders
     }
@@ -715,7 +826,7 @@ export default function ApplyPage() {
       setCurrentStep((s) => s + 1);
       return;
     }
-    handleSubmit();
+    await handleFinalSubmit();
   };
 
   const handleBack = () => {
@@ -726,10 +837,42 @@ export default function ApplyPage() {
     router.push("/dashboard");
   };
 
+  const handleStartOver = async () => {
+    if (!applicationId) return;
+    if (!confirm("Discard this loan request and start over? This can't be undone.")) return;
+    try {
+      await deleteApplication.mutateAsync(applicationId);
+      setApplicationId(null);
+      setReferenceNumber(null);
+      setResumedFromDraft(false);
+      setAmount(8000000);
+      setDuration(3);
+      setLoanType("business");
+      setPurpose("");
+      setMaxInterestRate("");
+      setValidUntil("");
+      setGuarantors([]);
+      setDocs({});
+      setCurrentStep(1);
+      toast.success("Started a fresh request");
+    } catch {
+      // error toast handled by useDeleteApplication
+    }
+  };
+
   const isSubmitting =
-    submitApplication.isPending ||
-    attachGuarantors.isPending ||
-    uploadDocument.isPending;
+    submitApplication.isPending || updateApplication.isPending || attachGuarantors.isPending;
+
+  if (resuming) {
+    return (
+      <div className="max-w-5xl space-y-6">
+        <BorrowerPageHeader title="Apply - Loan Details" />
+        <div className="flex items-center justify-center py-24">
+          <Loader2 className="h-6 w-6 animate-spin text-[#2BB5A0]" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-5xl space-y-6">
@@ -741,7 +884,24 @@ export default function ApplyPage() {
         <SuccessView reference={reference} />
       ) : (
         <>
-          <StepperHeader currentStep={currentStep} />
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <StepperHeader currentStep={currentStep} />
+            {applicationId && (
+              <button
+                onClick={handleStartOver}
+                disabled={isSubmitting}
+                className="text-xs font-medium text-gray-400 hover:text-red-500 disabled:opacity-50"
+              >
+                Discard &amp; start over
+              </button>
+            )}
+          </div>
+
+          {resumedFromDraft && (
+            <div className="-mt-2 rounded-lg border border-blue-200 bg-blue-50 px-4 py-2.5 text-sm text-blue-700">
+              Continuing your unfinished loan request right where you left off.
+            </div>
+          )}
 
           <AnimatePresence mode="wait">
             <motion.div
@@ -767,14 +927,7 @@ export default function ApplyPage() {
                   setValidUntil={setValidUntil}
                 />
               )}
-              {currentStep === 2 && (
-                <Step2
-                  files={files}
-                  onSelect={(key, file) =>
-                    setFiles((prev) => ({ ...prev, [key]: file }))
-                  }
-                />
-              )}
+              {currentStep === 2 && <Step2 docs={docs} onSelect={handleDocSelect} />}
               {currentStep === 3 && (
                 <Step3
                   guarantors={guarantors}
@@ -807,7 +960,11 @@ export default function ApplyPage() {
             </Button>
             <Button
               onClick={handleNext}
-              disabled={isSubmitting || (currentStep === 3 && guarantors.length < 2)}
+              disabled={
+                isSubmitting ||
+                (currentStep === 2 && !documentsComplete) ||
+                (currentStep === 3 && guarantors.length < 2)
+              }
               className="bg-[#2BB5A0] text-white hover:bg-[#239E8C]"
             >
               {isSubmitting ? "Submitting…" : nextLabels[currentStep - 1]}

@@ -1051,6 +1051,24 @@ export const api = {
   ): Promise<{ status: number; message: string; application: LoanApplication }> => {
     return apiAuthPost(`/loans/applications/${id}/unfreeze`, {});
   },
+  // The apply wizard's resume-where-you-left-off check — an application
+  // that exists but hasn't had its guarantors attached yet is by
+  // definition an unfinished draft (see GET /loans/applications/draft).
+  getDraftApplication: async (): Promise<
+    | (LoanApplication & {
+        documents: { id: string; document_type: string; file_url: string; file_name: string | null; verified: boolean }[];
+      })
+    | null
+  > => {
+    const res = await apiAuthGet<{
+      draft:
+        | (LoanApplication & {
+            documents: { id: string; document_type: string; file_url: string; file_name: string | null; verified: boolean }[];
+          })
+        | null;
+    }>("/loans/applications/draft");
+    return res.draft;
+  },
 
   // Lender/borrower — list documents on an application
   getApplicationDocuments: async (

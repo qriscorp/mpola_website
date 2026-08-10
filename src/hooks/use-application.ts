@@ -1,8 +1,15 @@
 "use client";
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
+
+export function useDraftApplication() {
+  return useQuery({
+    queryKey: ["applications", "draft"],
+    queryFn: api.getDraftApplication,
+  });
+}
 
 export function useSubmitApplication() {
   return useMutation({

@@ -283,7 +283,7 @@ function EditApplicationForm({ app, onDone }: { app: LoanApplication; onDone: ()
         </div>
         <div>
           <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500">
-            Need it by
+            Valid Until
           </label>
           <input
             type="date"
