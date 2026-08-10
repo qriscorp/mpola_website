@@ -12,6 +12,40 @@ function wsUrl(token: string): string {
   return `${base}/ws?token=${encodeURIComponent(token)}`;
 }
 
+// Types where someone is being asked to actually approve/decide something,
+// not just informed — these get an audible cue in addition to the toast so
+// they're harder to miss while the tab is open (mirrors the backend's
+// URGENT_NOTIFICATION_TYPES, which raises push priority for the same set
+// on mobile). No sound plays if the tab is closed — the browser has no
+// push channel today; only the visible-tab case is covered here.
+const URGENT_NOTIFICATION_TYPES = new Set(["guarantor_invite_received", "guarantor_still_pending"]);
+
+let audioCtx: AudioContext | null = null;
+
+function playAttentionChime() {
+  try {
+    audioCtx ??= new (window.AudioContext || (window as any).webkitAudioContext)();
+    const ctx = audioCtx;
+    if (ctx.state === "suspended") ctx.resume();
+    const now = ctx.currentTime;
+    // Two quick ascending tones, distinct from a plain single beep.
+    [[880, now], [1174.66, now + 0.14]].forEach(([freq, start]) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.value = freq as number;
+      gain.gain.setValueAtTime(0.0001, start as number);
+      gain.gain.exponentialRampToValueAtTime(0.2, (start as number) + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, (start as number) + 0.22);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(start as number);
+      osc.stop((start as number) + 0.24);
+    });
+  } catch {
+    // best-effort — never let a sound failure break notification delivery
+  }
+}
+
 /** Live notification/wallet push over WebSocket — reconnects with backoff.
  * Mount once near the app root (inside an authenticated layout) so it stays
  * connected for the life of the session.
@@ -55,6 +89,10 @@ export function useRealtimeNotifications() {
           queryClient.invalidateQueries({ queryKey: ["lender", "offer-templates"] });
           queryClient.invalidateQueries({ queryKey: ["guarantor-requests"] });
 
+          if (URGENT_NOTIFICATION_TYPES.has(msg.type)) {
+            playAttentionChime();
+          }
+
           if (msg.type === "loan_pending_disbursement") {
             toast.warning(msg.title, {
               description: msg.message,
@@ -85,15 +123,15 @@ export function useRealtimeNotifications() {
               },
             });
           } else if (msg.type === "guarantor_invite_received") {
-            const notificationsPath = pathnameRef.current?.startsWith("/lender")
-              ? "/lender/notifications"
-              : "/dashboard/notifications";
+            const approvalsPath = pathnameRef.current?.startsWith("/lender")
+              ? "/lender/approvals"
+              : "/dashboard/approvals";
             toast.warning(msg.title, {
               description: msg.message,
               duration: 15000,
               action: {
                 label: "Respond",
-                onClick: () => router.push(notificationsPath),
+                onClick: () => router.push(approvalsPath),
               },
             });
           } else if (msg.type === "guarantor_response") {

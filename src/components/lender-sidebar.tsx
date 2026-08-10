@@ -17,16 +17,24 @@ import {
   Gift,
   HelpCircle,
   AlertTriangle,
+  CheckCircle2,
 } from "lucide-react";
 import { SignOutModal } from "@/components/sign-out-modal";
 import { SwitchToAdminLink } from "@/components/portal-switch-link";
 import { useUser } from "@/hooks/use-dashboard";
 import { useMyOffers, useMarketplace } from "@/hooks/use-lender";
+import { useGuarantorRequests } from "@/hooks/use-guarantors";
 import { getInitials } from "@/lib/format";
 
 // ─── Nav structure matching new design ───────────────────
 const overviewNav = [
   { href: "/lender", label: "Dashboard", icon: LayoutDashboard },
+  {
+    href: "/lender/approvals",
+    label: "Approvals",
+    icon: CheckCircle2,
+    badgeKey: "pendingApprovals" as const,
+  },
 ];
 
 const lendingNav = [
@@ -61,7 +69,7 @@ type NavItem = {
   href: string;
   label: string;
   icon: React.ElementType;
-  badgeKey?: "pendingOffers" | "openApplications";
+  badgeKey?: "pendingOffers" | "openApplications" | "pendingApprovals";
 };
 
 export function LenderSidebarContent({
@@ -74,8 +82,10 @@ export function LenderSidebarContent({
   const { data: user } = useUser();
   const { data: offers } = useMyOffers();
   const { data: marketplace } = useMarketplace();
+  const { data: guarantorRequests } = useGuarantorRequests("pending");
   const pendingOffers = (offers ?? []).filter((o) => o.status === "pending").length;
   const openApplications = marketplace?.total ?? 0;
+  const pendingApprovals = guarantorRequests?.requests.length ?? 0;
 
   const navLink = (item: NavItem) => {
     const badge =
@@ -83,7 +93,9 @@ export function LenderSidebarContent({
         ? pendingOffers
         : item.badgeKey === "openApplications"
           ? openApplications
-          : undefined;
+          : item.badgeKey === "pendingApprovals"
+            ? pendingApprovals
+            : undefined;
     const isActive =
       pathname === item.href ||
       (item.href !== "/lender" && pathname.startsWith(item.href));

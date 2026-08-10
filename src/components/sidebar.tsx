@@ -19,17 +19,27 @@ import {
   Gift,
   HelpCircle,
   AlertTriangle,
+  CheckCircle2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SignOutModal } from "@/components/sign-out-modal";
 import { SwitchToAdminLink } from "@/components/portal-switch-link";
 import { useUser, useDashboardStats } from "@/hooks/use-dashboard";
+import { useGuarantorRequests } from "@/hooks/use-guarantors";
 import { getInitials } from "@/lib/format";
 
 const navGroups = [
   {
     label: "OVERVIEW",
-    items: [{ href: "/dashboard", label: "Dashboard", icon: LayoutDashboard }],
+    items: [
+      { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+      {
+        href: "/dashboard/approvals",
+        label: "Approvals",
+        icon: CheckCircle2,
+        badgeKey: "pendingApprovals" as const,
+      },
+    ],
   },
   {
     label: "BORROW",
@@ -96,14 +106,19 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const [signOutOpen, setSignOutOpen] = useState(false);
   const { data: user } = useUser();
   const { data: stats } = useDashboardStats();
+  const { data: guarantorRequests } = useGuarantorRequests("pending");
+  const badgeValues = {
+    ...stats,
+    pendingApprovals: guarantorRequests?.requests.length ?? 0,
+  };
 
   const navLink = (item: {
     href: string;
     label: string;
     icon: React.ElementType;
-    badgeKey?: "applicationsPending" | "newOffers";
+    badgeKey?: "applicationsPending" | "newOffers" | "pendingApprovals";
   }) => {
-    const badge = item.badgeKey ? stats?.[item.badgeKey] : undefined;
+    const badge = item.badgeKey ? badgeValues[item.badgeKey] : undefined;
     const isActive =
       pathname === item.href || pathname.startsWith(item.href + "/");
     return (
