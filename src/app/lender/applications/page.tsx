@@ -13,6 +13,7 @@ import {
   useSkipApplication,
 } from "@/hooks/use-lender";
 import { formatCurrency, formatRate, getInitials } from "@/lib/format";
+import { DOCUMENT_LABEL_OPTIONS } from "@/lib/document-labels";
 import type { MarketplaceApplication } from "@/lib/types";
 import { FadeSwap } from "@/components/motion/fade-swap";
 import { StaggerList, StaggerItem } from "@/components/motion/stagger";
@@ -42,6 +43,13 @@ export default function ApplicationsPage() {
     null,
   );
   const [rate, setRate] = useState("3");
+  const [requiredDocs, setRequiredDocs] = useState<string[]>([]);
+
+  function toggleDoc(label: string) {
+    setRequiredDocs((prev) =>
+      prev.includes(label) ? prev.filter((d) => d !== label) : [...prev, label],
+    );
+  }
 
   const { data: marketplace, isLoading } = useMarketplace();
   const { data: myOffers } = useMyOffers();
@@ -66,8 +74,9 @@ export default function ApplicationsPage() {
         amount: offerModal.amount,
         interest_rate: Number(rate),
         duration: offerModal.duration,
+        required_documents: requiredDocs,
       },
-      { onSuccess: () => setOfferModal(null) },
+      { onSuccess: () => { setOfferModal(null); setRequiredDocs([]); } },
     );
   }
 
@@ -238,6 +247,28 @@ export default function ApplicationsPage() {
               </div>
             </div>
 
+            <div className="mt-4">
+              <p className="text-sm font-medium text-[#1B2B3A] dark:text-white mb-2">
+                Documents required to accept (optional)
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {DOCUMENT_LABEL_OPTIONS.map((label) => (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={() => toggleDoc(label)}
+                    className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
+                      requiredDocs.includes(label)
+                        ? "bg-[#C4A55A] border-[#C4A55A] text-white"
+                        : "bg-white border-gray-300 text-gray-600 hover:border-[#C4A55A]"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <p className="text-xs text-gray-400 mt-3">
               If the borrower accepts, funds are disbursed automatically to
               their mobile money.
@@ -245,7 +276,7 @@ export default function ApplicationsPage() {
 
             <div className="flex gap-3 mt-6 justify-end">
               <button
-                onClick={() => setOfferModal(null)}
+                onClick={() => { setOfferModal(null); setRequiredDocs([]); }}
                 className="px-5 py-2 rounded-lg border border-gray-300 text-sm font-medium text-gray-600 hover:border-gray-400"
               >
                 Cancel

@@ -1399,6 +1399,7 @@ export const api = {
     amount: number;
     interest_rate: number;
     duration: number;
+    required_documents?: string[];
   }): Promise<{ status: number; message: string; offer: LoanOffer }> => {
     return apiAuthPost("/loans/offers", data);
   },

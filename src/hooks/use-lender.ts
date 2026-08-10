@@ -52,6 +52,7 @@ export function useMakeOffer() {
       amount: number;
       interest_rate: number;
       duration: number;
+      required_documents?: string[];
     }) => api.makeOffer(data),
     onSuccess: (_result, variables) => {
       toast.success("Offer sent successfully!");

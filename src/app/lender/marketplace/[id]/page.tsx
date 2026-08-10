@@ -12,6 +12,7 @@ import { ArrowLeft } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useApplicationDetail, useMakeOffer } from "@/hooks/use-lender";
 import { formatCurrency } from "@/lib/format";
+import { DOCUMENT_LABEL_OPTIONS } from "@/lib/document-labels";
 import { CardSkeleton } from "@/components/skeletons";
 
 function initials(name: string | null | undefined): string {
@@ -37,6 +38,13 @@ export default function ApplicationDetailPage({
   const [amount, setAmount] = useState("");
   const [interestRate, setInterestRate] = useState("3");
   const [duration, setDuration] = useState("");
+  const [requiredDocs, setRequiredDocs] = useState<string[]>([]);
+
+  function toggleDoc(label: string) {
+    setRequiredDocs((prev) =>
+      prev.includes(label) ? prev.filter((d) => d !== label) : [...prev, label],
+    );
+  }
 
   if (isLoading) {
     return (
@@ -75,8 +83,9 @@ export default function ApplicationDetailPage({
         amount: numAmount,
         interest_rate: numRate,
         duration: numDuration,
+        required_documents: requiredDocs,
       },
-      { onSuccess: () => setShowOfferForm(false) },
+      { onSuccess: () => { setShowOfferForm(false); setRequiredDocs([]); } },
     );
   };
 
@@ -189,6 +198,28 @@ export default function ApplicationDetailPage({
               </div>
             </div>
 
+            <div className="space-y-1.5">
+              <Label className="text-xs font-bold uppercase tracking-wider text-gray-500">
+                Documents required to accept (optional)
+              </Label>
+              <div className="flex flex-wrap gap-2">
+                {DOCUMENT_LABEL_OPTIONS.map((label) => (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={() => toggleDoc(label)}
+                    className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
+                      requiredDocs.includes(label)
+                        ? "bg-[#C4A55A] border-[#C4A55A] text-white"
+                        : "bg-white border-gray-300 text-gray-600 hover:border-[#C4A55A]"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {numAmount > 0 && numDuration > 0 && (
               <div className="flex gap-6 text-sm text-gray-600 dark:text-gray-400">
                 <span>
@@ -209,7 +240,7 @@ export default function ApplicationDetailPage({
             <div className="flex gap-3">
               <Button
                 variant="outline"
-                onClick={() => setShowOfferForm(false)}
+                onClick={() => { setShowOfferForm(false); setRequiredDocs([]); }}
                 disabled={isPending}
               >
                 Cancel

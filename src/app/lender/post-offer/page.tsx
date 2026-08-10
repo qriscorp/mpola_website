@@ -12,6 +12,7 @@ import {
   useUpdateOfferTemplate,
   useOfferTemplates,
 } from "@/hooks/use-lender";
+import { DOCUMENT_LABEL_OPTIONS } from "@/lib/document-labels";
 
 const LOAN_TYPES = [
   "Business",
@@ -22,13 +23,7 @@ const LOAN_TYPES = [
   "Asset Finance",
   "Salary Advance",
 ];
-const DOCUMENTS = [
-  "National ID",
-  "Bank Statement (3mo)",
-  "Payslip / Business Proof",
-  "Land Title",
-  "URA TIN",
-];
+const DOCUMENTS = DOCUMENT_LABEL_OPTIONS;
 const DURATIONS = [
   "1 month",
   "2 months",

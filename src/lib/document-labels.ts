@@ -10,3 +10,13 @@ export const BORROWER_DOC_LABEL_MAP: Record<string, BorrowerDocumentType> = {
   "Land Title": "land_title",
   "URA TIN": "ura_tin",
 };
+
+// Canonical list of document labels a lender can request, on a standing
+// template or a one-off manual offer — keys of mpola_api's DOCUMENT_LABEL_MAP.
+export const DOCUMENT_LABEL_OPTIONS = [
+  "National ID",
+  "Bank Statement (3mo)",
+  "Payslip / Business Proof",
+  "Land Title",
+  "URA TIN",
+];
