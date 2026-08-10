@@ -98,6 +98,15 @@ export function useRealtimeNotifications() {
             });
           } else if (msg.type === "guarantor_response") {
             toast.info(msg.title, { description: msg.message });
+          } else if (msg.type === "guarantor_still_pending") {
+            toast.warning(msg.title, {
+              description: msg.message,
+              duration: 15000,
+              action: {
+                label: "View",
+                onClick: () => router.push("/dashboard/my-requests"),
+              },
+            });
           } else if (msg.title) {
             toast.info(msg.title, { description: msg.message });
           }

@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { BorrowerPageHeader } from "@/components/top-nav";
 import { useApplications } from "@/hooks/use-dashboard";
-import { useSearchGuarantorCandidate, useReplaceGuarantor } from "@/hooks/use-guarantors";
+import { useSearchGuarantorCandidate, useReplaceGuarantor, useRemindGuarantor } from "@/hooks/use-guarantors";
 import { formatCurrency, getStatusColor, getStatusLabel } from "@/lib/format";
 import { TableSkeleton } from "@/components/skeletons";
 import { StaggerList, StaggerItem } from "@/components/motion/stagger";
@@ -103,6 +103,7 @@ function ReplaceGuarantorForm({
 
 function GuarantorStatusList({ applicationId, guarantors }: { applicationId: string; guarantors: Guarantor[] }) {
   const [replacingId, setReplacingId] = useState<string | null>(null);
+  const remind = useRemindGuarantor();
 
   return (
     <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-800 space-y-2">
@@ -116,6 +117,15 @@ function GuarantorStatusList({ applicationId, guarantors }: { applicationId: str
               <span className={`px-2 py-0.5 rounded-full text-xs font-semibold capitalize ${guarantorBadge[g.status]}`}>
                 {g.status}
               </span>
+              {g.status === "pending" && (
+                <button
+                  onClick={() => remind.mutate(g.id)}
+                  disabled={remind.isPending}
+                  className="text-xs font-semibold text-[#2BB5A0] hover:underline disabled:opacity-50"
+                >
+                  Remind
+                </button>
+              )}
               {g.status === "declined" && replacingId !== g.id && (
                 <button
                   onClick={() => setReplacingId(g.id)}

@@ -44,6 +44,14 @@ export function useRespondToGuarantorRequest() {
   });
 }
 
+export function useRemindGuarantor() {
+  return useMutation({
+    mutationFn: (guarantorId: string) => api.remindGuarantor(guarantorId),
+    onSuccess: () => toast.success("Reminder sent"),
+    onError: (err: Error) => toast.error(err.message || "Failed to send reminder"),
+  });
+}
+
 export function useReplaceGuarantor() {
   const qc = useQueryClient();
   return useMutation({

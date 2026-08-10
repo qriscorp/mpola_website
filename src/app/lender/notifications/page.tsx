@@ -32,6 +32,7 @@ const typeConfig: Record<
   repayment: { icon: CreditCard, iconBg: "bg-emerald-50", iconColor: "text-emerald-600" },
   guarantor_response: { icon: UserCheck, iconBg: "bg-blue-50", iconColor: "text-blue-600" },
   guarantor_invite_received: { icon: UserCheck, iconBg: "bg-blue-50", iconColor: "text-blue-600" },
+  guarantor_still_pending: { icon: UserCheck, iconBg: "bg-amber-50", iconColor: "text-amber-600" },
 };
 
 const defaultTypeConfig = {
@@ -43,7 +44,7 @@ const defaultTypeConfig = {
 function categoryOf(type: string | null): "offers" | "payments" | "guarantors" | "other" {
   if (type === "loan_offer" || type === "offer_accepted" || type === "offer_declined") return "offers";
   if (type === "payment" || type === "repayment") return "payments";
-  if (type === "guarantor_response" || type === "guarantor_invite_received") return "guarantors";
+  if (type === "guarantor_response" || type === "guarantor_invite_received" || type === "guarantor_still_pending") return "guarantors";
   return "other";
 }
 

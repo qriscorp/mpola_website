@@ -905,6 +905,9 @@ export const api = {
       new_guarantor_user_id: newGuarantorUserId,
     });
   },
+  remindGuarantor: async (guarantorId: string): Promise<{ status: number; message: string }> => {
+    return apiAuthPost(`/guarantors/${guarantorId}/remind`, {});
+  },
   getGuarantorRequests: async (status?: string): Promise<{ requests: GuarantorRequest[] }> => {
     return apiAuthGet(`/guarantors/requests${status ? `?status=${status}` : ""}`);
   },
