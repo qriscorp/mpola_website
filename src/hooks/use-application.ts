@@ -33,7 +33,7 @@ export function useUpdateApplication() {
         duration: number;
         loan_type: string;
         purpose: string;
-        max_interest_rate: number;
+        max_interest_rate: number | null;
         valid_until: string | null;
       }>;
     }) => api.updateApplication(id, data),

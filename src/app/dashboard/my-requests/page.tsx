@@ -196,8 +196,13 @@ function EditApplicationForm({ app, onDone }: { app: LoanApplication; onDone: ()
           amount: Number(amount),
           duration,
           loan_type: loanType,
-          purpose: purpose || undefined,
-          max_interest_rate: maxInterestRate ? Number(maxInterestRate) : undefined,
+          // Explicit "" / null rather than `undefined` — this is an edit,
+          // not a create, so a cleared field must actually reach the
+          // backend as a clear. `undefined` gets dropped by
+          // JSON.stringify, which `exclude_unset` on the backend then
+          // reads as "leave it alone", silently keeping the old value.
+          purpose,
+          max_interest_rate: maxInterestRate ? Number(maxInterestRate) : null,
           valid_until: validUntil || null,
         },
       },

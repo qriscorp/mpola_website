@@ -66,7 +66,7 @@ function PostOfferContent() {
   ]);
   const [duration, setDuration] = useState("6 months");
   const [maxAmount, setMaxAmount] = useState("50000000");
-  const [minAmount, setMinAmount] = useState("1000000");
+  const [minAmount, setMinAmount] = useState("1000");
   const [rate, setRate] = useState("2");
   const [description, setDescription] = useState("");
   const [validUntil, setValidUntil] = useState("");
@@ -132,7 +132,15 @@ function PostOfferContent() {
     );
   }
 
+  const amountRangeInvalid =
+    minAmount !== "" && maxAmount !== "" && Number(minAmount) >= Number(maxAmount);
+
   function handlePost(draft: boolean) {
+    if (amountRangeInvalid) {
+      toast.error("Min loan amount must be less than max loan amount");
+      return;
+    }
+
     const monthsMatch = duration.match(/\d+/);
     const fields = {
       max_amount: Number(maxAmount),
@@ -219,13 +227,18 @@ function PostOfferContent() {
                 </span>
                 <Input
                   className="rounded-l-none"
-                  placeholder="1000000"
+                  placeholder="1000"
                   value={minAmount}
                   onChange={(e) => setMinAmount(e.target.value)}
                 />
               </div>
             </div>
           </div>
+          {amountRangeInvalid && (
+            <p className="-mt-4 text-xs font-medium text-red-500">
+              Min loan amount must be less than max loan amount.
+            </p>
+          )}
 
           {/* Rate + Duration */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -335,7 +348,7 @@ function PostOfferContent() {
             {isEditing ? (
               <button
                 onClick={() => handlePost(false)}
-                disabled={updateTemplate.isPending || editDataLoading}
+                disabled={updateTemplate.isPending || editDataLoading || amountRangeInvalid}
                 className="px-5 py-2 rounded-lg bg-[#C4A55A] text-white text-sm font-semibold hover:bg-[#b3944a] transition-colors disabled:opacity-50"
               >
                 {editDataLoading
@@ -348,14 +361,14 @@ function PostOfferContent() {
               <>
                 <button
                   onClick={() => handlePost(true)}
-                  disabled={createTemplate.isPending}
+                  disabled={createTemplate.isPending || amountRangeInvalid}
                   className="px-5 py-2 rounded-lg border border-gray-300 text-sm font-semibold text-gray-700 hover:border-gray-400 transition-colors disabled:opacity-50"
                 >
                   {createTemplate.isPending ? "Saving…" : "Save Draft"}
                 </button>
                 <button
                   onClick={() => handlePost(false)}
-                  disabled={createTemplate.isPending}
+                  disabled={createTemplate.isPending || amountRangeInvalid}
                   className="px-5 py-2 rounded-lg bg-[#C4A55A] text-white text-sm font-semibold hover:bg-[#b3944a] transition-colors disabled:opacity-50"
                 >
                   {createTemplate.isPending ? "Posting…" : "Post Offer"}

@@ -57,7 +57,7 @@ const DEFAULTS: Record<string, string> = {
   platform_name: "Mpola Uganda",
   support_email: "support@mpola.ug",
   licence_number: "",
-  min_loan_amount: "500000",
+  min_loan_amount: "1000",
   max_loan_amount: "100000000",
   max_interest_rate: "10",
   // These four map directly to the keys the collections engine (scheduler.py)

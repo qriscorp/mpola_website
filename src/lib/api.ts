@@ -1032,7 +1032,7 @@ export const api = {
       duration: number;
       loan_type: string;
       purpose: string;
-      max_interest_rate: number;
+      max_interest_rate: number | null;
       valid_until: string | null;
     }>,
   ): Promise<{ status: number; message: string; application: LoanApplication }> => {
