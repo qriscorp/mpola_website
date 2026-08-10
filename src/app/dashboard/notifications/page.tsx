@@ -8,6 +8,7 @@ import {
   Gift,
   UserCheck,
   Settings,
+  Clock,
 } from "lucide-react";
 import {
   useMarkAllRead,
@@ -34,6 +35,8 @@ const typeConfig: Record<
   guarantor_response: { icon: UserCheck, iconBg: "bg-blue-50", iconColor: "text-blue-600" },
   guarantor_invite_received: { icon: UserCheck, iconBg: "bg-blue-50", iconColor: "text-blue-600" },
   guarantor_still_pending: { icon: UserCheck, iconBg: "bg-amber-50", iconColor: "text-amber-600" },
+  application_expired: { icon: Clock, iconBg: "bg-gray-100", iconColor: "text-gray-600" },
+  guarantor_request_expired: { icon: Clock, iconBg: "bg-gray-100", iconColor: "text-gray-600" },
 };
 
 const defaultTypeConfig = {
@@ -45,7 +48,7 @@ const defaultTypeConfig = {
 function categoryOf(type: string | null): "offers" | "payments" | "guarantors" | "other" {
   if (type === "loan_offer" || type === "offer_accepted" || type === "offer_declined") return "offers";
   if (type === "payment" || type === "repayment") return "payments";
-  if (type === "guarantor_response" || type === "guarantor_invite_received" || type === "guarantor_still_pending") return "guarantors";
+  if (type === "guarantor_response" || type === "guarantor_invite_received" || type === "guarantor_still_pending" || type === "guarantor_request_expired") return "guarantors";
   return "other";
 }
 

@@ -40,6 +40,7 @@ export function getStatusColor(status: string): string {
     case "defaulted":
       return "text-red-600 bg-red-50";
     case "upcoming":
+    case "expired":
       return "text-gray-500 bg-gray-50";
     default:
       return "text-gray-600 bg-gray-50";
@@ -62,6 +63,8 @@ export function getStatusLabel(status: string): string {
       return "Draft";
     case "rejected":
       return "Rejected";
+    case "expired":
+      return "Expired";
     default:
       return status.charAt(0).toUpperCase() + status.slice(1);
   }

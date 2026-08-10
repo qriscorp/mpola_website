@@ -14,6 +14,15 @@ import { toast } from "sonner";
 const tabs = ["All", "Pending", "Funded", "Closed"] as const;
 type Tab = (typeof tabs)[number];
 
+function expiryNote(validUntil: string | null, status: string): string | null {
+  if (!validUntil || status === "expired" || status === "funded" || status === "completed") return null;
+  const diffMs = new Date(validUntil).getTime() - Date.now();
+  if (diffMs <= 0) return null;
+  const days = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+  if (days <= 1) return "Expires today";
+  return `Expires in ${days} days`;
+}
+
 const guarantorBadge: Record<Guarantor["status"], string> = {
   pending: "bg-amber-50 text-amber-600",
   accepted: "bg-emerald-50 text-emerald-600",
@@ -161,7 +170,7 @@ export default function MyRequestsPage() {
     if (activeTab === "Funded")
       return applications.filter((a) => a.status === "funded");
     return applications.filter((a) =>
-      ["completed", "rejected", "defaulted"].includes(a.status),
+      ["completed", "rejected", "defaulted", "expired"].includes(a.status),
     );
   }, [applications, activeTab]);
 
@@ -213,6 +222,9 @@ export default function MyRequestsPage() {
                   </div>
                   <p className="text-sm text-gray-500 capitalize">
                     {app.loan_type} · {app.duration} months · #{app.id}
+                    {expiryNote(app.valid_until, app.status) && (
+                      <> · <span className="text-amber-600 font-medium">{expiryNote(app.valid_until, app.status)}</span></>
+                    )}
                   </p>
                   {app.status === "awaiting_guarantors" && (
                     <p className="text-xs text-amber-600 mt-1">

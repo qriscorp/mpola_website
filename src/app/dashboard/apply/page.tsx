@@ -154,6 +154,8 @@ function Step1({
   setPurpose,
   maxInterestRate,
   setMaxInterestRate,
+  validUntil,
+  setValidUntil,
 }: {
   amount: number;
   setAmount: (v: number) => void;
@@ -165,6 +167,8 @@ function Step1({
   setPurpose: (v: string) => void;
   maxInterestRate: string;
   setMaxInterestRate: (v: string) => void;
+  validUntil: string;
+  setValidUntil: (v: string) => void;
 }) {
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_420px]">
@@ -263,6 +267,23 @@ function Step1({
               placeholder="e.g. 3 — leave blank to accept any rate"
               className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm text-[#1B2B3A] outline-none focus:ring-2 focus:ring-[#2BB5A0]"
             />
+          </div>
+
+          <div>
+            <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-gray-500">
+              Need it by (optional)
+            </label>
+            <input
+              type="date"
+              value={validUntil}
+              onChange={(e) => setValidUntil(e.target.value)}
+              min={new Date().toISOString().slice(0, 10)}
+              className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm text-[#1B2B3A] outline-none focus:ring-2 focus:ring-[#2BB5A0]"
+            />
+            <p className="mt-1.5 text-xs text-gray-400">
+              If you need funds urgently, set a date — your request stops being shown to lenders
+              after this if it hasn&apos;t been funded. Leave blank for no deadline.
+            </p>
           </div>
         </CardContent>
       </Card>
@@ -503,11 +524,13 @@ function Step4({
   duration,
   loanType,
   guarantors,
+  validUntil,
 }: {
   amount: number;
   duration: number;
   loanType: string;
   guarantors: GuarantorInput[];
+  validUntil: string;
 }) {
   const totalInterest = amount * (PLATFORM_RATE_PER_MONTH / 100) * duration;
   const totalRepayable = amount + totalInterest;
@@ -532,6 +555,16 @@ function Step4({
             ["Duration", `${duration} months`],
             ["Rate", `${PLATFORM_RATE_PER_MONTH}%/month`],
             ["Total Repayable", formatCurrency(Math.round(totalRepayable))],
+            [
+              "Needed By",
+              validUntil
+                ? new Date(validUntil).toLocaleDateString(undefined, {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })
+                : "No deadline",
+            ],
             [
               "Guarantors",
               guarantors.length > 0
@@ -613,6 +646,7 @@ export default function ApplyPage() {
   const [loanType, setLoanType] = useState("business");
   const [purpose, setPurpose] = useState("");
   const [maxInterestRate, setMaxInterestRate] = useState("");
+  const [validUntil, setValidUntil] = useState("");
   const [guarantors, setGuarantors] = useState<GuarantorInput[]>([]);
   const [files, setFiles] = useState<Record<string, File>>({});
 
@@ -642,6 +676,7 @@ export default function ApplyPage() {
         loan_type: loanType,
         purpose: purpose || undefined,
         max_interest_rate: maxInterestRate ? Number(maxInterestRate) : undefined,
+        valid_until: validUntil || undefined,
       });
       await Promise.all([
         attachGuarantors.mutateAsync({
@@ -718,6 +753,8 @@ export default function ApplyPage() {
                   setPurpose={setPurpose}
                   maxInterestRate={maxInterestRate}
                   setMaxInterestRate={setMaxInterestRate}
+                  validUntil={validUntil}
+                  setValidUntil={setValidUntil}
                 />
               )}
               {currentStep === 2 && (
@@ -743,6 +780,7 @@ export default function ApplyPage() {
                   duration={duration}
                   loanType={loanType}
                   guarantors={guarantors}
+                  validUntil={validUntil}
                 />
               )}
             </motion.div>

@@ -12,6 +12,7 @@ export function useSubmitApplication() {
       loan_type: string;
       purpose?: string;
       max_interest_rate?: number;
+      valid_until?: string;
     }) => api.submitApplication(data),
     onError: (err: Error) => {
       toast.error(err.message || "Failed to submit application.");

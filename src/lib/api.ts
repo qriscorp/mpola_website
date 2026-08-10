@@ -1017,6 +1017,7 @@ export const api = {
     loan_type: string;
     purpose?: string;
     max_interest_rate?: number;
+    valid_until?: string;
   }): Promise<{
     status: number;
     message: string;

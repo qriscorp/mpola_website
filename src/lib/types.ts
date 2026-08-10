@@ -36,11 +36,12 @@ export interface LoanApplication {
   duration: number;
   loan_type: "personal" | "business" | "education" | "agricultural" | "emergency";
   purpose: string | null;
-  status: "awaiting_guarantors" | "pending" | "approved" | "rejected" | "funded" | "completed" | "defaulted";
+  status: "awaiting_guarantors" | "pending" | "approved" | "rejected" | "funded" | "completed" | "defaulted" | "expired";
   interest_rate: number | null;
   monthly_payment: number | null;
   total_repayable: number | null;
   max_interest_rate: number | null;
+  valid_until: string | null;
   created_at: string;
   borrower: ApplicationBorrower | null;
   offers_count: number;

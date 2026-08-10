@@ -107,6 +107,17 @@ export function useRealtimeNotifications() {
                 onClick: () => router.push("/dashboard/my-requests"),
               },
             });
+          } else if (msg.type === "application_expired") {
+            toast.warning(msg.title, {
+              description: msg.message,
+              duration: 15000,
+              action: {
+                label: "View",
+                onClick: () => router.push("/dashboard/my-requests"),
+              },
+            });
+          } else if (msg.type === "guarantor_request_expired") {
+            toast.info(msg.title, { description: msg.message });
           } else if (msg.title) {
             toast.info(msg.title, { description: msg.message });
           }
