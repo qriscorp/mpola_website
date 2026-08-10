@@ -42,6 +42,8 @@ export interface LoanApplication {
   total_repayable: number | null;
   max_interest_rate: number | null;
   valid_until: string | null;
+  is_frozen: boolean;
+  frozen_by: "borrower" | "admin" | null;
   created_at: string;
   borrower: ApplicationBorrower | null;
   offers_count: number;
@@ -304,14 +306,18 @@ export interface AdminApplication {
   duration: number;
   loan_type: string;
   status:
+    | "awaiting_guarantors"
     | "pending"
     | "approved"
     | "rejected"
     | "funded"
     | "completed"
-    | "defaulted";
+    | "defaulted"
+    | "expired";
   interest_rate: number | null;
   offer_count: number;
+  is_frozen: boolean;
+  frozen_by: "borrower" | "admin" | null;
   created_at: string;
 }
 

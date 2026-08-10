@@ -1025,6 +1025,32 @@ export const api = {
   }> => {
     return apiAuthPost("/loans/applications", data);
   },
+  updateApplication: async (
+    id: string,
+    data: Partial<{
+      amount: number;
+      duration: number;
+      loan_type: string;
+      purpose: string;
+      max_interest_rate: number;
+      valid_until: string | null;
+    }>,
+  ): Promise<{ status: number; message: string; application: LoanApplication }> => {
+    return apiAuthPut(`/loans/applications/${id}`, data);
+  },
+  deleteApplication: async (id: string): Promise<{ status: number; message: string }> => {
+    return apiAuthDelete(`/loans/applications/${id}`);
+  },
+  freezeApplication: async (
+    id: string,
+  ): Promise<{ status: number; message: string; application: LoanApplication }> => {
+    return apiAuthPost(`/loans/applications/${id}/freeze`, {});
+  },
+  unfreezeApplication: async (
+    id: string,
+  ): Promise<{ status: number; message: string; application: LoanApplication }> => {
+    return apiAuthPost(`/loans/applications/${id}/unfreeze`, {});
+  },
 
   // Lender/borrower — list documents on an application
   getApplicationDocuments: async (
@@ -1220,9 +1246,15 @@ export const api = {
 
   updateApplicationStatus: async (
     id: string,
-    action: "approve" | "reject",
+    action: "reject",
   ): Promise<{ success: boolean; status: string }> => {
     return apiAuthPut(`/admin/applications/${id}?action=${action}`, {});
+  },
+  freezeAdminApplication: async (id: string): Promise<{ status: number; message: string }> => {
+    return apiAuthPost(`/admin/applications/${id}/freeze`, {});
+  },
+  unfreezeAdminApplication: async (id: string): Promise<{ status: number; message: string }> => {
+    return apiAuthPost(`/admin/applications/${id}/unfreeze`, {});
   },
 
   getAdminPayments: async (

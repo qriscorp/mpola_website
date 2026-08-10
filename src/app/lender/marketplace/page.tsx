@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Search } from "lucide-react";
 import { LenderPageHeader } from "@/components/lender-top-nav";
+import { InfoTip } from "@/components/info-tip";
 import { useMarketplace } from "@/hooks/use-lender";
 import { formatCurrency } from "@/lib/format";
 import { PaginationControls } from "@/components/ui/pagination-controls";
@@ -68,10 +69,11 @@ export default function MarketplacePage() {
     <div className="space-y-6">
       <LenderPageHeader title="Borrower Marketplace" />
 
-      <p className="text-sm text-gray-500">
+      <p className="flex items-center gap-1.5 text-sm text-gray-500">
         {isLoading
           ? "Finding loan applications for you…"
           : `${total} loan applications available for review.`}
+        <InfoTip text="Only requests whose 2 guarantors have both already approved show up here. Making an offer doesn't commit any money — the borrower still has to accept it, and only one offer per request ever gets accepted." />
       </p>
 
       <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-5">

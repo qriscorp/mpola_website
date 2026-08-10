@@ -153,12 +153,28 @@ export function useUpdateApplicationStatus() {
       status,
     }: {
       id: string;
-      status: "approve" | "reject";
+      status: "reject";
     }) => api.updateApplicationStatus(id, status),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin", "applications"] });
       qc.invalidateQueries({ queryKey: ["admin", "stats"] });
     },
+  });
+}
+
+export function useFreezeAdminApplication() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.freezeAdminApplication(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "applications"] }),
+  });
+}
+
+export function useUnfreezeAdminApplication() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.unfreezeAdminApplication(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "applications"] }),
   });
 }
 

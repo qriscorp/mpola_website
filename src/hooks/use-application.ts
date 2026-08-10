@@ -20,6 +20,63 @@ export function useSubmitApplication() {
   });
 }
 
+export function useUpdateApplication() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: Partial<{
+        amount: number;
+        duration: number;
+        loan_type: string;
+        purpose: string;
+        max_interest_rate: number;
+        valid_until: string | null;
+      }>;
+    }) => api.updateApplication(id, data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["applications"] }),
+    onError: (err: Error) => {
+      toast.error(err.message || "Failed to update request.");
+    },
+  });
+}
+
+export function useDeleteApplication() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.deleteApplication(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["applications"] }),
+    onError: (err: Error) => {
+      toast.error(err.message || "Failed to withdraw request.");
+    },
+  });
+}
+
+export function useFreezeApplication() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.freezeApplication(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["applications"] }),
+    onError: (err: Error) => {
+      toast.error(err.message || "Failed to freeze request.");
+    },
+  });
+}
+
+export function useUnfreezeApplication() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.unfreezeApplication(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["applications"] }),
+    onError: (err: Error) => {
+      toast.error(err.message || "Failed to unfreeze request.");
+    },
+  });
+}
+
 export function useUploadDocument() {
   return useMutation({
     mutationFn: ({

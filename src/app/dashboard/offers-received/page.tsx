@@ -3,6 +3,7 @@
 import { Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { BorrowerPageHeader } from "@/components/top-nav";
+import { InfoTip } from "@/components/info-tip";
 import { useApplicationDetail } from "@/hooks/use-lender";
 import { useRespondToOffer } from "@/hooks/use-offers";
 import { formatCurrency, formatRate } from "@/lib/format";
@@ -80,6 +81,10 @@ function OffersReceivedContent() {
   return (
     <div className="space-y-6">
       <BorrowerPageHeader title="Offers Received" />
+      <p className="-mt-4 flex items-center gap-1.5 text-sm text-gray-500">
+        Each offer below is a real lender proposing to fund this request.
+        <InfoTip text="Accepting an offer immediately funds this loan and declines every other offer on it automatically — you can only accept one. Accepting requires both your guarantors to have already approved." />
+      </p>
 
       <p className="text-sm text-gray-500 capitalize">
         Offers for request{" "}

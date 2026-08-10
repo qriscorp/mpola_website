@@ -8,6 +8,7 @@ import { BorrowerPageHeader } from "@/components/top-nav";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { KYCUploadSection } from "@/components/kyc-upload-section";
+import { InfoTip } from "@/components/info-tip";
 import {
   useSubmitApplication,
   useUploadDocument,
@@ -174,7 +175,10 @@ function Step1({
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_420px]">
       <Card className="border border-gray-200 bg-white">
         <CardContent className="space-y-6 p-6">
-          <h2 className="text-2xl font-black text-[#1B2B3A]">Loan Details</h2>
+          <h2 className="flex items-center gap-2 text-2xl font-black text-[#1B2B3A]">
+            Loan Details
+            <InfoTip text="Here's the flow: you submit this request, your 2 guarantors approve it, then lenders on the marketplace can send you offers. You pick the one you like — nothing is funded until you accept an offer." />
+          </h2>
 
           <div>
             <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-gray-500">
@@ -354,7 +358,10 @@ function Step2({
     <div className="space-y-6">
       <Card className="border border-gray-200 bg-white">
         <CardContent className="space-y-2 p-6">
-          <h2 className="text-2xl font-black text-[#1B2B3A]">Identity Documents</h2>
+          <h2 className="flex items-center gap-2 text-2xl font-black text-[#1B2B3A]">
+            Identity Documents
+            <InfoTip text="These are account-wide, not per-loan — once verified here, you won't need to upload them again for future loan requests." />
+          </h2>
           <p className="text-sm text-gray-500">
             Pulled from your account KYC — already verified documents are used
             automatically, nothing to re-upload. Anything missing or still
@@ -432,7 +439,10 @@ function Step3({
   return (
     <Card className="border border-gray-200 bg-white">
       <CardContent className="space-y-6 p-6">
-        <h2 className="text-2xl font-black text-[#1B2B3A]">Add Guarantors</h2>
+        <h2 className="flex items-center gap-2 text-2xl font-black text-[#1B2B3A]">
+          Add Guarantors
+          <InfoTip text="If one declines, you can search for a replacement from My Requests after submitting. And if you ever edit the amount, duration, or type later, both guarantors are asked to approve again — their approval only ever covers the exact terms they saw." />
+        </h2>
         <p className="text-sm text-gray-500">
           Add exactly 2 guarantors — they must already have a Mpola account.
           They&apos;ll each get a request to approve or decline once you

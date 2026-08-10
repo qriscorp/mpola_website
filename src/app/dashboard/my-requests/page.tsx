@@ -3,16 +3,31 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { BorrowerPageHeader } from "@/components/top-nav";
+import { InfoTip } from "@/components/info-tip";
 import { useApplications } from "@/hooks/use-dashboard";
 import { useSearchGuarantorCandidate, useReplaceGuarantor, useRemindGuarantor } from "@/hooks/use-guarantors";
+import {
+  useUpdateApplication,
+  useDeleteApplication,
+  useFreezeApplication,
+  useUnfreezeApplication,
+} from "@/hooks/use-application";
 import { formatCurrency, getStatusColor, getStatusLabel } from "@/lib/format";
 import { TableSkeleton } from "@/components/skeletons";
 import { StaggerList, StaggerItem } from "@/components/motion/stagger";
-import type { Guarantor } from "@/lib/types";
+import type { Guarantor, LoanApplication } from "@/lib/types";
 import { toast } from "sonner";
 
 const tabs = ["All", "Pending", "Funded", "Closed"] as const;
 type Tab = (typeof tabs)[number];
+
+const EDIT_DURATIONS = [3, 4, 6, 12];
+const EDIT_LOAN_TYPES = [
+  { label: "Business", value: "business" },
+  { label: "Personal", value: "personal" },
+  { label: "Agricultural", value: "agricultural" },
+  { label: "Emergency", value: "emergency" },
+];
 
 function expiryNote(validUntil: string | null, status: string): string | null {
   if (!validUntil || status === "expired" || status === "funded" || status === "completed") return null;
@@ -158,6 +173,220 @@ function GuarantorStatusList({ applicationId, guarantors }: { applicationId: str
   );
 }
 
+function EditApplicationForm({ app, onDone }: { app: LoanApplication; onDone: () => void }) {
+  const [amount, setAmount] = useState(String(app.amount));
+  const [duration, setDuration] = useState(app.duration);
+  const [loanType, setLoanType] = useState(app.loan_type);
+  const [purpose, setPurpose] = useState(app.purpose ?? "");
+  const [maxInterestRate, setMaxInterestRate] = useState(
+    app.max_interest_rate != null ? String(app.max_interest_rate) : "",
+  );
+  const [validUntil, setValidUntil] = useState(app.valid_until ? app.valid_until.slice(0, 10) : "");
+  const update = useUpdateApplication();
+
+  const hadGuarantorResponse = (app.guarantors ?? []).some((g) => g.status !== "pending");
+  const termsChanged =
+    Number(amount) !== app.amount || duration !== app.duration || loanType !== app.loan_type;
+
+  const handleSave = () => {
+    update.mutate(
+      {
+        id: app.id,
+        data: {
+          amount: Number(amount),
+          duration,
+          loan_type: loanType,
+          purpose: purpose || undefined,
+          max_interest_rate: maxInterestRate ? Number(maxInterestRate) : undefined,
+          valid_until: validUntil || null,
+        },
+      },
+      {
+        onSuccess: () => {
+          toast.success("Request updated");
+          onDone();
+        },
+      },
+    );
+  };
+
+  return (
+    <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-800 space-y-3">
+      {termsChanged && hadGuarantorResponse && (
+        <div className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-700">
+          Changing the amount, duration, or type resets any guarantor who already responded — they&apos;ll
+          need to review and approve the new terms again.
+        </div>
+      )}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500">
+            Amount (UGX)
+          </label>
+          <input
+            type="number"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#2BB5A0]"
+          />
+        </div>
+        <div>
+          <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500">
+            Duration
+          </label>
+          <select
+            value={duration}
+            onChange={(e) => setDuration(Number(e.target.value))}
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#2BB5A0]"
+          >
+            {EDIT_DURATIONS.map((d) => (
+              <option key={d} value={d}>
+                {d} months
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500">
+            Loan Type
+          </label>
+          <select
+            value={loanType}
+            onChange={(e) => setLoanType(e.target.value as LoanApplication["loan_type"])}
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#2BB5A0]"
+          >
+            {EDIT_LOAN_TYPES.map((t) => (
+              <option key={t.value} value={t.value}>
+                {t.label}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500">
+            Max Interest Rate (%/month)
+          </label>
+          <input
+            type="number"
+            step="0.1"
+            value={maxInterestRate}
+            onChange={(e) => setMaxInterestRate(e.target.value)}
+            placeholder="Any rate"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#2BB5A0]"
+          />
+        </div>
+        <div>
+          <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500">
+            Purpose
+          </label>
+          <input
+            type="text"
+            value={purpose}
+            onChange={(e) => setPurpose(e.target.value)}
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#2BB5A0]"
+          />
+        </div>
+        <div>
+          <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500">
+            Need it by
+          </label>
+          <input
+            type="date"
+            value={validUntil}
+            onChange={(e) => setValidUntil(e.target.value)}
+            min={new Date().toISOString().slice(0, 10)}
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#2BB5A0]"
+          />
+        </div>
+      </div>
+      <div className="flex gap-2">
+        <button
+          onClick={onDone}
+          className="px-4 py-1.5 rounded-lg border border-gray-300 text-sm font-medium text-gray-600 hover:border-gray-400 transition-colors"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={handleSave}
+          disabled={update.isPending || !amount}
+          className="px-4 py-1.5 rounded-lg bg-[#2BB5A0] text-white text-sm font-semibold hover:bg-[#239E8C] transition-colors disabled:opacity-50"
+        >
+          {update.isPending ? "Saving…" : "Save Changes"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ApplicationActions({ app }: { app: LoanApplication }) {
+  const [editing, setEditing] = useState(false);
+  const deleteApplication = useDeleteApplication();
+  const freeze = useFreezeApplication();
+  const unfreeze = useUnfreezeApplication();
+
+  const handleWithdraw = () => {
+    if (!confirm("Withdraw this loan request? This can't be undone.")) return;
+    deleteApplication.mutate(app.id, {
+      onSuccess: () => toast.success("Request withdrawn"),
+    });
+  };
+
+  const handleFreeze = () => {
+    freeze.mutate(app.id, { onSuccess: () => toast.success("Request frozen — hidden from new lender matches") });
+  };
+
+  const handleUnfreeze = () => {
+    unfreeze.mutate(app.id, { onSuccess: () => toast.success("Request unfrozen") });
+  };
+
+  if (editing) {
+    return <EditApplicationForm app={app} onDone={() => setEditing(false)} />;
+  }
+
+  return (
+    <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-800 flex flex-wrap items-center gap-3">
+      <button
+        onClick={() => setEditing(true)}
+        className="px-3 py-1.5 rounded-lg border border-gray-300 text-xs font-medium text-gray-600 hover:border-[#2BB5A0] hover:text-[#2BB5A0] transition-colors"
+      >
+        Edit
+      </button>
+      {app.is_frozen ? (
+        <button
+          onClick={handleUnfreeze}
+          disabled={unfreeze.isPending || app.frozen_by === "admin"}
+          className="px-3 py-1.5 rounded-lg bg-[#2BB5A0] text-white text-xs font-semibold hover:bg-[#239E8C] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Unfreeze
+        </button>
+      ) : (
+        <button
+          onClick={handleFreeze}
+          disabled={freeze.isPending}
+          className="px-3 py-1.5 rounded-lg border border-gray-300 text-xs font-medium text-gray-600 hover:border-blue-300 hover:text-blue-600 transition-colors disabled:opacity-50"
+        >
+          Freeze
+        </button>
+      )}
+      <button
+        onClick={handleWithdraw}
+        disabled={deleteApplication.isPending}
+        className="px-3 py-1.5 rounded-lg border border-gray-300 text-xs font-medium text-gray-600 hover:border-red-300 hover:text-red-600 transition-colors disabled:opacity-50"
+      >
+        Withdraw
+      </button>
+      {app.is_frozen && (
+        <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold border bg-blue-50 text-blue-600 border-blue-200">
+          Frozen ({app.frozen_by === "admin" ? "by admin" : "by you"})
+        </span>
+      )}
+      {app.is_frozen && app.frozen_by === "admin" && (
+        <p className="text-xs text-gray-400">Frozen by an admin — only they can unfreeze it.</p>
+      )}
+    </div>
+  );
+}
+
 export default function MyRequestsPage() {
   const { data: applications, isLoading } = useApplications();
   const [activeTab, setActiveTab] = useState<Tab>("All");
@@ -177,6 +406,10 @@ export default function MyRequestsPage() {
   return (
     <div className="space-y-6">
       <BorrowerPageHeader title="My Requests" />
+      <p className="-mt-4 flex items-center gap-1.5 text-sm text-gray-500">
+        Awaiting Guarantors → Pending → Funded
+        <InfoTip text="Awaiting Guarantors: waiting on your 2 chosen guarantors to approve. Pending: both approved, visible to lenders on the marketplace. Funded: you accepted an offer. You can edit, freeze, or withdraw a request any time before it's funded." />
+      </p>
 
       {/* Tabs */}
       <div className="flex gap-2 flex-wrap">
@@ -244,6 +477,10 @@ export default function MyRequestsPage() {
 
               {app.status === "awaiting_guarantors" && app.guarantors && app.guarantors.length > 0 && (
                 <GuarantorStatusList applicationId={app.id} guarantors={app.guarantors} />
+              )}
+
+              {(app.status === "awaiting_guarantors" || app.status === "pending") && (
+                <ApplicationActions app={app} />
               )}
             </StaggerItem>
           ))}

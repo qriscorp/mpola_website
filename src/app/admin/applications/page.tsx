@@ -22,14 +22,17 @@ import {
 import {
   Search,
   MoreVertical,
-  CheckCircle,
   XCircle,
+  Snowflake,
+  Sun,
   Download,
 } from "lucide-react";
 import {
   useAdminApplications,
   useAdminStats,
   useUpdateApplicationStatus,
+  useFreezeAdminApplication,
+  useUnfreezeAdminApplication,
 } from "@/hooks/use-admin";
 import { formatCurrency } from "@/lib/format";
 import { downloadCsv } from "@/lib/csv";
@@ -40,14 +43,16 @@ import { toast } from "sonner";
 import { FadeSwap } from "@/components/motion/fade-swap";
 import { StaggerList, StaggerItem } from "@/components/motion/stagger";
 
-type StatusTab = "all" | "pending" | "funded" | "completed" | "rejected" | "defaulted";
+type StatusTab = "all" | "awaiting_guarantors" | "pending" | "funded" | "completed" | "rejected" | "defaulted" | "expired";
 const TABS: { key: StatusTab; label: string }[] = [
   { key: "all", label: "All" },
+  { key: "awaiting_guarantors", label: "Awaiting Guarantors" },
   { key: "pending", label: "Pending" },
   { key: "funded", label: "Funded" },
   { key: "completed", label: "Completed" },
   { key: "rejected", label: "Rejected" },
   { key: "defaulted", label: "Defaulted" },
+  { key: "expired", label: "Expired" },
 ];
 
 const PAGE_SIZE = 20;
@@ -64,17 +69,25 @@ export default function AdminApplicationsPage() {
   const { data: stats } = useAdminStats();
 
   const updateStatus = useUpdateApplicationStatus();
+  const freezeApplication = useFreezeAdminApplication();
+  const unfreezeApplication = useUnfreezeAdminApplication();
   const applications = data?.applications ?? [];
   const total = data?.total ?? 0;
 
-  const handleStatus = (id: string, action: "approve" | "reject") => {
+  const handleReject = (id: string) => {
+    if (!confirm("Close this loan request? This can't be undone.")) return;
     updateStatus.mutate(
-      { id, status: action },
-      {
-        onSuccess: () =>
-          toast.success(`Application ${action === "approve" ? "approved" : "rejected"}`),
-      },
+      { id, status: "reject" },
+      { onSuccess: () => toast.success("Application closed") },
     );
+  };
+
+  const handleFreeze = (id: string) => {
+    freezeApplication.mutate(id, { onSuccess: () => toast.success("Application frozen") });
+  };
+
+  const handleUnfreeze = (id: string) => {
+    unfreezeApplication.mutate(id, { onSuccess: () => toast.success("Application unfrozen") });
   };
 
   const breakdown = stats?.application_status_breakdown ?? [];
@@ -100,6 +113,10 @@ export default function AdminApplicationsPage() {
     switch (s) {
       case "pending":
         return "bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400";
+      case "awaiting_guarantors":
+        return "bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400";
+      case "expired":
+        return "bg-gray-50 text-gray-500 dark:bg-gray-800/40 dark:text-gray-400";
       case "funded":
         return "bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400";
       case "approved":
@@ -279,30 +296,47 @@ export default function AdminApplicationsPage() {
                       {app.offer_count}
                     </TableCell>
                     <TableCell>
-                      <Badge
-                        variant="outline"
-                        className={`text-xs ${statusColor(app.status)}`}
-                      >
-                        {app.status}
-                      </Badge>
+                      <div className="flex items-center gap-1.5">
+                        <Badge
+                          variant="outline"
+                          className={`text-xs ${statusColor(app.status)}`}
+                        >
+                          {app.status}
+                        </Badge>
+                        {app.is_frozen && (
+                          <Badge variant="outline" className="text-xs bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400">
+                            Frozen{app.frozen_by === "admin" ? " (admin)" : ""}
+                          </Badge>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell>
-                      {app.status === "pending" && (
+                      {(app.status === "pending" || app.status === "awaiting_guarantors") && (
                         <DropdownMenu>
                           <DropdownMenuTrigger className="inline-flex size-8 items-center justify-center rounded-lg border border-transparent hover:bg-muted transition-colors [&_svg]:pointer-events-none [&_svg]:shrink-0">
                             <MoreVertical className="h-4 w-4" />
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem
-                              className="gap-2 text-emerald-600"
-                              onClick={() => handleStatus(app.id, "approve")}
-                            >
-                              <CheckCircle className="h-4 w-4" />
-                              Approve
-                            </DropdownMenuItem>
+                            {app.is_frozen ? (
+                              <DropdownMenuItem
+                                className="gap-2 text-blue-600"
+                                onClick={() => handleUnfreeze(app.id)}
+                              >
+                                <Sun className="h-4 w-4" />
+                                Unfreeze
+                              </DropdownMenuItem>
+                            ) : (
+                              <DropdownMenuItem
+                                className="gap-2 text-blue-600"
+                                onClick={() => handleFreeze(app.id)}
+                              >
+                                <Snowflake className="h-4 w-4" />
+                                Freeze
+                              </DropdownMenuItem>
+                            )}
                             <DropdownMenuItem
                               className="gap-2 text-red-600"
-                              onClick={() => handleStatus(app.id, "reject")}
+                              onClick={() => handleReject(app.id)}
                             >
                               <XCircle className="h-4 w-4" />
                               Reject
