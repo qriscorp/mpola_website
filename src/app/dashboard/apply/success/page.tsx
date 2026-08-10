@@ -159,7 +159,7 @@ function SuccessContent() {
       </Card>
 
       <div className="flex items-center justify-center gap-4 mt-8">
-        <Link href="/dashboard/offers">
+        <Link href="/dashboard/offers-received">
           <Button className="bg-[#2BB5A0] text-white hover:bg-[#239E8C] px-6">
             View My Offers
           </Button>

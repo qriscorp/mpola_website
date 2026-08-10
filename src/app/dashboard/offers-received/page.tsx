@@ -9,6 +9,7 @@ import { useRespondToOffer } from "@/hooks/use-offers";
 import { formatCurrency, formatRate } from "@/lib/format";
 import { CardSkeleton } from "@/components/skeletons";
 import { RequiredDocumentsChecklist } from "@/components/required-documents-checklist";
+import { AllOffersList } from "@/components/all-offers-list";
 
 const avatarColors = ["#1B2B3A", "#2BB5A0", "#C4A55A", "#B0923E"];
 
@@ -39,13 +40,14 @@ function OffersReceivedContent() {
     return (
       <div className="space-y-6">
         <BorrowerPageHeader title="Offers Received" />
-        <p className="text-sm text-gray-500">
-          Pick a request from{" "}
+        <p className="-mt-4 text-sm text-gray-500">
+          Every offer you&apos;ve received across every request. Pick one from{" "}
           <a href="/dashboard/my-requests" className="text-[#2BB5A0] underline">
             My Requests
           </a>{" "}
-          to see its offers.
+          to see just that request&apos;s offers.
         </p>
+        <AllOffersList />
       </div>
     );
   }

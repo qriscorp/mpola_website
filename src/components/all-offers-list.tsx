@@ -3,17 +3,19 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Search } from "lucide-react";
-import { BorrowerPageHeader } from "@/components/top-nav";
 import { CardSkeleton } from "@/components/skeletons";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { formatCurrency, formatRate, getInitials } from "@/lib/format";
-import { FadeSwap } from "@/components/motion/fade-swap";
 import { StaggerList, StaggerItem } from "@/components/motion/stagger";
 
 const avatarColors = ["#1B2B3A", "#2BB5A0", "#8B4513", "#C4A55A"];
 
-export default function BrowseOffersPage() {
+/** Every offer the borrower has ever received, across every application —
+ * shown both at /dashboard/offers ("Browse Lender Offers") and as the
+ * default view at /dashboard/offers-received when no specific request is
+ * selected. Selecting one filters down to just that request's offers. */
+export function AllOffersList() {
   const [search, setSearch] = useState("");
   const [amountFilter, setAmountFilter] = useState("all");
   const [rateFilter, setRateFilter] = useState("all");
@@ -53,19 +55,12 @@ export default function BrowseOffersPage() {
     }, null);
   }, [offers]);
 
-  return (
-    <FadeSwap
-      loading={isLoading}
-      skeleton={
-        <div className="space-y-6">
-          <BorrowerPageHeader title="Browse Lender Offers" />
-          <CardSkeleton count={3} />
-        </div>
-      }
-    >
-    <div className="space-y-6">
-      <BorrowerPageHeader title="Browse Lender Offers" />
+  if (isLoading) {
+    return <CardSkeleton count={3} />;
+  }
 
+  return (
+    <div className="space-y-6">
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
@@ -169,6 +164,5 @@ export default function BrowseOffersPage() {
         </StaggerList>
       )}
     </div>
-    </FadeSwap>
   );
 }

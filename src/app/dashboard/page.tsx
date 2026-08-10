@@ -123,10 +123,10 @@ export default function DashboardPage() {
           </h2>
           <div className="grid grid-cols-2 gap-3">
             <Link
-              href="/dashboard/offers"
+              href="/dashboard/offers-received"
               className="flex items-center justify-center py-4 px-3 rounded-xl bg-[#2BB5A0] text-white text-sm font-semibold hover:bg-[#239E8C] transition-colors text-center"
             >
-              Browse Lender Offers
+              Offers Received
             </Link>
             <Link
               href="/dashboard/apply"

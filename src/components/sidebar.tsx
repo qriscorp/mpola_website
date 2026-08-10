@@ -5,7 +5,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
-  Search,
   FileText,
   ListOrdered,
   Activity,
@@ -44,11 +43,6 @@ const navGroups = [
   {
     label: "BORROW",
     items: [
-      {
-        href: "/dashboard/offers",
-        label: "Browse Lender Offers",
-        icon: Search,
-      },
       { href: "/dashboard/apply", label: "Apply for a Loan", icon: FileText },
       {
         href: "/dashboard/my-requests",
