@@ -67,7 +67,7 @@ const navGroups = [
         label: "Make a Payment",
         icon: CreditCard,
       },
-      { href: "/dashboard/receipts", label: "Payment Receipt", icon: Receipt },
+      { href: "/dashboard/receipts", label: "Payment Receipts", icon: Receipt },
     ],
   },
   {

@@ -11,6 +11,13 @@ export function useLoanDetail(loanId: string | undefined) {
   });
 }
 
+export function useMyRepayments(skip = 0, limit = 20) {
+  return useQuery({
+    queryKey: ["repayments", "mine", skip, limit],
+    queryFn: () => api.getMyRepayments(skip, limit),
+  });
+}
+
 export function useMakeRepayment() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -28,6 +35,7 @@ export function useMakeRepayment() {
       queryClient.invalidateQueries({ queryKey: ["loan", variables.loan_id] });
       queryClient.invalidateQueries({ queryKey: ["wallet"] });
       queryClient.invalidateQueries({ queryKey: ["transactions"] });
+      queryClient.invalidateQueries({ queryKey: ["repayments", "mine"] });
     },
   });
 }

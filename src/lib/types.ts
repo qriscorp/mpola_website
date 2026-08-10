@@ -82,6 +82,11 @@ export interface LoanRepayment {
   created_at: string;
 }
 
+export interface RepaymentHistoryItem extends LoanRepayment {
+  loan_id: string;
+  lender_name: string | null;
+}
+
 export interface ActiveLoan {
   id: string;
   borrower_id: string;

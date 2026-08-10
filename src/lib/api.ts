@@ -4,6 +4,7 @@ import type {
   DashboardStats,
   ActiveLoan,
   LoanRepayment,
+  RepaymentHistoryItem,
   LoanApplication,
   LoanOffer,
   MarketplaceApplication,
@@ -837,6 +838,12 @@ export const api = {
   },
   getLoanDetail: async (loanId: string): Promise<ActiveLoan> => {
     return apiAuthGet(`/loans/active/${loanId}`);
+  },
+  getMyRepayments: async (
+    skip = 0,
+    limit = 20,
+  ): Promise<{ total: number; repayments: RepaymentHistoryItem[] }> => {
+    return apiAuthGet(`/loans/repayments/mine?skip=${skip}&limit=${limit}`);
   },
   downloadRepaymentReceipt: async (repaymentId: string): Promise<void> => {
     const token = getCookie("lf_token");

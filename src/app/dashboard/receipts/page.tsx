@@ -1,23 +1,28 @@
 "use client";
 
-import { Suspense } from "react";
-import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { Download } from "lucide-react";
 import { toast } from "sonner";
 import { BorrowerPageHeader } from "@/components/top-nav";
 import { CardSkeleton } from "@/components/skeletons";
+import { useMyRepayments } from "@/hooks/use-repayments";
 import { api } from "@/lib/api";
 import { formatCurrency } from "@/lib/format";
+
+const PAGE_SIZE = 20;
 
 const METHOD_LABEL: Record<string, string> = {
   mobile_money: "Mobile Money",
   wallet: "Mpola Wallet",
 };
 
-function formatDateTime(iso: string | null | undefined): string {
-  if (!iso) return "—";
+const STATUS_CLASS: Record<string, string> = {
+  completed: "bg-emerald-50 text-emerald-600 border-emerald-200",
+  pending: "bg-amber-50 text-amber-600 border-amber-200",
+  late: "bg-red-50 text-red-600 border-red-200",
+};
+
+function formatDateTime(iso: string): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return iso;
   return d.toLocaleString("en-UG", {
@@ -29,130 +34,89 @@ function formatDateTime(iso: string | null | undefined): string {
   });
 }
 
-function ReceiptContent() {
-  const searchParams = useSearchParams();
-  const loanIdParam = searchParams.get("loanId");
-  const repaymentIdParam = searchParams.get("repaymentId");
-
-  const { data: defaultLoan, isLoading: loadingDefault } = useQuery({
-    queryKey: ["active-loan"],
-    queryFn: api.getActiveLoan,
-    enabled: !loanIdParam,
-  });
-
-  const loanId = loanIdParam ?? defaultLoan?.id;
-
-  const { data: loan, isLoading: loadingLoan } = useQuery({
-    queryKey: ["loan-detail", loanId],
-    queryFn: () => api.getLoanDetail(loanId as string),
-    enabled: !!loanId,
-  });
-
-  if (loadingDefault || loadingLoan) {
-    return <CardSkeleton count={1} height="h-96" />;
-  }
-
-  if (!loan) {
-    return (
-      <div className="max-w-md mx-auto bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 p-8 text-center text-gray-500">
-        You don&apos;t have any loans yet.
-      </div>
-    );
-  }
-
-  const repayments = loan.repayments ?? [];
-  const repayment = repaymentIdParam
-    ? repayments.find((r) => r.id === repaymentIdParam)
-    : repayments[0];
-
-  if (!repayment) {
-    return (
-      <div className="max-w-md mx-auto bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 p-8 text-center text-gray-500">
-        No repayments have been made on this loan yet.
-      </div>
-    );
-  }
-
-  return (
-    <div className="max-w-md mx-auto bg-white dark:bg-gray-900 rounded-2xl border-2 border-[#2BB5A0] p-8 shadow-sm">
-      <div className="flex flex-col items-center mb-6">
-        <div className="w-16 h-16 rounded-full bg-teal-50 flex items-center justify-center mb-3">
-          <svg
-            className="w-8 h-8 text-[#2BB5A0]"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={2.5}
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-          </svg>
-        </div>
-        <h2 className="text-2xl font-extrabold text-[#1B2B3A] dark:text-white">
-          Payment Successful
-        </h2>
-        <p className="text-sm text-gray-400 mt-1">
-          {repayment.status === "completed" ? "Transaction confirmed" : repayment.status}
-        </p>
-      </div>
-
-      <div className="space-y-3 divide-y divide-gray-100 dark:divide-gray-800">
-        {[
-          { label: "Transaction ID", value: `#${repayment.transaction_id ?? repayment.id}` },
-          { label: "Date", value: formatDateTime(repayment.created_at) },
-          {
-            label: "Method",
-            value: repayment.payment_method
-              ? (METHOD_LABEL[repayment.payment_method] ?? repayment.payment_method)
-              : "—",
-          },
-          { label: "Loan Ref", value: `#${loan.id.slice(0, 8)}` },
-        ].map((row) => (
-          <div key={row.label} className="flex justify-between py-3 text-sm first:pt-0">
-            <span className="text-gray-400">{row.label}</span>
-            <span className="font-medium text-[#1B2B3A] dark:text-white">
-              {row.value}
-            </span>
-          </div>
-        ))}
-        <div className="flex justify-between py-3 text-sm">
-          <span className="font-bold text-[#1B2B3A] dark:text-white">
-            Amount Paid
-          </span>
-          <span className="font-extrabold text-[#2BB5A0] text-lg">
-            {formatCurrency(repayment.amount)}
-          </span>
-        </div>
-      </div>
-
-      <div className="flex gap-3 mt-6">
-        <button
-          onClick={() =>
-            api
-              .downloadRepaymentReceipt(repayment.id)
-              .catch(() => toast.error("Couldn't download the receipt. Please try again."))
-          }
-          className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-gray-300 text-sm font-semibold text-gray-700 hover:border-[#2BB5A0] hover:text-[#2BB5A0] transition-colors"
-        >
-          <Download className="w-4 h-4" /> Download Receipt
-        </button>
-        <Link
-          href="/dashboard/repayments"
-          className="flex-1 text-center px-4 py-2.5 rounded-xl bg-[#2BB5A0] text-white text-sm font-semibold hover:bg-[#239E8C] transition-colors"
-        >
-          View Schedule
-        </Link>
-      </div>
-    </div>
-  );
-}
-
 export default function ReceiptsPage() {
+  const [page, setPage] = useState(0);
+  const { data, isLoading } = useMyRepayments(page * PAGE_SIZE, PAGE_SIZE);
+  const repayments = data?.repayments ?? [];
+  const total = data?.total ?? 0;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+
+  const handleDownload = (repaymentId: string) => {
+    api
+      .downloadRepaymentReceipt(repaymentId)
+      .catch(() => toast.error("Couldn't download the receipt. Please try again."));
+  };
+
   return (
     <div className="space-y-6">
-      <BorrowerPageHeader title="Payment Receipt" />
-      <Suspense fallback={<CardSkeleton count={1} height="h-96" />}>
-        <ReceiptContent />
-      </Suspense>
+      <BorrowerPageHeader title="Payment Receipts" />
+
+      {isLoading ? (
+        <CardSkeleton count={3} height="h-20" />
+      ) : repayments.length === 0 ? (
+        <div className="max-w-md mx-auto bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-8 text-center text-gray-500">
+          You haven&apos;t made any repayments yet — once you do, every receipt
+          shows up here for download.
+        </div>
+      ) : (
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 divide-y divide-gray-100 dark:divide-gray-800">
+          {repayments.map((r) => (
+            <div
+              key={r.id}
+              className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5"
+            >
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <p className="font-semibold text-[#1B2B3A] dark:text-white">
+                    {formatCurrency(r.amount)}
+                  </p>
+                  <span
+                    className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium capitalize ${
+                      STATUS_CLASS[r.status] ?? "bg-gray-100 text-gray-600 border-gray-200"
+                    }`}
+                  >
+                    {r.status}
+                  </span>
+                </div>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  Instalment #{r.instalment_number} &middot;{" "}
+                  {r.lender_name ? `To ${r.lender_name}` : `Loan #${r.loan_id.slice(0, 8)}`} &middot;{" "}
+                  {METHOD_LABEL[r.payment_method ?? ""] ?? r.payment_method ?? "—"} &middot;{" "}
+                  {formatDateTime(r.created_at)}
+                </p>
+              </div>
+              <button
+                onClick={() => handleDownload(r.id)}
+                className="shrink-0 inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-gray-300 text-sm font-semibold text-gray-700 hover:border-[#2BB5A0] hover:text-[#2BB5A0] transition-colors"
+              >
+                <Download className="w-4 h-4" /> Download
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between text-sm text-gray-500">
+          <button
+            onClick={() => setPage((p) => Math.max(0, p - 1))}
+            disabled={page === 0}
+            className="px-3 py-1.5 rounded-lg border border-gray-300 disabled:opacity-40"
+          >
+            Previous
+          </button>
+          <span>
+            Page {page + 1} of {totalPages}
+          </span>
+          <button
+            onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+            disabled={page >= totalPages - 1}
+            className="px-3 py-1.5 rounded-lg border border-gray-300 disabled:opacity-40"
+          >
+            Next
+          </button>
+        </div>
+      )}
     </div>
   );
 }
