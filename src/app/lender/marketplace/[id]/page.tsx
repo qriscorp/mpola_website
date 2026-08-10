@@ -263,10 +263,10 @@ export default function ApplicationDetailPage({
                   >
                     <div>
                       <p className="text-sm font-medium text-[#1B2B3A] dark:text-white">
-                        {g.name}
+                        {g.full_name ?? g.username}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {g.relationship_type ?? "—"} &middot; {g.phone}
+                        {g.relationship_type ?? "—"} &middot; @{g.username}
                       </p>
                     </div>
                     <Badge className="bg-[#F5F0E0] text-[#C4A55A] dark:bg-[#C4A55A]/10 dark:text-[#C4A55A] text-xs capitalize">

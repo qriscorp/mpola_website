@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { toast } from "sonner";
 import { API_BASE_URL } from "@/lib/constants";
 import { getCookie } from "@/lib/api";
@@ -19,8 +19,11 @@ function wsUrl(token: string): string {
 export function useRealtimeNotifications() {
   const queryClient = useQueryClient();
   const router = useRouter();
+  const pathname = usePathname();
   const retryRef = useRef(0);
   const closedByUsRef = useRef(false);
+  const pathnameRef = useRef(pathname);
+  pathnameRef.current = pathname;
 
   useEffect(() => {
     const token = getCookie("lf_token");
@@ -50,6 +53,7 @@ export function useRealtimeNotifications() {
           queryClient.invalidateQueries({ queryKey: ["active-loan"] });
           queryClient.invalidateQueries({ queryKey: ["lender", "active-loans"] });
           queryClient.invalidateQueries({ queryKey: ["lender", "offer-templates"] });
+          queryClient.invalidateQueries({ queryKey: ["guarantor-requests"] });
 
           if (msg.type === "loan_pending_disbursement") {
             toast.warning(msg.title, {
@@ -80,6 +84,20 @@ export function useRealtimeNotifications() {
                 onClick: () => router.push("/lender/wallet"),
               },
             });
+          } else if (msg.type === "guarantor_invite_received") {
+            const notificationsPath = pathnameRef.current?.startsWith("/lender")
+              ? "/lender/notifications"
+              : "/dashboard/notifications";
+            toast.warning(msg.title, {
+              description: msg.message,
+              duration: 15000,
+              action: {
+                label: "Respond",
+                onClick: () => router.push(notificationsPath),
+              },
+            });
+          } else if (msg.type === "guarantor_response") {
+            toast.info(msg.title, { description: msg.message });
           } else if (msg.title) {
             toast.info(msg.title, { description: msg.message });
           }

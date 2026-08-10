@@ -19,27 +19,6 @@ export function useSubmitApplication() {
   });
 }
 
-export function useAddGuarantor() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({
-      applicationId,
-      data,
-    }: {
-      applicationId: string;
-      data: { name: string; phone: string; relationship_type?: string };
-    }) => api.addGuarantor(applicationId, data),
-    onSuccess: (_result, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: ["application", variables.applicationId],
-      });
-    },
-    onError: (err: Error) => {
-      toast.error(err.message || "Failed to add guarantor.");
-    },
-  });
-}
-
 export function useUploadDocument() {
   return useMutation({
     mutationFn: ({

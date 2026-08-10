@@ -215,12 +215,12 @@ function ApplicantContent() {
                     className={`h-10 w-10 rounded-full ${guarantorColors[i % guarantorColors.length]} flex items-center justify-center shrink-0`}
                   >
                     <span className="text-white text-xs font-bold">
-                      {getInitials(g.name)}
+                      {getInitials(g.full_name ?? g.username ?? "?")}
                     </span>
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-[#1B2B3A]">
-                      {g.name}
+                      {g.full_name ?? g.username}
                     </p>
                     <p className="text-xs text-gray-400 capitalize">
                       {g.relationship_type ?? "—"}

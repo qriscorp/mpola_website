@@ -17,6 +17,7 @@ import {
 import { BorrowerPageHeader } from "@/components/top-nav";
 import { CardSkeleton } from "@/components/skeletons";
 import { StaggerList, StaggerItem } from "@/components/motion/stagger";
+import { GuarantorRequestsBanner } from "@/components/guarantor-requests-banner";
 import type { Notification } from "@/lib/types";
 
 type FilterKey = "all" | "unread" | "offers" | "payments" | "guarantors";
@@ -31,6 +32,7 @@ const typeConfig: Record<
   payment: { icon: CreditCard, iconBg: "bg-[#E6F4F2]", iconColor: "text-[#149D8E]" },
   repayment: { icon: CreditCard, iconBg: "bg-[#E6F4F2]", iconColor: "text-[#149D8E]" },
   guarantor_response: { icon: UserCheck, iconBg: "bg-blue-50", iconColor: "text-blue-600" },
+  guarantor_invite_received: { icon: UserCheck, iconBg: "bg-blue-50", iconColor: "text-blue-600" },
 };
 
 const defaultTypeConfig = {
@@ -42,7 +44,7 @@ const defaultTypeConfig = {
 function categoryOf(type: string | null): "offers" | "payments" | "guarantors" | "other" {
   if (type === "loan_offer" || type === "offer_accepted" || type === "offer_declined") return "offers";
   if (type === "payment" || type === "repayment") return "payments";
-  if (type === "guarantor_response") return "guarantors";
+  if (type === "guarantor_response" || type === "guarantor_invite_received") return "guarantors";
   return "other";
 }
 
@@ -82,6 +84,8 @@ export default function NotificationsPage() {
   return (
     <div className="space-y-6">
       <BorrowerPageHeader title="Notifications" />
+
+      <GuarantorRequestsBanner />
 
       <div className="rounded-xl border border-[#9DDAD1] bg-[#E6F4F2] px-4 py-3 sm:px-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

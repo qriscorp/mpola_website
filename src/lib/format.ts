@@ -30,6 +30,7 @@ export function getStatusColor(status: string): string {
     case "reviewing_offers":
     case "pending":
     case "due":
+    case "awaiting_guarantors":
       return "text-amber-600 bg-amber-50";
     case "completed":
       return "text-blue-600 bg-blue-50";
@@ -47,6 +48,8 @@ export function getStatusColor(status: string): string {
 
 export function getStatusLabel(status: string): string {
   switch (status) {
+    case "awaiting_guarantors":
+      return "Awaiting Guarantors";
     case "reviewing_offers":
       return "Reviewing Offers";
     case "active":

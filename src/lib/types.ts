@@ -36,7 +36,7 @@ export interface LoanApplication {
   duration: number;
   loan_type: "personal" | "business" | "education" | "agricultural" | "emergency";
   purpose: string | null;
-  status: "pending" | "approved" | "rejected" | "funded" | "completed" | "defaulted";
+  status: "awaiting_guarantors" | "pending" | "approved" | "rejected" | "funded" | "completed" | "defaulted";
   interest_rate: number | null;
   monthly_payment: number | null;
   total_repayable: number | null;
@@ -101,10 +101,22 @@ export interface ActiveLoan {
 
 export interface Guarantor {
   id: string;
-  name: string;
-  phone: string;
+  guarantor_user_id: string;
+  full_name: string | null;
+  username: string | null;
   relationship_type: string | null;
   status: "pending" | "accepted" | "declined";
+}
+
+export interface GuarantorRequest {
+  id: string;
+  application_id: string;
+  status: "pending" | "accepted" | "declined";
+  amount: number | null;
+  loan_type: string | null;
+  duration: number | null;
+  borrower_name: string | null;
+  created_at: string;
 }
 
 export interface Document {

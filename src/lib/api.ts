@@ -34,6 +34,7 @@ import type {
   LoginSessionInfo,
   KYCDocument,
   KYCDocumentType,
+  GuarantorRequest,
 } from "./types";
 
 // ─── Real API helpers ────────────────────────────────────
@@ -874,33 +875,38 @@ export const api = {
   getApplicationDetail: async (id: string): Promise<LoanApplication> => {
     return apiAuthGet(`/loans/applications/${id}`);
   },
-  addGuarantor: async (
+  searchGuarantorCandidate: async (
+    email: string,
+    phoneNumber: string,
+  ): Promise<{ id: string; username: string; full_name: string | null; role: string }> => {
+    const params = new URLSearchParams({ email, phone_number: phoneNumber });
+    return apiAuthGet(`/users/search-guarantor-candidate?${params.toString()}`);
+  },
+  attachGuarantors: async (
     applicationId: string,
-    data: { name: string; phone: string; relationship_type?: string },
+    guarantorUserIds: string[],
   ): Promise<{ status: number; message: string }> => {
-    return apiAuthPost(`/loans/applications/${applicationId}/guarantors`, data);
+    return apiAuthPost(`/loans/applications/${applicationId}/guarantors`, {
+      guarantor_user_ids: guarantorUserIds,
+    });
   },
-
-  // Guarantor confirmation — public, the guarantor has no account.
-  getGuarantorInvite: async (
-    token: string,
-  ): Promise<{
-    guarantor: { id: string; name: string; status: string };
-    application: {
-      id: string | null;
-      amount: number | null;
-      duration: number | null;
-      loan_type: string | null;
-      borrower_name: string | null;
-    };
-  }> => {
-    return apiGet(`/loans/guarantors/${token}`);
-  },
-  respondToGuarantorInvite: async (
-    token: string,
+  respondToGuarantorRequest: async (
+    guarantorId: string,
     status: "accepted" | "declined",
   ): Promise<{ status: number; message: string }> => {
-    return apiPost(`/loans/guarantors/${token}/respond`, { status });
+    return apiAuthPut(`/guarantors/${guarantorId}/respond`, { status });
+  },
+  replaceGuarantor: async (
+    applicationId: string,
+    guarantorId: string,
+    newGuarantorUserId: string,
+  ): Promise<{ status: number; message: string }> => {
+    return apiAuthPut(`/guarantors/applications/${applicationId}/${guarantorId}/replace`, {
+      new_guarantor_user_id: newGuarantorUserId,
+    });
+  },
+  getGuarantorRequests: async (status?: string): Promise<{ requests: GuarantorRequest[] }> => {
+    return apiAuthGet(`/guarantors/requests${status ? `?status=${status}` : ""}`);
   },
 
   // Offers

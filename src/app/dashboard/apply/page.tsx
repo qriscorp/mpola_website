@@ -7,15 +7,19 @@ import { Check, Upload } from "lucide-react";
 import { BorrowerPageHeader } from "@/components/top-nav";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { KYCUploadSection } from "@/components/kyc-upload-section";
 import {
   useSubmitApplication,
-  useAddGuarantor,
   useUploadDocument,
 } from "@/hooks/use-application";
+import { useSearchGuarantorCandidate, useAttachGuarantors } from "@/hooks/use-guarantors";
 import { formatCurrency } from "@/lib/format";
 
 const STEPS = ["Loan Details", "Documents", "Guarantors", "Review"];
-const DURATIONS = ["1 mo", "2 mo", "3 mo", "4 mo", "6 mo", "12 mo"];
+// Backend enforces duration >= 3 months (repository/models.py's
+// LoanApplicationCreate) — 1/2 mo used to be offered here and would always
+// fail validation on submit.
+const DURATIONS = ["3 mo", "4 mo", "6 mo", "12 mo"];
 const LOAN_TYPES = [
   { label: "Business", value: "business" },
   { label: "Personal", value: "personal" },
@@ -27,9 +31,9 @@ const LOAN_TYPES = [
 const PLATFORM_RATE_PER_MONTH = 3;
 
 interface GuarantorInput {
-  name: string;
-  phone: string;
-  relationship_type: string;
+  user_id: string;
+  full_name: string | null;
+  username: string;
 }
 
 function StepperHeader({ currentStep }: { currentStep: number }) {
@@ -308,10 +312,14 @@ function UploadZone({
   );
 }
 
+// Genuinely loan-specific paperwork — NOT identity documents, so unrelated
+// to KYC. Identity (national_id, passport, profile_photo, proof_of_address)
+// is handled entirely by KYCUploadSection below, reusing whatever the
+// borrower already has on file from their account KYC instead of asking
+// them to re-upload the same thing here.
 const DOCUMENT_SLOTS = [
-  { key: "national_id", label: "National ID" },
   { key: "bank_statement", label: "Bank Statement (3 months)" },
-  { key: "business_registration", label: "Business Registration / Payslip" },
+  { key: "business_registration", label: "Business Registration" },
 ];
 
 function Step2({
@@ -322,27 +330,44 @@ function Step2({
   onSelect: (key: string, file: File) => void;
 }) {
   return (
-    <Card className="border border-gray-200 bg-white">
-      <CardContent className="space-y-6 p-6">
-        <h2 className="text-2xl font-black text-[#1B2B3A]">Upload Documents</h2>
-        <p className="text-sm text-gray-500">
-          Optional for now — document upload isn&apos;t required to submit
-          your application.
-        </p>
-
-        {DOCUMENT_SLOTS.map((slot) => (
-          <div key={slot.key}>
-            <label className="mb-2 block text-lg font-bold text-[#1B2B3A]">
-              {slot.label}
-            </label>
-            <UploadZone
-              file={files[slot.key] ?? null}
-              onSelect={(file) => onSelect(slot.key, file)}
-            />
+    <div className="space-y-6">
+      <Card className="border border-gray-200 bg-white">
+        <CardContent className="space-y-2 p-6">
+          <h2 className="text-2xl font-black text-[#1B2B3A]">Identity Documents</h2>
+          <p className="text-sm text-gray-500">
+            Pulled from your account KYC — already verified documents are used
+            automatically, nothing to re-upload. Anything missing or still
+            pending review needs uploading here once.
+          </p>
+          <div className="pt-2">
+            <KYCUploadSection accent="teal" />
           </div>
-        ))}
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+
+      <Card className="border border-gray-200 bg-white">
+        <CardContent className="space-y-6 p-6">
+          <div>
+            <h2 className="text-2xl font-black text-[#1B2B3A]">Loan Documents</h2>
+            <p className="text-sm text-gray-500">
+              Optional for now — not required to submit your application.
+            </p>
+          </div>
+
+          {DOCUMENT_SLOTS.map((slot) => (
+            <div key={slot.key}>
+              <label className="mb-2 block text-lg font-bold text-[#1B2B3A]">
+                {slot.label}
+              </label>
+              <UploadZone
+                file={files[slot.key] ?? null}
+                onSelect={(file) => onSelect(slot.key, file)}
+              />
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+    </div>
   );
 }
 
@@ -355,15 +380,32 @@ function Step3({
   onAdd: (g: GuarantorInput) => void;
   onRemove: (idx: number) => void;
 }) {
-  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [relationship, setRelationship] = useState("Colleague");
+  const [error, setError] = useState<string | null>(null);
+  const search = useSearchGuarantorCandidate();
 
   const handleAdd = () => {
-    if (!name.trim() || !phone.trim()) return;
-    onAdd({ name, phone: `+256${phone}`, relationship_type: relationship });
-    setName("");
-    setPhone("");
+    setError(null);
+    if (!email.trim() || !phone.trim()) return;
+    const phoneNumber = `+256${phone}`;
+    if (guarantors.length >= 2) return;
+
+    search.mutate(
+      { email: email.trim(), phoneNumber },
+      {
+        onSuccess: (candidate) => {
+          if (guarantors.some((g) => g.user_id === candidate.id)) {
+            setError("Already added as a guarantor.");
+            return;
+          }
+          onAdd({ user_id: candidate.id, full_name: candidate.full_name, username: candidate.username });
+          setEmail("");
+          setPhone("");
+        },
+        onError: (err: Error) => setError(err.message || "No account found matching that email and phone"),
+      },
+    );
   };
 
   return (
@@ -371,18 +413,20 @@ function Step3({
       <CardContent className="space-y-6 p-6">
         <h2 className="text-2xl font-black text-[#1B2B3A]">Add Guarantors</h2>
         <p className="text-sm text-gray-500">
-          Add at least 2 guarantors. They&apos;ll be attached to your
-          application when you submit.
+          Add exactly 2 guarantors — they must already have a Mpola account.
+          They&apos;ll each get a request to approve or decline once you
+          submit, and your application won&apos;t be shown to lenders until
+          both accept.
         </p>
 
         {guarantors.map((g, idx) => (
           <div
-            key={idx}
+            key={g.user_id}
             className="flex items-center justify-between rounded-xl border-2 border-[#2BB5A0] bg-[#E6F4F2] p-4"
           >
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#149D8E] text-sm font-bold text-white">
-                {g.name
+                {(g.full_name ?? g.username)
                   .split(" ")
                   .map((n) => n[0])
                   .join("")
@@ -390,10 +434,8 @@ function Step3({
                   .slice(0, 2)}
               </div>
               <div>
-                <p className="text-lg font-bold text-[#1B2B3A]">{g.name}</p>
-                <p className="text-sm text-gray-500">
-                  {g.phone} · {g.relationship_type}
-                </p>
+                <p className="text-lg font-bold text-[#1B2B3A]">{g.full_name ?? g.username}</p>
+                <p className="text-sm text-gray-500">@{g.username}</p>
               </div>
             </div>
             <button
@@ -405,63 +447,52 @@ function Step3({
           </div>
         ))}
 
-        <div className="rounded-xl border border-gray-200 p-4">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div>
-              <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500">
-                Full Name
-              </label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Guarantor full name"
-                className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-[#1B2B3A] outline-none focus:ring-2 focus:ring-[#2BB5A0]"
-              />
-            </div>
-
-            <div>
-              <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500">
-                Phone (MTN/Airtel)
-              </label>
-              <div className="flex items-center overflow-hidden rounded-lg border border-gray-300 focus-within:ring-2 focus-within:ring-[#2BB5A0]">
-                <span className="bg-[#E6F4F2] px-4 py-2.5 text-sm font-bold text-[#149D8E]">
-                  +256
-                </span>
+        {guarantors.length < 2 && (
+          <div className="rounded-xl border border-gray-200 p-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div>
+                <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500">
+                  Guarantor&apos;s Email
+                </label>
                 <input
-                  type="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="700 000 000"
-                  className="flex-1 px-4 py-2.5 text-sm text-[#1B2B3A] outline-none"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="their.email@example.com"
+                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-[#1B2B3A] outline-none focus:ring-2 focus:ring-[#2BB5A0]"
                 />
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500">
+                  Guarantor&apos;s Phone (MTN/Airtel)
+                </label>
+                <div className="flex items-center overflow-hidden rounded-lg border border-gray-300 focus-within:ring-2 focus-within:ring-[#2BB5A0]">
+                  <span className="bg-[#E6F4F2] px-4 py-2.5 text-sm font-bold text-[#149D8E]">
+                    +256
+                  </span>
+                  <input
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="700 000 000"
+                    className="flex-1 px-4 py-2.5 text-sm text-[#1B2B3A] outline-none"
+                  />
+                </div>
               </div>
             </div>
 
-            <div>
-              <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500">
-                Relationship
-              </label>
-              <select
-                value={relationship}
-                onChange={(e) => setRelationship(e.target.value)}
-                className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-[#1B2B3A] outline-none focus:ring-2 focus:ring-[#2BB5A0]"
-              >
-                <option>Colleague</option>
-                <option>Friend</option>
-                <option>Family</option>
-                <option>Business Partner</option>
-              </select>
-            </div>
-          </div>
+            {error && <p className="mt-3 text-sm text-red-500">{error}</p>}
 
-          <Button
-            onClick={handleAdd}
-            className="mt-4 bg-[#2BB5A0] text-white hover:bg-[#239E8C]"
-          >
-            Add Guarantor
-          </Button>
-        </div>
+            <Button
+              onClick={handleAdd}
+              disabled={search.isPending || !email.trim() || !phone.trim()}
+              className="mt-4 bg-[#2BB5A0] text-white hover:bg-[#239E8C]"
+            >
+              {search.isPending ? "Searching…" : "Add Guarantor"}
+            </Button>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
@@ -504,7 +535,7 @@ function Step4({
             [
               "Guarantors",
               guarantors.length > 0
-                ? guarantors.map((g) => g.name).join(", ")
+                ? guarantors.map((g) => g.full_name ?? g.username).join(", ")
                 : "None added",
             ],
           ].map(([k, v]) => (
@@ -586,7 +617,7 @@ export default function ApplyPage() {
   const [files, setFiles] = useState<Record<string, File>>({});
 
   const submitApplication = useSubmitApplication();
-  const addGuarantor = useAddGuarantor();
+  const attachGuarantors = useAttachGuarantors();
   const uploadDocument = useUploadDocument();
 
   const stepTitles = [
@@ -613,12 +644,10 @@ export default function ApplyPage() {
         max_interest_rate: maxInterestRate ? Number(maxInterestRate) : undefined,
       });
       await Promise.all([
-        ...guarantors.map((g) =>
-          addGuarantor.mutateAsync({
-            applicationId: res.application.id,
-            data: g,
-          }),
-        ),
+        attachGuarantors.mutateAsync({
+          applicationId: res.application.id,
+          guarantorUserIds: guarantors.map((g) => g.user_id),
+        }),
         ...Object.entries(files).map(([documentType, file]) =>
           uploadDocument.mutateAsync({
             applicationId: res.application.id,
@@ -634,6 +663,9 @@ export default function ApplyPage() {
   };
 
   const handleNext = () => {
+    if (currentStep === 3 && guarantors.length < 2) {
+      return; // button is disabled in this state too — belt and suspenders
+    }
     if (currentStep < 4) {
       setCurrentStep((s) => s + 1);
       return;
@@ -651,7 +683,7 @@ export default function ApplyPage() {
 
   const isSubmitting =
     submitApplication.isPending ||
-    addGuarantor.isPending ||
+    attachGuarantors.isPending ||
     uploadDocument.isPending;
 
   return (
@@ -727,7 +759,7 @@ export default function ApplyPage() {
             </Button>
             <Button
               onClick={handleNext}
-              disabled={isSubmitting}
+              disabled={isSubmitting || (currentStep === 3 && guarantors.length < 2)}
               className="bg-[#2BB5A0] text-white hover:bg-[#239E8C]"
             >
               {isSubmitting ? "Submitting…" : nextLabels[currentStep - 1]}
