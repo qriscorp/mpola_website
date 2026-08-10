@@ -18,6 +18,7 @@ import {
   HelpCircle,
   AlertTriangle,
   CheckCircle2,
+  Search,
 } from "lucide-react";
 import { SignOutModal } from "@/components/sign-out-modal";
 import { SwitchToAdminLink } from "@/components/portal-switch-link";
@@ -40,6 +41,7 @@ const overviewNav = [
 const lendingNav = [
   { href: "/lender/post-offer", label: "Post an Offer", icon: PlusCircle },
   { href: "/lender/offers", label: "My Offers", icon: FileText, badgeKey: "pendingOffers" as const },
+  { href: "/lender/marketplace", label: "Marketplace", icon: Search },
   {
     href: "/lender/applications",
     label: "Applications",

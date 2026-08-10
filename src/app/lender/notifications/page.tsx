@@ -18,6 +18,7 @@ import {
 import { LenderPageHeader } from "@/components/lender-top-nav";
 import { CardSkeleton } from "@/components/skeletons";
 import { StaggerList, StaggerItem } from "@/components/motion/stagger";
+import { WebPushPrompt } from "@/components/web-push-prompt";
 
 type FilterKey = "all" | "unread" | "offers" | "payments" | "guarantors";
 
@@ -86,6 +87,8 @@ export default function LenderNotificationsPage() {
   return (
     <div className="space-y-6 max-w-4xl">
       <LenderPageHeader title="Notifications" />
+
+      <WebPushPrompt />
 
       <div className="rounded-xl border border-[#E8D9B0] bg-[#F5F0E0] px-4 py-3 sm:px-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

@@ -18,6 +18,7 @@ import {
 import { BorrowerPageHeader } from "@/components/top-nav";
 import { CardSkeleton } from "@/components/skeletons";
 import { StaggerList, StaggerItem } from "@/components/motion/stagger";
+import { WebPushPrompt } from "@/components/web-push-prompt";
 import type { Notification } from "@/lib/types";
 
 type FilterKey = "all" | "unread" | "offers" | "payments" | "guarantors";
@@ -87,6 +88,8 @@ export default function NotificationsPage() {
   return (
     <div className="space-y-6">
       <BorrowerPageHeader title="Notifications" />
+
+      <WebPushPrompt />
 
       <div className="rounded-xl border border-[#9DDAD1] bg-[#E6F4F2] px-4 py-3 sm:px-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

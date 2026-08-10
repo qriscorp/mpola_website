@@ -1527,4 +1527,19 @@ export const api = {
   signOutEverywhere: async (): Promise<{ status: number; message: string }> => {
     return apiAuthPost("/sessions/sign-out-everywhere", {});
   },
+
+  // ─── Web Push ───
+  getVapidPublicKey: async (): Promise<{ public_key: string | null }> => {
+    return apiGet("/webpush/vapid-public-key");
+  },
+  subscribeWebPush: async (data: {
+    endpoint: string;
+    p256dh: string;
+    auth: string;
+  }): Promise<{ status: number; message: string }> => {
+    return apiAuthPost("/webpush/subscribe", data);
+  },
+  unsubscribeWebPush: async (endpoint: string): Promise<{ status: number; message: string }> => {
+    return apiAuthPost("/webpush/unsubscribe", { endpoint });
+  },
 };

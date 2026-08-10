@@ -123,8 +123,14 @@ export default function DashboardPage() {
           </h2>
           <div className="grid grid-cols-2 gap-3">
             <Link
-              href="/dashboard/apply"
+              href="/dashboard/offers"
               className="flex items-center justify-center py-4 px-3 rounded-xl bg-[#2BB5A0] text-white text-sm font-semibold hover:bg-[#239E8C] transition-colors text-center"
+            >
+              Browse Lender Offers
+            </Link>
+            <Link
+              href="/dashboard/apply"
+              className="flex items-center justify-center py-4 px-3 rounded-xl border-2 border-gray-200 dark:border-gray-700 text-[#1B2B3A] dark:text-white text-sm font-semibold hover:border-[#2BB5A0] hover:text-[#2BB5A0] transition-colors text-center"
             >
               Apply for a Loan
             </Link>
