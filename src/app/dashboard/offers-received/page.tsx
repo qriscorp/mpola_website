@@ -8,6 +8,7 @@ import { useApplicationDetail } from "@/hooks/use-lender";
 import { useRespondToOffer } from "@/hooks/use-offers";
 import { formatCurrency, formatRate } from "@/lib/format";
 import { CardSkeleton } from "@/components/skeletons";
+import { RequiredDocumentsChecklist } from "@/components/required-documents-checklist";
 
 const avatarColors = ["#1B2B3A", "#2BB5A0", "#C4A55A", "#B0923E"];
 
@@ -148,11 +149,6 @@ function OffersReceivedContent() {
                       {formatCurrency(offer.total_repayable ?? 0)} · Status:{" "}
                       <span className="capitalize">{offer.status}</span>
                     </p>
-                    {offer.required_documents.length > 0 && (
-                      <p className="mt-1 text-xs text-gray-400">
-                        Requires: {offer.required_documents.join(", ")}
-                      </p>
-                    )}
                   </div>
                   {offer.status === "pending" && (
                     <div className="flex gap-2 shrink-0">
@@ -178,11 +174,19 @@ function OffersReceivedContent() {
                         disabled={isPending}
                         className="px-5 py-2 rounded-xl bg-[#2BB5A0] text-white text-sm font-semibold hover:bg-[#239E8C] transition-colors disabled:opacity-50"
                       >
-                        Accept Offer
+                        Review &amp; Accept
                       </button>
                     </div>
                   )}
                 </div>
+                {offer.required_documents_status.length > 0 && (
+                  <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                      Documents this lender requires
+                    </p>
+                    <RequiredDocumentsChecklist items={offer.required_documents_status} />
+                  </div>
+                )}
               </div>
             );
           })}

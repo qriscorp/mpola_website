@@ -101,6 +101,11 @@ export default function AdminSettingsPage() {
   const isMaintenanceOn = (settings?.maintenance_mode?.value ?? "false") === "true";
 
   async function handleSaveAll() {
+    const rate = Number(form.max_interest_rate);
+    if (form.max_interest_rate.trim() === "" || Number.isNaN(rate) || rate < 0.1 || rate > 25) {
+      toast.error("Max Interest Rate must be between 0.1% and 25%");
+      return;
+    }
     setSaving(true);
     try {
       await Promise.all(
@@ -246,6 +251,9 @@ export default function AdminSettingsPage() {
               <Label>Max Interest Rate (%/month)</Label>
               <Input
                 type="number"
+                min={0.1}
+                max={25}
+                step={0.1}
                 value={form.max_interest_rate}
                 onChange={(e) => setForm({ ...form, max_interest_rate: e.target.value })}
                 disabled={isLoading}

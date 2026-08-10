@@ -66,8 +66,10 @@ export default function ApplicationsPage() {
   // "Approved"/"Declined" are always empty here by design, not a bug.
   const filtered = tab === "All" || tab === "Pending" ? applications : [];
 
+  const rateInvalid = rate !== "" && (Number(rate) < 0.1 || Number(rate) > 25);
+
   function confirmOffer() {
-    if (!offerModal) return;
+    if (!offerModal || rate === "" || rateInvalid) return;
     makeOffer.mutate(
       {
         application_id: offerModal.id,
@@ -245,6 +247,9 @@ export default function ApplicationsPage() {
                   className="w-24 text-right border border-gray-300 rounded-lg px-2 py-1 text-sm bg-white text-[#1B2B3A] outline-none focus:ring-2 focus:ring-[#C4A55A]"
                 />
               </div>
+              {rateInvalid && (
+                <p className="text-xs text-red-500 text-right">Rate must be between 0.1% and 25%</p>
+              )}
             </div>
 
             <div className="mt-4">
@@ -283,7 +288,7 @@ export default function ApplicationsPage() {
               </button>
               <button
                 onClick={confirmOffer}
-                disabled={makeOffer.isPending}
+                disabled={makeOffer.isPending || rate === "" || rateInvalid}
                 className="px-5 py-2 rounded-lg bg-[#C4A55A] text-white text-sm font-semibold hover:bg-[#b3944a] disabled:opacity-50"
               >
                 {makeOffer.isPending ? "Sending…" : "Send Offer"}

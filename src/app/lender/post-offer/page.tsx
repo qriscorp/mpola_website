@@ -129,10 +129,15 @@ function PostOfferContent() {
 
   const amountRangeInvalid =
     minAmount !== "" && maxAmount !== "" && Number(minAmount) >= Number(maxAmount);
+  const rateInvalid = rate !== "" && (Number(rate) < 0.1 || Number(rate) > 25);
 
   function handlePost(draft: boolean) {
     if (amountRangeInvalid) {
       toast.error("Min loan amount must be less than max loan amount");
+      return;
+    }
+    if (rate === "" || rateInvalid) {
+      toast.error("Interest rate must be between 0.1% and 25%");
       return;
     }
 
@@ -242,10 +247,17 @@ function PostOfferContent() {
                 Interest Rate (%/month)
               </Label>
               <Input
+                type="number"
+                min={0.1}
+                max={25}
+                step={0.1}
                 placeholder="2"
                 value={rate}
                 onChange={(e) => setRate(e.target.value)}
               />
+              {rateInvalid && (
+                <p className="text-xs text-red-500">Rate must be between 0.1% and 25%</p>
+              )}
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
@@ -343,7 +355,7 @@ function PostOfferContent() {
             {isEditing ? (
               <button
                 onClick={() => handlePost(false)}
-                disabled={updateTemplate.isPending || editDataLoading || amountRangeInvalid}
+                disabled={updateTemplate.isPending || editDataLoading || amountRangeInvalid || rateInvalid}
                 className="px-5 py-2 rounded-lg bg-[#C4A55A] text-white text-sm font-semibold hover:bg-[#b3944a] transition-colors disabled:opacity-50"
               >
                 {editDataLoading
@@ -356,14 +368,14 @@ function PostOfferContent() {
               <>
                 <button
                   onClick={() => handlePost(true)}
-                  disabled={createTemplate.isPending || amountRangeInvalid}
+                  disabled={createTemplate.isPending || amountRangeInvalid || rateInvalid}
                   className="px-5 py-2 rounded-lg border border-gray-300 text-sm font-semibold text-gray-700 hover:border-gray-400 transition-colors disabled:opacity-50"
                 >
                   {createTemplate.isPending ? "Saving…" : "Save Draft"}
                 </button>
                 <button
                   onClick={() => handlePost(false)}
-                  disabled={createTemplate.isPending || amountRangeInvalid}
+                  disabled={createTemplate.isPending || amountRangeInvalid || rateInvalid}
                   className="px-5 py-2 rounded-lg bg-[#C4A55A] text-white text-sm font-semibold hover:bg-[#b3944a] transition-colors disabled:opacity-50"
                 >
                   {createTemplate.isPending ? "Posting…" : "Post Offer"}

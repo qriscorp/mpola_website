@@ -72,6 +72,7 @@ export default function ApplicationDetailPage({
   const numAmount = Number(amount) || 0;
   const numRate = Number(interestRate) || 0;
   const numDuration = Number(duration) || 0;
+  const rateInvalid = interestRate !== "" && (numRate < 0.1 || numRate > 25);
   const totalInterest = numAmount * (numRate / 100) * numDuration;
   const totalRepayable = numAmount + totalInterest;
   const monthlyPayment = numDuration > 0 ? totalRepayable / numDuration : 0;
@@ -181,9 +182,15 @@ export default function ApplicationDetailPage({
                 </Label>
                 <Input
                   type="number"
+                  min={0.1}
+                  max={25}
+                  step={0.1}
                   value={interestRate}
                   onChange={(e) => setInterestRate(e.target.value)}
                 />
+                {rateInvalid && (
+                  <p className="text-xs text-red-500">Rate must be between 0.1% and 25%</p>
+                )}
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs font-bold uppercase tracking-wider text-gray-500">
@@ -247,7 +254,7 @@ export default function ApplicationDetailPage({
               </Button>
               <Button
                 onClick={handleSubmitOffer}
-                disabled={isPending || !numAmount || !numDuration}
+                disabled={isPending || !numAmount || !numDuration || !numRate || rateInvalid}
                 className="bg-[#C4A55A] hover:bg-[#b3944a] text-white"
               >
                 {isPending ? "Sending…" : "Send Offer"}

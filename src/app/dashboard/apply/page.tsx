@@ -161,6 +161,7 @@ function Step1({
   setPurpose,
   maxInterestRate,
   setMaxInterestRate,
+  maxInterestRateError,
   validUntil,
   setValidUntil,
 }: {
@@ -175,6 +176,7 @@ function Step1({
   setPurpose: (v: string) => void;
   maxInterestRate: string;
   setMaxInterestRate: (v: string) => void;
+  maxInterestRateError: string | null;
   validUntil: string;
   setValidUntil: (v: string) => void;
 }) {
@@ -288,12 +290,17 @@ function Step1({
             </label>
             <input
               type="number"
+              min={0.1}
+              max={25}
               step="0.1"
               value={maxInterestRate}
               onChange={(e) => setMaxInterestRate(e.target.value)}
               placeholder="e.g. 3 — leave blank to accept any rate"
               className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm text-[#1B2B3A] outline-none focus:ring-2 focus:ring-[#2BB5A0]"
             />
+            {maxInterestRateError && (
+              <p className="mt-1.5 text-xs text-red-500">{maxInterestRateError}</p>
+            )}
           </div>
 
           <div>
@@ -599,6 +606,7 @@ export default function ApplyPage() {
   const [validUntil, setValidUntil] = useState("");
   const [guarantors, setGuarantors] = useState<GuarantorInput[]>([]);
   const [amountError, setAmountError] = useState<string | null>(null);
+  const [maxInterestRateError, setMaxInterestRateError] = useState<string | null>(null);
 
   const { data: draft, isLoading: draftLoading } = useDraftApplication();
   const submitApplication = useSubmitApplication();
@@ -658,6 +666,15 @@ export default function ApplyPage() {
       return false;
     }
     setAmountError(null);
+
+    if (maxInterestRate.trim()) {
+      const numRate = Number(maxInterestRate);
+      if (Number.isNaN(numRate) || numRate < 0.1 || numRate > 25) {
+        setMaxInterestRateError("Must be between 0.1% and 25%, or left blank");
+        return false;
+      }
+    }
+    setMaxInterestRateError(null);
     return true;
   };
 
@@ -747,6 +764,7 @@ export default function ApplyPage() {
       setValidUntil("");
       setGuarantors([]);
       setAmountError(null);
+      setMaxInterestRateError(null);
       setCurrentStep(1);
       toast.success("Started a fresh request");
     } catch {
@@ -757,6 +775,8 @@ export default function ApplyPage() {
   const isSubmitting =
     submitApplication.isPending || updateApplication.isPending || attachGuarantors.isPending;
   const step1AmountValid = Number(amount) >= 1000 && Number(amount) <= 50000000;
+  const step1RateValid =
+    !maxInterestRate.trim() || (Number(maxInterestRate) >= 0.1 && Number(maxInterestRate) <= 25);
 
   if (resuming) {
     return (
@@ -818,7 +838,8 @@ export default function ApplyPage() {
                   purpose={purpose}
                   setPurpose={setPurpose}
                   maxInterestRate={maxInterestRate}
-                  setMaxInterestRate={setMaxInterestRate}
+                  setMaxInterestRate={(v) => { setMaxInterestRate(v); if (maxInterestRateError) setMaxInterestRateError(null); }}
+                  maxInterestRateError={maxInterestRateError}
                   validUntil={validUntil}
                   setValidUntil={setValidUntil}
                 />
@@ -857,7 +878,7 @@ export default function ApplyPage() {
               onClick={handleNext}
               disabled={
                 isSubmitting ||
-                (currentStep === 1 && !step1AmountValid) ||
+                (currentStep === 1 && (!step1AmountValid || !step1RateValid)) ||
                 (currentStep === 2 && guarantors.length < 2)
               }
               className="bg-[#2BB5A0] text-white hover:bg-[#239E8C]"
