@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { BorrowerPageHeader } from "@/components/top-nav";
 import { InfoTip } from "@/components/info-tip";
+import { ConfirmModal } from "@/components/confirm-modal";
 import { useApplications } from "@/hooks/use-dashboard";
 import { useSearchGuarantorCandidate, useReplaceGuarantor, useRemindGuarantor } from "@/hooks/use-guarantors";
 import {
@@ -315,6 +316,7 @@ function EditApplicationForm({ app, onDone }: { app: LoanApplication; onDone: ()
 
 function ApplicationActions({ app }: { app: LoanApplication }) {
   const [editing, setEditing] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<"withdraw" | "freeze" | null>(null);
   const deleteApplication = useDeleteApplication();
   const freeze = useFreezeApplication();
   const unfreeze = useUnfreezeApplication();
@@ -326,14 +328,21 @@ function ApplicationActions({ app }: { app: LoanApplication }) {
   const editLocked = (app.guarantors ?? []).some((g) => g.status === "accepted");
 
   const handleWithdraw = () => {
-    if (!confirm("Withdraw this loan request? This can't be undone.")) return;
     deleteApplication.mutate(app.id, {
-      onSuccess: () => toast.success("Request withdrawn"),
+      onSuccess: () => {
+        toast.success("Request withdrawn");
+        setConfirmAction(null);
+      },
     });
   };
 
   const handleFreeze = () => {
-    freeze.mutate(app.id, { onSuccess: () => toast.success("Request frozen — hidden from new lender matches") });
+    freeze.mutate(app.id, {
+      onSuccess: () => {
+        toast.success("Request frozen — hidden from new lender matches");
+        setConfirmAction(null);
+      },
+    });
   };
 
   const handleUnfreeze = () => {
@@ -364,7 +373,7 @@ function ApplicationActions({ app }: { app: LoanApplication }) {
         </button>
       ) : (
         <button
-          onClick={handleFreeze}
+          onClick={() => setConfirmAction("freeze")}
           disabled={freeze.isPending}
           className="px-3 py-1.5 rounded-lg border border-gray-300 text-xs font-medium text-gray-600 hover:border-blue-300 hover:text-blue-600 transition-colors disabled:opacity-50"
         >
@@ -372,7 +381,7 @@ function ApplicationActions({ app }: { app: LoanApplication }) {
         </button>
       )}
       <button
-        onClick={handleWithdraw}
+        onClick={() => setConfirmAction("withdraw")}
         disabled={deleteApplication.isPending}
         className="px-3 py-1.5 rounded-lg border border-gray-300 text-xs font-medium text-gray-600 hover:border-red-300 hover:text-red-600 transition-colors disabled:opacity-50"
       >
@@ -391,6 +400,26 @@ function ApplicationActions({ app }: { app: LoanApplication }) {
           A guarantor has already approved — editing is locked, but you can still freeze or withdraw.
         </p>
       )}
+
+      <ConfirmModal
+        open={confirmAction === "withdraw"}
+        onOpenChange={(open) => !open && setConfirmAction(null)}
+        title="Withdraw this loan request?"
+        description="This can't be undone — you'll need to submit a new request from scratch if you change your mind."
+        confirmLabel="Yes, Withdraw"
+        onConfirm={handleWithdraw}
+        loading={deleteApplication.isPending}
+        destructive
+      />
+      <ConfirmModal
+        open={confirmAction === "freeze"}
+        onOpenChange={(open) => !open && setConfirmAction(null)}
+        title="Freeze this loan request?"
+        description="Lenders won't be able to match or send new offers on it until you unfreeze it. You can unfreeze any time."
+        confirmLabel="Yes, Freeze"
+        onConfirm={handleFreeze}
+        loading={freeze.isPending}
+      />
     </div>
   );
 }
