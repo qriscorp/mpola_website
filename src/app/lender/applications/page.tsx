@@ -183,7 +183,7 @@ export default function ApplicationsPage() {
                   }}
                   className="px-3 py-1.5 rounded-lg bg-emerald-500 text-white text-xs font-semibold hover:bg-emerald-600 transition-colors"
                 >
-                  Approve
+                  Make Offer
                 </button>
                 <button
                   onClick={() =>
@@ -211,7 +211,7 @@ export default function ApplicationsPage() {
         </StaggerList>
       )}
 
-      {/* Approve = make a real offer modal */}
+      {/* Make Offer = build a real offer for this borrower */}
       {offerModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
           <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md p-6 sm:p-8">

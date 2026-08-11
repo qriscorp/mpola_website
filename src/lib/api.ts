@@ -1122,18 +1122,30 @@ export const api = {
         title: string;
         message: string;
         type: string | null;
+        data: string | null;
         is_read: boolean;
         created_at: string;
       }[];
     }>("/notifications/?limit=50");
-    return res.notifications.map((n) => ({
-      id: n.id,
-      title: n.title,
-      message: n.message,
-      type: n.type,
-      read: n.is_read,
-      createdAt: n.created_at,
-    }));
+    return res.notifications.map((n) => {
+      let data: Record<string, unknown> | null = null;
+      if (n.data) {
+        try {
+          data = JSON.parse(n.data);
+        } catch {
+          data = null;
+        }
+      }
+      return {
+        id: n.id,
+        title: n.title,
+        message: n.message,
+        type: n.type,
+        data,
+        read: n.is_read,
+        createdAt: n.created_at,
+      };
+    });
   },
 
   markNotificationRead: async (id: string): Promise<void> => {

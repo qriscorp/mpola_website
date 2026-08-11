@@ -23,7 +23,7 @@ import {
 import { SignOutModal } from "@/components/sign-out-modal";
 import { SwitchToAdminLink } from "@/components/portal-switch-link";
 import { useUser } from "@/hooks/use-dashboard";
-import { useMyOffers, useMarketplace } from "@/hooks/use-lender";
+import { useMyOffers, useMarketplace, useLenderActiveLoans } from "@/hooks/use-lender";
 import { useGuarantorRequests } from "@/hooks/use-guarantors";
 import { getInitials } from "@/lib/format";
 
@@ -48,7 +48,12 @@ const lendingNav = [
     icon: Activity,
     badgeKey: "openApplications" as const,
   },
-  { href: "/lender/portfolio", label: "Portfolio", icon: Briefcase },
+  {
+    href: "/lender/portfolio",
+    label: "Portfolio",
+    icon: Briefcase,
+    badgeKey: "awaitingDisbursement" as const,
+  },
 ];
 
 const financeNav = [
@@ -71,7 +76,7 @@ type NavItem = {
   href: string;
   label: string;
   icon: React.ElementType;
-  badgeKey?: "pendingOffers" | "openApplications" | "pendingApprovals";
+  badgeKey?: "pendingOffers" | "openApplications" | "pendingApprovals" | "awaitingDisbursement";
 };
 
 export function LenderSidebarContent({
@@ -85,9 +90,11 @@ export function LenderSidebarContent({
   const { data: offers } = useMyOffers();
   const { data: marketplace } = useMarketplace();
   const { data: guarantorRequests } = useGuarantorRequests("pending");
+  const { data: activeLoans } = useLenderActiveLoans();
   const pendingOffers = (offers ?? []).filter((o) => o.status === "pending").length;
   const openApplications = marketplace?.total ?? 0;
   const pendingApprovals = guarantorRequests?.requests.length ?? 0;
+  const awaitingDisbursement = (activeLoans ?? []).filter((l) => l.status === "pending_disbursement").length;
 
   const navLink = (item: NavItem) => {
     const badge =
@@ -97,7 +104,9 @@ export function LenderSidebarContent({
           ? openApplications
           : item.badgeKey === "pendingApprovals"
             ? pendingApprovals
-            : undefined;
+            : item.badgeKey === "awaitingDisbursement"
+              ? awaitingDisbursement
+              : undefined;
     const isActive =
       pathname === item.href ||
       (item.href !== "/lender" && pathname.startsWith(item.href));

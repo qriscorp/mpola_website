@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Bell,
   CheckCheck,
@@ -19,6 +20,7 @@ import { BorrowerPageHeader } from "@/components/top-nav";
 import { CardSkeleton } from "@/components/skeletons";
 import { StaggerList, StaggerItem } from "@/components/motion/stagger";
 import { WebPushPrompt } from "@/components/web-push-prompt";
+import { notificationHref } from "@/lib/notifications";
 import type { Notification } from "@/lib/types";
 
 type FilterKey = "all" | "unread" | "offers" | "payments" | "guarantors";
@@ -63,6 +65,7 @@ function timeSince(dateStr: string) {
 }
 
 export default function NotificationsPage() {
+  const router = useRouter();
   const { data: items = [], isLoading } = useNotifications();
   const markRead = useMarkRead();
   const markAll = useMarkAllRead();
@@ -145,15 +148,21 @@ export default function NotificationsPage() {
           {filteredItems.map((item, index) => {
             const cfg = (item.type && typeConfig[item.type]) || defaultTypeConfig;
             const Icon = cfg.icon;
+            const href = notificationHref(item.type, false);
             return (
               <StaggerItem key={item.id} className="w-full">
               <button
-                onClick={() => !item.read && markRead.mutate(item.id)}
+                onClick={() => {
+                  if (!item.read) markRead.mutate(item.id);
+                  if (href) router.push(href);
+                }}
                 className={`flex w-full items-start gap-4 px-4 py-4 text-left transition-colors sm:px-5 ${
                   index !== filteredItems.length - 1
                     ? "border-b border-gray-100"
                     : ""
-                } ${!item.read ? "bg-[#F2FBF9] hover:bg-[#EAF8F5]" : "hover:bg-gray-50"}`}
+                } ${!item.read ? "bg-[#F2FBF9] hover:bg-[#EAF8F5]" : "hover:bg-gray-50"} ${
+                  href ? "cursor-pointer" : ""
+                }`}
               >
                 <div
                   className={`mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${cfg.iconBg}`}

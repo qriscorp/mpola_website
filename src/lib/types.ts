@@ -48,6 +48,11 @@ export interface LoanApplication {
   borrower: ApplicationBorrower | null;
   offers_count: number;
   pending_offers_count: number;
+  // Once status is "funded", check these to tell "accepted, waiting on the
+  // lender to disburse" apart from "actually disbursed" — see _app_response.
+  loan_id: string | null;
+  loan_status: "pending_disbursement" | "active" | "overdue" | "completed" | "defaulted" | null;
+  loan_disbursed_at: string | null;
   offers?: LoanOffer[];
   guarantors?: Guarantor[];
 }
@@ -202,6 +207,7 @@ export interface Notification {
   title: string;
   message: string;
   type: string | null;
+  data: Record<string, unknown> | null;
   read: boolean;
   createdAt: string;
 }

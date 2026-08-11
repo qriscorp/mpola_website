@@ -20,7 +20,6 @@ export function getInitials(name: string): string {
 export function getStatusColor(status: string): string {
   switch (status) {
     case "active":
-    case "funded":
     case "approved":
     case "paid":
     case "confirmed":
@@ -68,4 +67,25 @@ export function getStatusLabel(status: string): string {
     default:
       return status.charAt(0).toUpperCase() + status.slice(1);
   }
+}
+
+/** A LoanApplication's status alone can't tell "accepted, waiting on the
+ * lender to release funds" apart from "actually funded" — both are stored
+ * as status="funded" (see _app_response); only the associated Loan's own
+ * status (loan_status) distinguishes them. Use this instead of
+ * getStatusLabel/getStatusColor wherever an application's status is shown. */
+export function getApplicationStatusLabel(status: string, loanStatus?: string | null): string {
+  if (status === "funded") {
+    return loanStatus && loanStatus !== "pending_disbursement" ? "Funded" : "Awaiting Disbursement";
+  }
+  return getStatusLabel(status);
+}
+
+export function getApplicationStatusColor(status: string, loanStatus?: string | null): string {
+  if (status === "funded") {
+    return loanStatus && loanStatus !== "pending_disbursement"
+      ? "text-emerald-600 bg-emerald-50"
+      : "text-amber-600 bg-amber-50";
+  }
+  return getStatusColor(status);
 }

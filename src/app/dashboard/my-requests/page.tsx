@@ -13,7 +13,7 @@ import {
   useFreezeApplication,
   useUnfreezeApplication,
 } from "@/hooks/use-application";
-import { formatCurrency, getStatusColor, getStatusLabel } from "@/lib/format";
+import { formatCurrency, getApplicationStatusColor, getApplicationStatusLabel } from "@/lib/format";
 import { TableSkeleton } from "@/components/skeletons";
 import { StaggerList, StaggerItem } from "@/components/motion/stagger";
 import type { Guarantor, LoanApplication } from "@/lib/types";
@@ -563,9 +563,9 @@ export default function MyRequestsPage() {
                         {formatCurrency(app.amount)}
                       </span>
                       <span
-                        className={`px-2 py-0.5 rounded-full text-xs font-semibold ${getStatusColor(app.status)}`}
+                        className={`px-2 py-0.5 rounded-full text-xs font-semibold ${getApplicationStatusColor(app.status, app.loan_status)}`}
                       >
-                        {getStatusLabel(app.status)}
+                        {getApplicationStatusLabel(app.status, app.loan_status)}
                       </span>
                     </div>
                     <p className="text-sm text-gray-500 capitalize">
