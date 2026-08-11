@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useApplicationDetail, useMakeOffer } from "@/hooks/use-lender";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, getApplicationStatusLabel } from "@/lib/format";
 import { DOCUMENT_LABEL_OPTIONS } from "@/lib/document-labels";
 import { CardSkeleton } from "@/components/skeletons";
 
@@ -146,8 +146,8 @@ export default function ApplicationDetailPage({
                   Make an Offer
                 </Button>
               ) : (
-                <Badge className="bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300 capitalize">
-                  {application.status}
+                <Badge className="bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300">
+                  {getApplicationStatusLabel(application.status, application.loan_status)}
                 </Badge>
               )}
             </div>

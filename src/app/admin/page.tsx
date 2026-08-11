@@ -25,7 +25,7 @@ import {
   useAdminLoans,
   useAdminApplications,
 } from "@/hooks/use-admin";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, getApplicationStatusLabel, getApplicationStatusColor } from "@/lib/format";
 import { FadeSwap } from "@/components/motion/fade-swap";
 import { StaggerList, StaggerItem } from "@/components/motion/stagger";
 import {
@@ -609,17 +609,9 @@ export default function AdminDashboardPage() {
                   </div>
                   <Badge
                     variant="outline"
-                    className={`text-xs ${
-                      app.status === "pending"
-                        ? "bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400"
-                        : app.status === "funded"
-                          ? "bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400"
-                          : app.status === "completed" || app.status === "approved"
-                            ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400"
-                            : "bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400"
-                    }`}
+                    className={`text-xs ${getApplicationStatusColor(app.status, app.loan_status)}`}
                   >
-                    {app.status}
+                    {getApplicationStatusLabel(app.status, app.loan_status)}
                   </Badge>
                 </div>
               ))}

@@ -330,6 +330,7 @@ export interface AdminApplication {
     | "completed"
     | "defaulted"
     | "expired";
+  loan_status: "pending_disbursement" | "active" | "overdue" | "completed" | "defaulted" | null;
   interest_rate: number | null;
   offer_count: number;
   is_frozen: boolean;

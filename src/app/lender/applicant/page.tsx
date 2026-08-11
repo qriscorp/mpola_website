@@ -9,7 +9,7 @@ import {
   useApplicationDetail,
   useSkipApplication,
 } from "@/hooks/use-lender";
-import { formatCurrency, getInitials } from "@/lib/format";
+import { formatCurrency, getInitials, getApplicationStatusLabel, getApplicationStatusColor } from "@/lib/format";
 
 const guarantorColors = ["bg-emerald-600", "bg-amber-700", "bg-blue-700"];
 
@@ -109,10 +109,12 @@ function ApplicantContent() {
                 )}
               </div>
               <div className="flex gap-2 mt-3 flex-wrap">
-                <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-600 border border-amber-200 capitalize">
+                <span
+                  className={`px-2.5 py-1 rounded-full text-xs font-semibold border border-current/20 ${getApplicationStatusColor(application.status, application.loan_status)}`}
+                >
                   {application.status === "pending"
                     ? "Pending Review"
-                    : application.status}
+                    : getApplicationStatusLabel(application.status, application.loan_status)}
                 </span>
                 <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-[#1B2B3A] text-[#C4A55A]">
                   Score {borrower?.credit_score ?? "—"}/100
