@@ -121,10 +121,10 @@ export function WalletDepositModal({
         <div className="flex gap-3 pt-2">
           <button
             onClick={onClose}
-            disabled={isPending}
+            disabled={mobileMoney.isPending}
             className="flex-1 py-2.5 border border-gray-300 rounded-xl text-sm font-semibold text-gray-700 disabled:opacity-50"
           >
-            Cancel
+            {cardDeposit.isPending ? "Close (keeps waiting)" : "Cancel"}
           </button>
           <button
             onClick={handleConfirm}
