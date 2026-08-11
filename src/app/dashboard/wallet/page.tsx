@@ -38,6 +38,14 @@ export default function WalletPage() {
         onDeposit={() => setDepositOpen(true)}
         onWithdraw={() => setWithdrawOpen(true)}
         onSetup={() => setSetupOpen(true)}
+        extraActions={
+          <button
+            onClick={() => router.push("/dashboard/repayments/pay")}
+            className="px-5 py-2 rounded-lg border border-white/30 text-white font-semibold text-sm hover:bg-white/10 transition-colors"
+          >
+            Pay Loan
+          </button>
+        }
       />
 
       {/* Transaction history */}

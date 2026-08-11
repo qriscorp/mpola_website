@@ -75,7 +75,15 @@ function MakePaymentContent() {
 
   const isBulletLoan = loan.duration_days != null;
   const dueAmount = loan.next_payment_amount ?? loan.monthly_payment;
+  const remainingBalance = Math.max(0, loan.total_repayable - loan.total_paid);
+  const showPayoffOption = remainingBalance > dueAmount;
   const effectiveAmount = amount ? Number(amount) : dueAmount;
+  const payMode: "instalment" | "full" | "custom" =
+    effectiveAmount === dueAmount
+      ? "instalment"
+      : effectiveAmount === remainingBalance
+        ? "full"
+        : "custom";
   const instalmentNumber = loan.paid_instalments + 1;
   const walletFee = calcPlatformFee(effectiveAmount);
   const walletTotalDebit = effectiveAmount + walletFee;
@@ -217,6 +225,46 @@ function MakePaymentContent() {
               )}
             </div>
           </div>
+
+          {showPayoffOption && (
+            <div className="mt-6">
+              <p className="mb-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-gray-500">
+                How much would you like to pay?
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <button
+                  onClick={() => setAmount(String(dueAmount))}
+                  className={`flex-1 min-w-[180px] rounded-xl border p-4 text-left transition-colors ${
+                    payMode === "instalment"
+                      ? "border-[#2BB5A0] bg-[#E6F4F2]"
+                      : "border-gray-200 bg-white hover:border-gray-300"
+                  }`}
+                >
+                  <p className="text-sm font-semibold text-[#1B2B3A]">
+                    Pay this instalment
+                  </p>
+                  <p className="mt-1 text-lg font-black text-[#1B2B3A]">
+                    {formatCurrency(dueAmount)}
+                  </p>
+                </button>
+                <button
+                  onClick={() => setAmount(String(remainingBalance))}
+                  className={`flex-1 min-w-[180px] rounded-xl border p-4 text-left transition-colors ${
+                    payMode === "full"
+                      ? "border-[#2BB5A0] bg-[#E6F4F2]"
+                      : "border-gray-200 bg-white hover:border-gray-300"
+                  }`}
+                >
+                  <p className="text-sm font-semibold text-[#1B2B3A]">
+                    Pay off full balance
+                  </p>
+                  <p className="mt-1 text-lg font-black text-[#1B2B3A]">
+                    {formatCurrency(remainingBalance)}
+                  </p>
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Wallet payment — the only method offered for repayments */}
           <div className="mt-6 space-y-3">
