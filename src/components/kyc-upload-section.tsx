@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import { CheckCircle2, Clock, Upload } from "lucide-react";
+import { CheckCircle2, Clock, Upload, Loader2 } from "lucide-react";
 import { useMyKycDocuments, useUploadKycDocument } from "@/hooks/use-dashboard";
 import type { KYCDocumentType } from "@/lib/types";
 
@@ -45,7 +45,13 @@ function DocumentSlot({
         )}
       </div>
       <div className="flex items-center gap-2 shrink-0">
-        {existing &&
+        {upload.isPending ? (
+          <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${colors.bg} ${colors.text}`}>
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            Uploading…
+          </span>
+        ) : (
+          existing &&
           (existing.verified ? (
             <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${colors.bg} ${colors.text}`}>
               <CheckCircle2 className="h-3.5 w-3.5" />
@@ -56,7 +62,8 @@ function DocumentSlot({
               <Clock className="h-3.5 w-3.5" />
               Pending review
             </span>
-          ))}
+          ))
+        )}
         <input
           ref={inputRef}
           type="file"
@@ -73,8 +80,12 @@ function DocumentSlot({
           disabled={upload.isPending}
           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 text-xs font-semibold text-gray-600 dark:text-gray-300 hover:border-current hover:text-current transition-colors disabled:opacity-50"
         >
-          <Upload className="h-3.5 w-3.5" />
-          {existing ? "Replace" : "Upload"}
+          {upload.isPending ? (
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          ) : (
+            <Upload className="h-3.5 w-3.5" />
+          )}
+          {upload.isPending ? "Uploading…" : existing ? "Replace" : "Upload"}
         </button>
       </div>
     </div>
