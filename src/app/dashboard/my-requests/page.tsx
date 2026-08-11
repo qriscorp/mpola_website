@@ -250,8 +250,10 @@ function EditApplicationForm({ app, onDone }: { app: LoanApplication; onDone: ()
     maxInterestRate.trim() !== "" &&
     (Number.isNaN(Number(maxInterestRate)) || Number(maxInterestRate) < 0.1 || Number(maxInterestRate) > 25);
 
+  const durationInvalid = isEmergency && durationDays == null;
+
   const handleSave = () => {
-    if (amountInvalid || rateInvalid) return;
+    if (amountInvalid || rateInvalid || durationInvalid) return;
     update.mutate(
       {
         id: app.id,
@@ -358,12 +360,19 @@ function EditApplicationForm({ app, onDone }: { app: LoanApplication; onDone: ()
                 onChange={(e) => {
                   const v = e.target.value;
                   setCustomDays(v);
+                  if (v === "") {
+                    setDurationDays(null);
+                    return;
+                  }
                   const n = parseInt(v, 10);
-                  if (!Number.isNaN(n) && n >= 1 && n <= 29) setDurationDays(n);
+                  setDurationDays(!Number.isNaN(n) && n >= 1 && n <= 29 ? n : null);
                 }}
                 placeholder="Custom days (1-29)"
                 className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#2BB5A0]"
               />
+              {customDays !== "" && durationDays == null && (
+                <p className="text-xs text-red-500">Enter a whole number between 1 and 29</p>
+              )}
             </div>
           ) : (
             <select
@@ -430,7 +439,7 @@ function EditApplicationForm({ app, onDone }: { app: LoanApplication; onDone: ()
         </button>
         <button
           onClick={handleSave}
-          disabled={update.isPending || amountInvalid || rateInvalid}
+          disabled={update.isPending || amountInvalid || rateInvalid || durationInvalid}
           className="px-4 py-1.5 rounded-lg bg-[#2BB5A0] text-white text-sm font-semibold hover:bg-[#239E8C] transition-colors disabled:opacity-50"
         >
           {update.isPending ? "Saving…" : "Save Changes"}

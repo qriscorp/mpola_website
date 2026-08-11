@@ -323,14 +323,21 @@ function Step1({
                     onChange={(e) => {
                       const v = e.target.value;
                       setCustomDays(v);
+                      if (v === "") {
+                        setDurationDays(null);
+                        return;
+                      }
                       const n = parseInt(v, 10);
-                      if (!Number.isNaN(n) && n >= 1 && n <= 29) setDurationDays(n);
+                      setDurationDays(!Number.isNaN(n) && n >= 1 && n <= 29 ? n : null);
                     }}
                     placeholder="Custom (1-29 days)"
                     className="w-44 rounded-lg border border-gray-300 px-3 py-2 text-sm text-[#1B2B3A] outline-none focus:ring-2 focus:ring-[#2BB5A0]"
                   />
                   <span className="text-xs text-gray-400">days</span>
                 </div>
+                {customDays !== "" && durationDays == null && (
+                  <p className="text-xs text-red-500">Enter a whole number between 1 and 29</p>
+                )}
                 <p className="text-xs text-gray-400">
                   30 days or more? Switch the loan type above — that&apos;s a standard request.
                 </p>
@@ -772,6 +779,8 @@ export default function ApplyPage() {
       }
     }
     setMaxInterestRateError(null);
+
+    if (loanType === "emergency" && durationDays == null) return false;
     return true;
   };
 
@@ -877,6 +886,7 @@ export default function ApplyPage() {
   const step1AmountValid = Number(amount) >= 1000 && Number(amount) <= 50000000;
   const step1RateValid =
     !maxInterestRate.trim() || (Number(maxInterestRate) >= 0.1 && Number(maxInterestRate) <= 25);
+  const step1DurationValid = loanType !== "emergency" || durationDays != null;
 
   if (resuming) {
     return (
@@ -981,7 +991,7 @@ export default function ApplyPage() {
               onClick={handleNext}
               disabled={
                 isSubmitting ||
-                (currentStep === 1 && (!step1AmountValid || !step1RateValid)) ||
+                (currentStep === 1 && (!step1AmountValid || !step1RateValid || !step1DurationValid)) ||
                 (currentStep === 2 && guarantors.length < 2)
               }
               className="bg-[#2BB5A0] text-white hover:bg-[#239E8C]"
