@@ -439,7 +439,8 @@ export interface AdminOfferTemplate {
   max_amount: number;
   min_amount: number;
   interest_rate: number;
-  max_duration: number;
+  max_duration: number | null;
+  max_duration_days: number | null;
   accepted_loan_types: string[];
   required_documents: string[];
   description: string | null;
@@ -613,7 +614,11 @@ export interface LenderOfferTemplate {
   max_amount: number;
   min_amount: number;
   interest_rate: number;
-  max_duration: number;
+  max_duration: number | null;
+  // A standing offer is either month-based (max_duration) or a day-based
+  // "emergency" offer (max_duration_days) — exactly one is ever set, same
+  // split as LoanApplication/LoanOffer.
+  max_duration_days: number | null;
   accepted_loan_types: string[];
   required_documents: string[];
   description: string | null;

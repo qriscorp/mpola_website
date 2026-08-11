@@ -11,7 +11,7 @@ import {
   useFreezeOfferTemplate,
   useUnfreezeOfferTemplate,
 } from "@/hooks/use-admin";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, formatDuration } from "@/lib/format";
 import { CardSkeleton } from "@/components/skeletons";
 import { FadeSwap } from "@/components/motion/fade-swap";
 import { StaggerList, StaggerItem } from "@/components/motion/stagger";
@@ -145,7 +145,7 @@ export default function AdminOfferTemplatesPage() {
                           {formatCurrency(t.max_amount)}
                         </p>
                         <p className="text-[#2BB5A0] font-semibold text-sm mt-0.5">
-                          {t.interest_rate}%/month · Max {t.max_duration} months
+                          {t.interest_rate}%/month · Max {formatDuration(t.max_duration, t.max_duration_days)}
                         </p>
                       </div>
                       <div className="flex flex-col items-end gap-1.5 shrink-0">

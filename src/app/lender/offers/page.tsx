@@ -252,7 +252,7 @@ export default function MyOffersPage() {
                       {formatCurrency(t.min_amount)} – {formatCurrency(t.max_amount)}
                     </p>
                     <p className="text-[#C4A55A] font-semibold text-sm mt-0.5">
-                      {formatRate(t.interest_rate)} · Max {t.max_duration} months
+                      {formatRate(t.interest_rate)} · Max {formatDuration(t.max_duration, t.max_duration_days)}
                     </p>
                     <p className="text-xs text-gray-400 mt-1 capitalize">
                       {t.accepted_loan_types.join(", ") || "Any loan type"}

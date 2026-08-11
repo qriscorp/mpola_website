@@ -1451,7 +1451,8 @@ export const api = {
     max_amount: number;
     min_amount: number;
     interest_rate: number;
-    max_duration: number;
+    max_duration?: number | null;
+    max_duration_days?: number | null;
     accepted_loan_types: string[];
     required_documents: string[];
     description?: string;
@@ -1473,7 +1474,8 @@ export const api = {
       max_amount: number;
       min_amount: number;
       interest_rate: number;
-      max_duration: number;
+      max_duration: number | null;
+      max_duration_days: number | null;
       accepted_loan_types: string[];
       required_documents: string[];
       description: string;

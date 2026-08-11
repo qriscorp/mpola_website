@@ -28,6 +28,9 @@ const DOCUMENTS = DOCUMENT_LABEL_OPTIONS;
 // borrowers can only ever pick 1-12 months, so a lender's max_duration should
 // be pickable at the same granularity, not a curated subset up to 24.
 const DURATIONS = Array.from({ length: 12 }, (_, i) => `${i + 1} month${i === 0 ? "" : "s"}`);
+// Mirrors the borrower apply wizard's emergency day presets exactly — a
+// day-based standing offer's max_duration_days should use the same range.
+const DAY_PRESETS = [1, 3, 7, 14];
 
 export default function PostOfferPage() {
   return (
@@ -54,7 +57,10 @@ function PostOfferContent() {
     "Bank Statement (3mo)",
     "Payslip / Business Proof",
   ]);
+  const [unit, setUnit] = useState<"months" | "days">("months");
   const [duration, setDuration] = useState("6 months");
+  const [durationDays, setDurationDays] = useState<number | null>(DAY_PRESETS[0]);
+  const [customDays, setCustomDays] = useState("");
   const [maxAmount, setMaxAmount] = useState("50000000");
   const [minAmount, setMinAmount] = useState("1000");
   const [rate, setRate] = useState("2");
@@ -76,11 +82,20 @@ function PostOfferContent() {
     setMaxAmount(String(editingTemplate.max_amount));
     setMinAmount(String(editingTemplate.min_amount));
     setRate(String(editingTemplate.interest_rate));
-    setDuration(
-      editingTemplate.max_duration === 1
-        ? "1 month"
-        : `${editingTemplate.max_duration} months`,
-    );
+    if (editingTemplate.max_duration_days != null) {
+      setUnit("days");
+      setDurationDays(editingTemplate.max_duration_days);
+      if (!DAY_PRESETS.includes(editingTemplate.max_duration_days)) {
+        setCustomDays(String(editingTemplate.max_duration_days));
+      }
+    } else if (editingTemplate.max_duration != null) {
+      setUnit("months");
+      setDuration(
+        editingTemplate.max_duration === 1
+          ? "1 month"
+          : `${editingTemplate.max_duration} months`,
+      );
+    }
     setSelectedTypes(
       LOAN_TYPES.filter((t) =>
         editingTemplate.accepted_loan_types.includes(t.toLowerCase()),
@@ -125,6 +140,7 @@ function PostOfferContent() {
   const amountRangeInvalid =
     minAmount !== "" && maxAmount !== "" && Number(minAmount) >= Number(maxAmount);
   const rateInvalid = rate !== "" && (Number(rate) < 0.1 || Number(rate) > 25);
+  const durationInvalid = unit === "days" && durationDays == null;
 
   function handlePost(draft: boolean) {
     if (amountRangeInvalid) {
@@ -135,13 +151,18 @@ function PostOfferContent() {
       toast.error("Interest rate must be between 0.1% and 25%");
       return;
     }
+    if (durationInvalid) {
+      toast.error("Enter a valid custom duration between 1 and 29 days");
+      return;
+    }
 
     const monthsMatch = duration.match(/\d+/);
     const fields = {
       max_amount: Number(maxAmount),
       min_amount: Number(minAmount),
       interest_rate: Number(rate),
-      max_duration: monthsMatch ? Number(monthsMatch[0]) : 6,
+      max_duration: unit === "months" ? (monthsMatch ? Number(monthsMatch[0]) : 6) : null,
+      max_duration_days: unit === "days" ? durationDays : null,
       accepted_loan_types: selectedTypes.map((t) => t.toLowerCase()),
       required_documents: selectedDocs,
       description: description || undefined,
@@ -235,33 +256,42 @@ function PostOfferContent() {
             </p>
           )}
 
-          {/* Rate + Duration */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                Interest Rate (%/month)
-              </Label>
-              <Input
-                type="number"
-                min={0.1}
-                max={25}
-                step={0.1}
-                placeholder="2"
-                value={rate}
-                onChange={(e) => setRate(e.target.value)}
-              />
-              {rateInvalid && (
-                <p className="text-xs text-red-500">Rate must be between 0.1% and 25%</p>
-              )}
-            </div>
-            <div className="space-y-1.5">
+          {/* Rate */}
+          <div className="space-y-1.5">
+            <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              Interest Rate (%/month)
+            </Label>
+            <Input
+              type="number"
+              min={0.1}
+              max={25}
+              step={0.1}
+              placeholder="2"
+              value={rate}
+              onChange={(e) => setRate(e.target.value)}
+              className="max-w-xs"
+            />
+            {rateInvalid && (
+              <p className="text-xs text-red-500">Rate must be between 0.1% and 25%</p>
+            )}
+          </div>
+
+          {/* Duration */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
               <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
                 Maximum Duration
               </Label>
+              <div className="flex gap-2">
+                {chipBtn("Months", unit === "months", () => setUnit("months"))}
+                {chipBtn("Days (Emergency)", unit === "days", () => setUnit("days"))}
+              </div>
+            </div>
+            {unit === "months" ? (
               <select
                 value={duration}
                 onChange={(e) => setDuration(e.target.value)}
-                className="flex h-9 w-full rounded-lg border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                className="flex h-9 w-full max-w-xs rounded-lg border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               >
                 {DURATIONS.map((d) => (
                   <option key={d} value={d}>
@@ -269,7 +299,44 @@ function PostOfferContent() {
                   </option>
                 ))}
               </select>
-            </div>
+            ) : (
+              <div className="space-y-2">
+                <div className="flex flex-wrap gap-2">
+                  {DAY_PRESETS.map((d) =>
+                    chipBtn(`${d} day${d === 1 ? "" : "s"}`, durationDays === d && customDays === "", () => {
+                      setDurationDays(d);
+                      setCustomDays("");
+                    }),
+                  )}
+                </div>
+                <div className="flex items-center gap-2 max-w-xs">
+                  <Input
+                    type="number"
+                    min={1}
+                    max={29}
+                    placeholder="Custom (1-29 days)"
+                    value={customDays}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setCustomDays(v);
+                      if (v === "") {
+                        setDurationDays(null);
+                        return;
+                      }
+                      const n = parseInt(v, 10);
+                      setDurationDays(!Number.isNaN(n) && n >= 1 && n <= 29 ? n : null);
+                    }}
+                  />
+                </div>
+                {customDays !== "" && durationDays == null && (
+                  <p className="text-xs text-red-500">Enter a whole number between 1 and 29</p>
+                )}
+                <p className="text-xs text-gray-400">
+                  Matches short-term "emergency" requests (1-29 days, single repayment). These
+                  never match a month-based offer, and vice versa.
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Accepted loan types */}
@@ -350,7 +417,7 @@ function PostOfferContent() {
             {isEditing ? (
               <button
                 onClick={() => handlePost(false)}
-                disabled={updateTemplate.isPending || editDataLoading || amountRangeInvalid || rateInvalid}
+                disabled={updateTemplate.isPending || editDataLoading || amountRangeInvalid || rateInvalid || durationInvalid}
                 className="px-5 py-2 rounded-lg bg-[#C4A55A] text-white text-sm font-semibold hover:bg-[#b3944a] transition-colors disabled:opacity-50"
               >
                 {editDataLoading
@@ -363,14 +430,14 @@ function PostOfferContent() {
               <>
                 <button
                   onClick={() => handlePost(true)}
-                  disabled={createTemplate.isPending || amountRangeInvalid || rateInvalid}
+                  disabled={createTemplate.isPending || amountRangeInvalid || rateInvalid || durationInvalid}
                   className="px-5 py-2 rounded-lg border border-gray-300 text-sm font-semibold text-gray-700 hover:border-gray-400 transition-colors disabled:opacity-50"
                 >
                   {createTemplate.isPending ? "Saving…" : "Save Draft"}
                 </button>
                 <button
                   onClick={() => handlePost(false)}
-                  disabled={createTemplate.isPending || amountRangeInvalid || rateInvalid}
+                  disabled={createTemplate.isPending || amountRangeInvalid || rateInvalid || durationInvalid}
                   className="px-5 py-2 rounded-lg bg-[#C4A55A] text-white text-sm font-semibold hover:bg-[#b3944a] transition-colors disabled:opacity-50"
                 >
                   {createTemplate.isPending ? "Posting…" : "Post Offer"}

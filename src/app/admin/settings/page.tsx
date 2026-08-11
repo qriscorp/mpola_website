@@ -25,7 +25,7 @@ import {
 } from "@/hooks/use-admin";
 import { useUser, useUpdateProfile } from "@/hooks/use-dashboard";
 import { api } from "@/lib/api";
-import { formatCurrency, formatRate } from "@/lib/format";
+import { formatCurrency, formatRate, formatDuration } from "@/lib/format";
 import { CardSkeleton } from "@/components/skeletons";
 import { FadeSwap } from "@/components/motion/fade-swap";
 import { StaggerList, StaggerItem } from "@/components/motion/stagger";
@@ -452,7 +452,7 @@ export default function AdminSettingsPage() {
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {formatCurrency(t.min_amount)} – {formatCurrency(t.max_amount)} ·{" "}
-                      {formatRate(t.interest_rate)} · Max {t.max_duration} months
+                      {formatRate(t.interest_rate)} · Max {formatDuration(t.max_duration, t.max_duration_days)}
                     </p>
                   </div>
                   <div className="flex gap-2 shrink-0">
