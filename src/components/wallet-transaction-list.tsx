@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useState } from "react";
+import { useState } from "react";
 import {
   Table,
   TableBody,
@@ -12,6 +12,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { TableSkeleton } from "@/components/skeletons";
 import { formatCurrency } from "@/lib/format";
+import { TransactionDetailModal } from "@/components/transaction-detail-modal";
 import type { WalletTransaction, WalletTransactionType } from "@/lib/types";
 
 const TYPE_LABEL: Record<WalletTransactionType, string> = {
@@ -86,18 +87,6 @@ function formatDate(iso: string): string {
   });
 }
 
-function formatDateTime(iso: string): string {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  return d.toLocaleString("en-UG", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  });
-}
-
 export function WalletTransactionList({
   transactions,
   isLoading,
@@ -107,7 +96,7 @@ export function WalletTransactionList({
   isLoading?: boolean;
   emptyMessage?: string;
 }) {
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   if (isLoading) {
     return <TableSkeleton rows={5} />;
@@ -122,23 +111,23 @@ export function WalletTransactionList({
   }
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Date</TableHead>
-          <TableHead>Description</TableHead>
-          <TableHead>Type</TableHead>
-          <TableHead className="text-right">Amount</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {transactions.map((tx) => {
-          const isCredit = CREDIT_TYPES.has(tx.type);
-          const expanded = expandedId === tx.id;
-          return (
-            <Fragment key={tx.id}>
+    <>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Date</TableHead>
+            <TableHead>Description</TableHead>
+            <TableHead>Type</TableHead>
+            <TableHead className="text-right">Amount</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {transactions.map((tx) => {
+            const isCredit = CREDIT_TYPES.has(tx.type);
+            return (
               <TableRow
-                onClick={() => setExpandedId(expanded ? null : tx.id)}
+                key={tx.id}
+                onClick={() => setSelectedId(tx.id)}
                 className="cursor-pointer"
               >
                 <TableCell className="text-gray-500 text-xs whitespace-nowrap">
@@ -169,50 +158,15 @@ export function WalletTransactionList({
                   {formatCurrency(tx.amount)}
                 </TableCell>
               </TableRow>
-              {expanded && (
-                <TableRow className="bg-gray-50 dark:bg-gray-950">
-                  <TableCell colSpan={4} className="py-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-xs">
-                      <div className="flex justify-between sm:block">
-                        <span className="text-gray-400">Transaction ID</span>
-                        <span className="sm:block font-medium text-[#1B2B3A] dark:text-white break-all">
-                          {tx.id}
-                        </span>
-                      </div>
-                      <div className="flex justify-between sm:block">
-                        <span className="text-gray-400">Reference</span>
-                        <span className="sm:block font-medium text-[#1B2B3A] dark:text-white break-all">
-                          {tx.reference || "—"}
-                        </span>
-                      </div>
-                      <div className="flex justify-between sm:block">
-                        <span className="text-gray-400">Date &amp; Time</span>
-                        <span className="sm:block font-medium text-[#1B2B3A] dark:text-white">
-                          {formatDateTime(tx.created_at)}
-                        </span>
-                      </div>
-                      <div className="flex justify-between sm:block">
-                        <span className="text-gray-400">Status</span>
-                        <span className="sm:block font-medium text-[#1B2B3A] dark:text-white capitalize">
-                          {tx.status}
-                        </span>
-                      </div>
-                      {tx.counterparty && (
-                        <div className="flex justify-between sm:block">
-                          <span className="text-gray-400">Counterparty</span>
-                          <span className="sm:block font-medium text-[#1B2B3A] dark:text-white">
-                            {tx.counterparty}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              )}
-            </Fragment>
-          );
-        })}
-      </TableBody>
-    </Table>
+            );
+          })}
+        </TableBody>
+      </Table>
+
+      <TransactionDetailModal
+        transactionId={selectedId}
+        onClose={() => setSelectedId(null)}
+      />
+    </>
   );
 }

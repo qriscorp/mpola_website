@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { BorrowerPageHeader } from "@/components/top-nav";
 import { WalletBalanceCard } from "@/components/wallet-balance-card";
 import { WalletTransactionList } from "@/components/wallet-transaction-list";
@@ -13,6 +14,7 @@ import { PaginationControls } from "@/components/ui/pagination-controls";
 const PAGE_SIZE = 20;
 
 export default function WalletPage() {
+  const router = useRouter();
   const { data: wallet, isLoading: walletLoading } = useWallet();
   const [txPage, setTxPage] = useState(1);
   const { data: txData, isLoading: txLoading } = useTransactions(txPage, PAGE_SIZE);

@@ -169,6 +169,35 @@ export interface WalletTransaction {
   created_at: string;
 }
 
+export interface TransactionLoanSummary {
+  id: string;
+  amount: number;
+  interest_rate: number;
+  duration: number | null;
+  duration_days: number | null;
+  status: string;
+  borrower_name: string | null;
+  lender_name: string | null;
+  total_repayable: number;
+  total_paid: number;
+  paid_instalments: number;
+  total_instalments: number;
+}
+
+export interface TransactionRepaymentSummary {
+  instalment_number: number;
+  payment_method: string | null;
+}
+
+export interface TransactionDetail extends WalletTransaction {
+  platform_fee: number | null;
+  provider_fee: number | null;
+  total_fee: number | null;
+  fee_category: string | null;
+  loan: TransactionLoanSummary | null;
+  repayment: TransactionRepaymentSummary | null;
+}
+
 export interface Wallet {
   id?: string;
   balance: number;

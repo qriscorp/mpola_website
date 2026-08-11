@@ -10,6 +10,7 @@ import type {
   MarketplaceApplication,
   Wallet,
   WalletTransaction,
+  TransactionDetail,
   BankOption,
   CardDepositInitiateResult,
   TransferStatusResult,
@@ -958,6 +959,9 @@ export const api = {
       limit: String(pageSize),
     });
     return apiAuthGet(`/wallet/transactions?${params.toString()}`);
+  },
+  getTransactionDetail: async (id: string): Promise<TransactionDetail> => {
+    return apiAuthGet(`/wallet/transactions/${id}`);
   },
   setupWallet: async (pin: string): Promise<{ status: number; message: string }> => {
     return apiAuthPost("/wallet/setup", { pin });

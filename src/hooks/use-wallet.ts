@@ -28,6 +28,14 @@ export function useTransactions(page: number = 1, pageSize: number = 20) {
   });
 }
 
+export function useTransactionDetail(id: string | null) {
+  return useQuery({
+    queryKey: ["transaction-detail", id],
+    queryFn: () => api.getTransactionDetail(id as string),
+    enabled: !!id,
+  });
+}
+
 /** Shared by both portals — wallet setup isn't role-specific. */
 export function useSetupWallet() {
   const queryClient = useQueryClient();
