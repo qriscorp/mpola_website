@@ -66,12 +66,16 @@ function statBadge(s: LoanStatus) {
 export default function LenderPortfolioPage() {
   const [tab, setTab] = useState<"All" | LoanStatus>("All");
   const [expandedLoanId, setExpandedLoanId] = useState<string | null>(null);
+  const [confirmingLoan, setConfirmingLoan] = useState<ActiveLoan | null>(null);
   const { data: loans, isLoading } = useLenderActiveLoans();
   const approveDisbursement = useApproveDisbursement();
 
   const handleApprove = (loanId: string) => {
     approveDisbursement.mutate(loanId, {
-      onSuccess: () => toast.success("Disbursed — funds sent to the borrower's wallet."),
+      onSuccess: () => {
+        toast.success("Disbursed — funds sent to the borrower's wallet.");
+        setConfirmingLoan(null);
+      },
       onError: (err: Error) => toast.error(err.message || "Failed to approve disbursement"),
     });
   };
@@ -234,11 +238,13 @@ export default function LenderPortfolioPage() {
                       {loan.status === "pending_disbursement" ? (
                         <div className="flex flex-col items-start gap-1.5">
                           <button
-                            onClick={() => handleApprove(loan.id)}
+                            onClick={() => setConfirmingLoan(loan)}
                             disabled={approveDisbursement.isPending}
                             className="text-xs px-3 py-1.5 rounded-lg bg-emerald-500 text-white font-semibold hover:bg-emerald-600 transition-colors disabled:opacity-50 whitespace-nowrap"
                           >
-                            {approveDisbursement.isPending ? "Approving…" : "Approve Disbursement"}
+                            {approveDisbursement.isPending && approveDisbursement.variables === loan.id
+                              ? "Approving…"
+                              : "Approve Disbursement"}
                           </button>
                           {loan.required_documents.length > 0 && (
                             <button
@@ -278,6 +284,44 @@ export default function LenderPortfolioPage() {
           </div>
         )}
       </div>
+
+      {confirmingLoan && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md p-6 sm:p-8">
+            <h2 className="text-xl font-bold text-[#1B2B3A] dark:text-white">
+              Approve disbursement?
+            </h2>
+            <p className="text-sm text-gray-500 mt-2">
+              This sends{" "}
+              <strong className="text-[#1B2B3A] dark:text-white">
+                {formatCurrency(confirmingLoan.amount)}
+              </strong>{" "}
+              from your wallet to{" "}
+              <strong className="text-[#1B2B3A] dark:text-white">
+                {confirmingLoan.borrower_name ?? "the borrower"}
+              </strong>{" "}
+              right now. This can&apos;t be undone.
+            </p>
+
+            <div className="flex gap-3 mt-6 justify-end">
+              <button
+                onClick={() => setConfirmingLoan(null)}
+                disabled={approveDisbursement.isPending}
+                className="px-5 py-2 rounded-lg border border-gray-300 text-sm font-medium text-gray-600 hover:border-gray-400 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleApprove(confirmingLoan.id)}
+                disabled={approveDisbursement.isPending}
+                className="px-5 py-2 rounded-lg bg-emerald-500 text-white text-sm font-semibold hover:bg-emerald-600 disabled:opacity-50"
+              >
+                {approveDisbursement.isPending ? "Disbursing…" : "Yes, disburse funds"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
     </FadeSwap>
   );

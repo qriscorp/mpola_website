@@ -1,8 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PhoneInput } from "@/components/phone-input";
+import { CarrierSelect } from "@/components/carrier-select";
+import { useUser } from "@/hooks/use-dashboard";
 import {
   useWithdrawMobileMoney,
   useBankWithdraw,
@@ -33,8 +36,11 @@ export function WalletWithdrawModal({
   const [method, setMethod] = useState<"mobile_money" | "bank">(
     "mobile_money",
   );
-  const [amount, setAmount] = useState("500000");
+  const { data: user } = useUser();
+  const [amount, setAmount] = useState("1000");
   const [phone, setPhone] = useState("");
+  const [phoneTouched, setPhoneTouched] = useState(false);
+  const [carrierOverride, setCarrierOverride] = useState<"MTN" | "AIRTEL" | null>(null);
   const [accountBank, setAccountBank] = useState("");
   const [accountNumber, setAccountNumber] = useState("");
   const [beneficiaryName, setBeneficiaryName] = useState("");
@@ -43,22 +49,40 @@ export function WalletWithdrawModal({
   const bankWithdraw = useBankWithdraw();
   const { data: bankList, isLoading: banksLoading } = useBanks("UG");
 
+  // Auto-fill from the account's saved phone number and auto-select the
+  // matching network — same as kumpi. Only runs before the user has typed
+  // or picked anything themselves, so it never clobbers a manual choice.
+  useEffect(() => {
+    if (!phoneTouched && !phone && user?.phone) {
+      const digits = user.phone.replace(/\D/g, "").slice(-9);
+      if (digits.length === 9) {
+        setPhone(digits);
+        setCarrierOverride(detectCarrier(`0${digits}`));
+      }
+    }
+  }, [user, phone, phoneTouched]);
+
+  const carrier = carrierOverride ?? detectCarrier(phone ? `0${phone}` : "");
   const numericAmount = Number(amount) || 0;
   const charges = useMemo(() => {
     if (numericAmount <= 0) return null;
     return method === "mobile_money"
-      ? calcMobileMoneyWithdrawalCharges(numericAmount, phone || "MTN")
+      ? calcMobileMoneyWithdrawalCharges(numericAmount, carrier)
       : calcBankWithdrawalCharges(numericAmount);
-  }, [method, numericAmount, phone]);
+  }, [method, numericAmount, carrier]);
 
   if (!open) return null;
 
   const isPending = mobileMoney.isPending || bankWithdraw.isPending;
+  const phoneError =
+    method === "mobile_money" && phone.length > 0 && phone.length !== 9
+      ? "Enter a full 9-digit number after +256"
+      : null;
 
   const handleConfirm = () => {
     if (method === "mobile_money") {
       mobileMoney.mutate(
-        { amount: numericAmount, phone },
+        { amount: numericAmount, phone: `+256${phone}`, carrier },
         { onSuccess: onClose },
       );
     } else {
@@ -105,23 +129,42 @@ export function WalletWithdrawModal({
           </Label>
           <Input
             type="number"
-            placeholder="e.g. 500000"
+            placeholder="e.g. 1000"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
           />
         </div>
 
         {method === "mobile_money" ? (
-          <div className="space-y-1.5">
-            <Label className="text-xs font-bold uppercase tracking-wider text-gray-500">
-              Phone Number
-            </Label>
-            <Input
-              placeholder="+256 7XX XXX XXX"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-            />
-          </div>
+          <>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-bold uppercase tracking-wider text-gray-500">
+                Phone Number
+              </Label>
+              <PhoneInput
+                value={phone}
+                onChange={(v) => {
+                  setPhoneTouched(true);
+                  setPhone(v);
+                }}
+              />
+              {phoneError && (
+                <p className="text-xs text-red-500">{phoneError}</p>
+              )}
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-bold uppercase tracking-wider text-gray-500">
+                Network
+              </Label>
+              <CarrierSelect
+                value={carrier}
+                onChange={(c) => {
+                  setPhoneTouched(true);
+                  setCarrierOverride(c);
+                }}
+              />
+            </div>
+          </>
         ) : (
           <>
             <div className="space-y-1.5">
@@ -200,17 +243,17 @@ export function WalletWithdrawModal({
         <div className="flex gap-3 pt-2">
           <button
             onClick={onClose}
-            disabled={isPending}
+            disabled={mobileMoney.isPending}
             className="flex-1 py-2.5 border border-gray-300 rounded-xl text-sm font-semibold text-gray-700 disabled:opacity-50"
           >
-            Cancel
+            {bankWithdraw.isPending ? "Close (keeps waiting)" : "Cancel"}
           </button>
           <button
             onClick={handleConfirm}
             disabled={
               isPending ||
               !amount ||
-              (method === "mobile_money" ? !phone : !bankValid)
+              (method === "mobile_money" ? phone.length !== 9 : !bankValid)
             }
             className={`flex-1 py-2.5 text-white rounded-xl text-sm font-semibold disabled:opacity-50 ${ACCENT_BUTTON_CLASSES[accent]}`}
           >
