@@ -68,9 +68,9 @@ function RequestDetailPanel({ app }: { app: LoanApplication }) {
       {app.max_interest_rate != null && (
         <DetailRow label="Your Rate Cap" value={formatRate(app.max_interest_rate)} />
       )}
-      {app.interest_rate != null ? (
+      {app.status === "funded" ? (
         <>
-          <DetailRow label="Accepted Interest Rate" value={formatRate(app.interest_rate)} />
+          <DetailRow label="Accepted Interest Rate" value={formatRate(app.interest_rate ?? 0)} />
           {app.monthly_payment != null && (
             <DetailRow
               label={app.duration_days != null ? "Repayment Due" : "Monthly Payment"}

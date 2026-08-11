@@ -33,9 +33,6 @@ const LOAN_TYPES = [
   { label: "Emergency", value: "emergency" },
 ];
 
-// Matches mpola_api's default platform rate (routers/loans.py: rate = 3.0, % per month).
-const PLATFORM_RATE_PER_MONTH = 3;
-
 interface GuarantorInput {
   user_id: string;
   full_name: string | null;
@@ -97,7 +94,10 @@ function LoanCalculator({
   maxInterestRate: string;
 }) {
   const hasCap = maxInterestRate.trim() !== "";
-  const displayRate = hasCap ? Number(maxInterestRate) : PLATFORM_RATE_PER_MONTH;
+  // Zero, not the platform-average placeholder — until the borrower actually
+  // types a rate cap, there's nothing real to estimate against, and showing
+  // a fabricated number here reads as "the app already decided my rate."
+  const displayRate = hasCap ? Number(maxInterestRate) : 0;
   const isEmergency = durationDays != null;
   const totalInterest = isEmergency
     ? amount * (displayRate / 100) * (durationDays / 30)
@@ -118,7 +118,7 @@ function LoanCalculator({
           </div>
           <div className="flex justify-between">
             <span className="text-gray-500">
-              {hasCap ? "Your Rate Cap" : "Interest Rate (estimate)"}
+              {hasCap ? "Your Rate Cap" : "Interest Rate (not set)"}
             </span>
             <span className="font-semibold text-[#1B2B3A]">
               {displayRate}%/month
@@ -159,7 +159,7 @@ function LoanCalculator({
             ? isEmergency
               ? "One repayment, due in full — this is only an estimate at your rate cap. Nothing is submitted from this calculator."
               : "This is only an estimate at your rate cap. Nothing is submitted from this calculator."
-            : `You left the rate blank — your request will match any lender's offer. This estimate uses the platform average (${PLATFORM_RATE_PER_MONTH}%/month) just so you can see roughly what you'd repay; it isn't saved anywhere.`}
+            : "You left the rate blank — your request will match any lender's offer, at whatever rate they set. Nothing is submitted from this calculator; the totals above are 0 until you enter a cap or an amount."}
         </p>
       </CardContent>
     </Card>
@@ -582,7 +582,10 @@ function Step3({
   maxInterestRate: string;
 }) {
   const hasCap = maxInterestRate.trim() !== "";
-  const displayRate = hasCap ? Number(maxInterestRate) : PLATFORM_RATE_PER_MONTH;
+  // Zero, not the platform-average placeholder — until the borrower actually
+  // types a rate cap, there's nothing real to estimate against, and showing
+  // a fabricated number here reads as "the app already decided my rate."
+  const displayRate = hasCap ? Number(maxInterestRate) : 0;
   const isEmergency = durationDays != null;
   const totalInterest = isEmergency
     ? amount * (displayRate / 100) * (durationDays / 30)
@@ -608,7 +611,7 @@ function Step3({
             ["Type", loanTypeLabel],
             ["Duration", formatDuration(duration, durationDays)],
             [
-              hasCap ? "Your Rate Cap" : "Rate (uncapped, est.)",
+              hasCap ? "Your Rate Cap" : "Rate (uncapped)",
               `${displayRate}%/month`,
             ],
             ["Total Repayable", formatCurrency(Math.round(totalRepayable))],
