@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 import { useLenderWallet, useLenderTransactions } from "@/hooks/use-lender";
 import { useSetupWallet } from "@/hooks/use-wallet";
 import { LenderPageHeader } from "@/components/lender-top-nav";
@@ -15,6 +15,7 @@ import { PaginationControls } from "@/components/ui/pagination-controls";
 const PAGE_SIZE = 20;
 
 export default function LenderWalletPage() {
+  const router = useRouter();
   const { data: wallet, isLoading: walletLoading } = useLenderWallet();
   const [txPage, setTxPage] = useState(1);
   const { data: txData, isLoading: txLoading } = useLenderTransactions(txPage, PAGE_SIZE);
@@ -39,9 +40,7 @@ export default function LenderWalletPage() {
         onSetup={() => setShowSetup(true)}
         extraActions={
           <button
-            onClick={() =>
-              toast.info("Fund Loan is coming in the next update.")
-            }
+            onClick={() => router.push("/lender/portfolio")}
             className="px-5 py-2 rounded-lg border border-white/30 text-white font-semibold text-sm hover:bg-white/10 transition-colors"
           >
             Fund Loan
