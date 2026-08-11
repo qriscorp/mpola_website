@@ -6,7 +6,7 @@ import { Search } from "lucide-react";
 import { CardSkeleton } from "@/components/skeletons";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
-import { formatCurrency, formatRate, getInitials } from "@/lib/format";
+import { formatCurrency, formatRate, formatDuration, getInitials } from "@/lib/format";
 import { StaggerList, StaggerItem } from "@/components/motion/stagger";
 
 const avatarColors = ["#1B2B3A", "#2BB5A0", "#8B4513", "#C4A55A"];
@@ -136,7 +136,7 @@ export function AllOffersList() {
                   {formatRate(offer.interest_rate)}
                 </p>
                 <p className="text-xs text-gray-400 mt-0.5">
-                  {offer.duration} months
+                  {formatDuration(offer.duration, offer.duration_days)}
                   {offer.loan_type ? ` · ${offer.loan_type}` : ""}
                   {offer.application_reference
                     ? ` · #${offer.application_reference}`

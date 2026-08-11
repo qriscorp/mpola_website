@@ -2,7 +2,7 @@
 
 import { CheckCircle2, UserCheck } from "lucide-react";
 import { useGuarantorRequests, useRespondToGuarantorRequest } from "@/hooks/use-guarantors";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, formatDuration } from "@/lib/format";
 import { toast } from "sonner";
 
 /** Everything the current user has been asked to approve — right now just
@@ -64,7 +64,7 @@ export function ApprovalsList() {
               <div>
                 <p className="text-gray-400">Duration</p>
                 <p className="font-semibold text-[#1B2B3A] dark:text-white">
-                  {r.duration ? `${r.duration} months` : "—"}
+                  {formatDuration(r.duration, r.duration_days)}
                 </p>
               </div>
               <div className="col-span-2 sm:col-span-1">

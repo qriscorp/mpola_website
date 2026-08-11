@@ -9,7 +9,7 @@ import {
   useApplicationDetail,
   useSkipApplication,
 } from "@/hooks/use-lender";
-import { formatCurrency, getInitials, getApplicationStatusLabel, getApplicationStatusColor } from "@/lib/format";
+import { formatCurrency, formatDuration, getInitials, getApplicationStatusLabel, getApplicationStatusColor } from "@/lib/format";
 
 const guarantorColors = ["bg-emerald-600", "bg-amber-700", "bg-blue-700"];
 
@@ -126,7 +126,7 @@ function ApplicantContent() {
           <div className="grid grid-cols-2 gap-x-8 gap-y-5 mt-6 pt-6 border-t border-gray-100">
             {[
               { label: "AMOUNT", value: formatCurrency(application.amount), big: true },
-              { label: "DURATION", value: `${application.duration} months`, big: true },
+              { label: "DURATION", value: formatDuration(application.duration, application.duration_days), big: true },
               { label: "PURPOSE", value: application.purpose ?? "—", big: false },
               {
                 label: "KYC STATUS",

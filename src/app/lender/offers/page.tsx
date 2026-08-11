@@ -14,7 +14,7 @@ import {
   useUnfreezeMyOfferTemplate,
   useExtendOfferTemplateExpiry,
 } from "@/hooks/use-lender";
-import { formatCurrency, formatRate } from "@/lib/format";
+import { formatCurrency, formatRate, formatDuration } from "@/lib/format";
 import type { LoanOffer } from "@/lib/types";
 import { FadeSwap } from "@/components/motion/fade-swap";
 import { StaggerList, StaggerItem } from "@/components/motion/stagger";
@@ -183,8 +183,8 @@ export default function MyOffersPage() {
                       </h3>
                     </div>
                     <p className="text-[#C4A55A] font-semibold text-sm mt-0.5">
-                      {formatRate(offer.interest_rate)} · {offer.duration}{" "}
-                      months
+                      {formatRate(offer.interest_rate)} ·{" "}
+                      {formatDuration(offer.duration, offer.duration_days)}
                     </p>
                     <p className="text-xs text-gray-400 mt-1">
                       {offer.borrower_name ?? "Unknown borrower"}

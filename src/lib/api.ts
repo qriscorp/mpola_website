@@ -1022,7 +1022,8 @@ export const api = {
   // Application submission
   submitApplication: async (data: {
     amount: number;
-    duration: number;
+    duration?: number;
+    duration_days?: number;
     loan_type: string;
     purpose?: string;
     max_interest_rate?: number;
@@ -1038,7 +1039,8 @@ export const api = {
     id: string,
     data: Partial<{
       amount: number;
-      duration: number;
+      duration: number | null;
+      duration_days: number | null;
       loan_type: string;
       purpose: string;
       max_interest_rate: number | null;
@@ -1417,7 +1419,8 @@ export const api = {
     application_id: string;
     amount: number;
     interest_rate: number;
-    duration: number;
+    duration?: number | null;
+    duration_days?: number | null;
     required_documents?: string[];
   }): Promise<{ status: number; message: string; offer: LoanOffer }> => {
     return apiAuthPost("/loans/offers", data);

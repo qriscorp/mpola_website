@@ -33,7 +33,8 @@ export interface LoanApplication {
   id: string;
   reference_number: string;
   amount: number;
-  duration: number;
+  duration: number | null;
+  duration_days: number | null;
   loan_type: "personal" | "business" | "education" | "agricultural" | "emergency";
   purpose: string | null;
   status: "awaiting_guarantors" | "pending" | "approved" | "rejected" | "funded" | "completed" | "defaulted" | "expired";
@@ -68,7 +69,8 @@ export interface LoanOffer {
   lender_name: string | null;
   amount: number;
   interest_rate: number;
-  duration: number;
+  duration: number | null;
+  duration_days: number | null;
   monthly_payment: number | null;
   total_repayable: number | null;
   status: "pending" | "accepted" | "declined" | "expired";
@@ -100,7 +102,8 @@ export interface ActiveLoan {
   lender_name: string | null;
   amount: number;
   interest_rate: number;
-  duration: number;
+  duration: number | null;
+  duration_days: number | null;
   monthly_payment: number;
   total_repayable: number;
   total_paid: number;
@@ -132,6 +135,7 @@ export interface GuarantorRequest {
   amount: number | null;
   loan_type: string | null;
   duration: number | null;
+  duration_days: number | null;
   purpose: string | null;
   borrower_name: string | null;
   created_at: string;
@@ -319,7 +323,8 @@ export interface AdminApplication {
   borrower_id: string;
   borrower_name: string | null;
   amount: number;
-  duration: number;
+  duration: number | null;
+  duration_days: number | null;
   loan_type: string;
   status:
     | "awaiting_guarantors"

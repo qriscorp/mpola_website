@@ -51,7 +51,8 @@ export function useMakeOffer() {
       application_id: string;
       amount: number;
       interest_rate: number;
-      duration: number;
+      duration?: number | null;
+      duration_days?: number | null;
       required_documents?: string[];
     }) => api.makeOffer(data),
     onSuccess: (_result, variables) => {

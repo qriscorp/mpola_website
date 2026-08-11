@@ -8,7 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { FileText, Shield, Check, ArrowLeft, PenTool } from "lucide-react";
-import { formatCurrency, formatRate } from "@/lib/format";
+import { formatCurrency, formatRate, formatDuration } from "@/lib/format";
 import { useUser } from "@/hooks/use-dashboard";
 import { useApplicationDetail } from "@/hooks/use-lender";
 import { useRespondToOffer } from "@/hooks/use-offers";
@@ -146,12 +146,12 @@ function AcceptOfferContent() {
                 <div>
                   <p className="text-xs text-muted-foreground">Duration</p>
                   <p className="text-lg font-bold text-[#1B2B3A] dark:text-white">
-                    {offer.duration} months
+                    {formatDuration(offer.duration, offer.duration_days)}
                   </p>
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">
-                    Monthly Payment
+                    {offer.duration_days != null ? "Repayment Due" : "Monthly Payment"}
                   </p>
                   <p className="text-lg font-bold text-[#C4A55A]">
                     {formatCurrency(offer.monthly_payment ?? 0)}
@@ -201,10 +201,20 @@ function AcceptOfferContent() {
                 </h4>
                 <p className="mb-3">
                   The Lender agrees to provide a loan of{" "}
-                  {formatCurrency(offer.amount)} at an annual interest rate of{" "}
-                  {offer.interest_rate}%, repayable over {offer.duration}{" "}
-                  monthly instalments of {formatCurrency(offer.monthly_payment ?? 0)}{" "}
-                  each.
+                  {formatCurrency(offer.amount)} at a rate of{" "}
+                  {offer.interest_rate}%/month,{" "}
+                  {offer.duration_days != null ? (
+                    <>
+                      repayable in one payment of{" "}
+                      {formatCurrency(offer.monthly_payment ?? 0)} due{" "}
+                      {offer.duration_days} day{offer.duration_days === 1 ? "" : "s"} after disbursement.
+                    </>
+                  ) : (
+                    <>
+                      repayable over {offer.duration} monthly instalments of{" "}
+                      {formatCurrency(offer.monthly_payment ?? 0)} each.
+                    </>
+                  )}
                 </p>
                 <h4 className="mb-1 font-semibold text-foreground">
                   2. Repayment Schedule

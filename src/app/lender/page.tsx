@@ -8,7 +8,7 @@ import {
   useLenderActiveLoans,
   useMarketplace,
 } from "@/hooks/use-lender";
-import { formatCurrency, formatRate, getInitials } from "@/lib/format";
+import { formatCurrency, formatRate, formatDuration, getInitials } from "@/lib/format";
 import { CardSkeleton } from "@/components/skeletons";
 import { LenderPageHeader } from "@/components/lender-top-nav";
 import { FadeSwap } from "@/components/motion/fade-swap";
@@ -103,8 +103,8 @@ export default function LenderDashboardPage() {
                       {formatCurrency(loan.amount)}
                     </p>
                     <p className="text-[#C4A55A] font-semibold text-sm mt-0.5">
-                      {formatRate(loan.interest_rate)} · {loan.duration}{" "}
-                      months
+                      {formatRate(loan.interest_rate)} ·{" "}
+                      {formatDuration(loan.duration, loan.duration_days)}
                     </p>
                     <p className="text-xs text-gray-400 mt-1">
                       {loan.borrower_name ?? "Unknown borrower"}
@@ -154,7 +154,7 @@ export default function LenderDashboardPage() {
                       {a.borrower?.full_name ?? "Unknown"}
                     </p>
                     <p className="text-xs text-gray-400 truncate">
-                      {a.loan_type} · {a.duration} months
+                      {a.loan_type} · {formatDuration(a.duration, a.duration_days)}
                     </p>
                   </div>
                   <div className="shrink-0 text-right">

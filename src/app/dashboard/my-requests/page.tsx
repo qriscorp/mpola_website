@@ -13,7 +13,7 @@ import {
   useFreezeApplication,
   useUnfreezeApplication,
 } from "@/hooks/use-application";
-import { formatCurrency, formatRate, getApplicationStatusColor, getApplicationStatusLabel } from "@/lib/format";
+import { formatCurrency, formatRate, formatDuration, getApplicationStatusColor, getApplicationStatusLabel } from "@/lib/format";
 import { TableSkeleton } from "@/components/skeletons";
 import { StaggerList, StaggerItem } from "@/components/motion/stagger";
 import type { Guarantor, LoanApplication } from "@/lib/types";
@@ -22,7 +22,7 @@ import { toast } from "sonner";
 const tabs = ["All", "Pending", "Funded", "Closed"] as const;
 type Tab = (typeof tabs)[number];
 
-const EDIT_DURATIONS = [1, 2, 3, 4, 6, 12];
+const EDIT_DURATIONS = Array.from({ length: 12 }, (_, i) => i + 1);
 const EDIT_LOAN_TYPES = [
   { label: "Business", value: "business" },
   { label: "Personal", value: "personal" },
@@ -59,20 +59,23 @@ function RequestDetailPanel({ app }: { app: LoanApplication }) {
     <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-800 divide-y divide-gray-100 dark:divide-gray-800">
       <DetailRow label="Reference" value={app.reference_number} />
       <DetailRow label="Amount" value={formatCurrency(app.amount)} />
-      <DetailRow label="Duration" value={`${app.duration} months`} />
+      <DetailRow label="Duration" value={formatDuration(app.duration, app.duration_days)} />
       <DetailRow
         label="Loan Type"
         value={app.loan_type.charAt(0).toUpperCase() + app.loan_type.slice(1)}
       />
       {app.purpose && <DetailRow label="Purpose" value={app.purpose} />}
       {app.max_interest_rate != null && (
-        <DetailRow label="Your Rate Cap" value={`${formatRate(app.max_interest_rate)}/month`} />
+        <DetailRow label="Your Rate Cap" value={formatRate(app.max_interest_rate)} />
       )}
       {app.interest_rate != null ? (
         <>
-          <DetailRow label="Accepted Interest Rate" value={`${formatRate(app.interest_rate)}/month`} />
+          <DetailRow label="Accepted Interest Rate" value={formatRate(app.interest_rate)} />
           {app.monthly_payment != null && (
-            <DetailRow label="Monthly Payment" value={formatCurrency(app.monthly_payment)} />
+            <DetailRow
+              label={app.duration_days != null ? "Repayment Due" : "Monthly Payment"}
+              value={formatCurrency(app.monthly_payment)}
+            />
           )}
           {app.total_repayable != null && (
             <DetailRow label="Total Repayable" value={formatCurrency(app.total_repayable)} />
@@ -221,9 +224,17 @@ function GuarantorStatusList({ applicationId, guarantors }: { applicationId: str
   );
 }
 
+const EMERGENCY_DAY_PRESETS = [1, 3, 7, 14];
+
 function EditApplicationForm({ app, onDone }: { app: LoanApplication; onDone: () => void }) {
   const [amount, setAmount] = useState(String(app.amount));
-  const [duration, setDuration] = useState(app.duration);
+  const [duration, setDuration] = useState(app.duration ?? 3);
+  const [durationDays, setDurationDays] = useState<number | null>(app.duration_days);
+  const [customDays, setCustomDays] = useState(
+    app.duration_days != null && !EMERGENCY_DAY_PRESETS.includes(app.duration_days)
+      ? String(app.duration_days)
+      : "",
+  );
   const [loanType, setLoanType] = useState(app.loan_type);
   const [purpose, setPurpose] = useState(app.purpose ?? "");
   const [maxInterestRate, setMaxInterestRate] = useState(
@@ -232,6 +243,7 @@ function EditApplicationForm({ app, onDone }: { app: LoanApplication; onDone: ()
   const [validUntil, setValidUntil] = useState(app.valid_until ? app.valid_until.slice(0, 10) : "");
   const update = useUpdateApplication();
 
+  const isEmergency = loanType === "emergency";
   const numAmount = Number(amount);
   const amountInvalid = !amount.trim() || Number.isNaN(numAmount) || numAmount < 1000 || numAmount > 50000000;
   const rateInvalid =
@@ -245,13 +257,17 @@ function EditApplicationForm({ app, onDone }: { app: LoanApplication; onDone: ()
         id: app.id,
         data: {
           amount: Number(amount),
-          duration,
-          loan_type: loanType,
           // Explicit "" / null rather than `undefined` — this is an edit,
           // not a create, so a cleared field must actually reach the
           // backend as a clear. `undefined` gets dropped by
           // JSON.stringify, which `exclude_unset` on the backend then
           // reads as "leave it alone", silently keeping the old value.
+          // Exactly one of duration/duration_days is ever set — switching
+          // loan type between "Emergency" and anything else must clear
+          // the other one explicitly, not leave it stale.
+          duration: isEmergency ? null : duration,
+          duration_days: isEmergency ? durationDays : null,
+          loan_type: loanType,
           purpose,
           max_interest_rate: maxInterestRate ? Number(maxInterestRate) : null,
           valid_until: validUntil || null,
@@ -287,27 +303,19 @@ function EditApplicationForm({ app, onDone }: { app: LoanApplication; onDone: ()
         </div>
         <div>
           <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500">
-            Duration
-          </label>
-          <select
-            value={duration}
-            onChange={(e) => setDuration(Number(e.target.value))}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#2BB5A0]"
-          >
-            {EDIT_DURATIONS.map((d) => (
-              <option key={d} value={d}>
-                {d} months
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500">
             Loan Type
           </label>
           <select
             value={loanType}
-            onChange={(e) => setLoanType(e.target.value as LoanApplication["loan_type"])}
+            onChange={(e) => {
+              const v = e.target.value as LoanApplication["loan_type"];
+              setLoanType(v);
+              if (v === "emergency") {
+                setDurationDays((d) => d ?? EMERGENCY_DAY_PRESETS[0]);
+              } else {
+                setDurationDays(null);
+              }
+            }}
             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#2BB5A0]"
           >
             {EDIT_LOAN_TYPES.map((t) => (
@@ -316,6 +324,60 @@ function EditApplicationForm({ app, onDone }: { app: LoanApplication; onDone: ()
               </option>
             ))}
           </select>
+        </div>
+        <div>
+          <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500">
+            Duration
+          </label>
+          {isEmergency ? (
+            <div className="space-y-2">
+              <div className="flex flex-wrap gap-1.5">
+                {EMERGENCY_DAY_PRESETS.map((d) => (
+                  <button
+                    key={d}
+                    type="button"
+                    onClick={() => {
+                      setDurationDays(d);
+                      setCustomDays("");
+                    }}
+                    className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+                      durationDays === d
+                        ? "border-[#2BB5A0] bg-[#E6F4F2] text-[#149D8E]"
+                        : "border-gray-300 bg-white text-[#1B2B3A] hover:border-[#2BB5A0]"
+                    }`}
+                  >
+                    {d}d
+                  </button>
+                ))}
+              </div>
+              <input
+                type="number"
+                min={1}
+                max={29}
+                value={customDays}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setCustomDays(v);
+                  const n = parseInt(v, 10);
+                  if (!Number.isNaN(n) && n >= 1 && n <= 29) setDurationDays(n);
+                }}
+                placeholder="Custom days (1-29)"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#2BB5A0]"
+              />
+            </div>
+          ) : (
+            <select
+              value={duration}
+              onChange={(e) => setDuration(Number(e.target.value))}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#2BB5A0]"
+            >
+              {EDIT_DURATIONS.map((d) => (
+                <option key={d} value={d}>
+                  {d} months
+                </option>
+              ))}
+            </select>
+          )}
         </div>
         <div>
           <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500">
@@ -583,7 +645,7 @@ export default function MyRequestsPage() {
                         </span>
                       </div>
                       <p className="text-sm text-gray-500 capitalize">
-                        {app.loan_type} · {app.duration} months
+                        {app.loan_type} · {formatDuration(app.duration, app.duration_days)}
                       </p>
                       <p className="text-xs text-gray-400 mt-1">Not yet submitted.</p>
                     </div>
@@ -617,7 +679,7 @@ export default function MyRequestsPage() {
                       </span>
                     </div>
                     <p className="text-sm text-gray-500 capitalize">
-                      {app.loan_type} · {app.duration} months · #{app.id}
+                      {app.loan_type} · {formatDuration(app.duration, app.duration_days)} · #{app.id}
                       {expiryNote(app.valid_until, app.status) && (
                         <> · <span className="text-amber-600 font-medium">{expiryNote(app.valid_until, app.status)}</span></>
                       )}

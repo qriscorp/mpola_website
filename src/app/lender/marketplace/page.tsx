@@ -6,7 +6,7 @@ import { Search } from "lucide-react";
 import { LenderPageHeader } from "@/components/lender-top-nav";
 import { InfoTip } from "@/components/info-tip";
 import { useMarketplace } from "@/hooks/use-lender";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, formatDuration } from "@/lib/format";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { StaggerList, StaggerItem } from "@/components/motion/stagger";
@@ -160,7 +160,7 @@ export default function MarketplacePage() {
                 {formatCurrency(a.amount)}
               </p>
               <p className="mt-0.5 text-sm font-semibold text-[#C4A55A]">
-                {a.duration} months
+                {formatDuration(a.duration, a.duration_days)}
               </p>
 
               {a.purpose && (

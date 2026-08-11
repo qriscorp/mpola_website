@@ -15,7 +15,8 @@ export function useSubmitApplication() {
   return useMutation({
     mutationFn: (data: {
       amount: number;
-      duration: number;
+      duration?: number;
+      duration_days?: number;
       loan_type: string;
       purpose?: string;
       max_interest_rate?: number;
@@ -37,7 +38,8 @@ export function useUpdateApplication() {
       id: string;
       data: Partial<{
         amount: number;
-        duration: number;
+        duration: number | null;
+        duration_days: number | null;
         loan_type: string;
         purpose: string;
         max_interest_rate: number | null;

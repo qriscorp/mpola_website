@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useApplicationDetail, useMakeOffer } from "@/hooks/use-lender";
-import { formatCurrency, getApplicationStatusLabel } from "@/lib/format";
+import { formatCurrency, formatDuration, getApplicationStatusLabel } from "@/lib/format";
 import { DOCUMENT_LABEL_OPTIONS } from "@/lib/document-labels";
 import { CardSkeleton } from "@/components/skeletons";
 
@@ -69,13 +69,20 @@ export default function ApplicationDetailPage({
 
   const verified = application.borrower?.kyc_status === "verified";
 
+  const isEmergency = application.duration_days != null;
   const numAmount = Number(amount) || 0;
   const numRate = Number(interestRate) || 0;
   const numDuration = Number(duration) || 0;
   const rateInvalid = interestRate !== "" && (numRate < 0.1 || numRate > 25);
-  const totalInterest = numAmount * (numRate / 100) * numDuration;
+  const totalInterest = isEmergency
+    ? numAmount * (numRate / 100) * (numDuration / 30)
+    : numAmount * (numRate / 100) * numDuration;
   const totalRepayable = numAmount + totalInterest;
-  const monthlyPayment = numDuration > 0 ? totalRepayable / numDuration : 0;
+  const monthlyPayment = isEmergency
+    ? totalRepayable
+    : numDuration > 0
+      ? totalRepayable / numDuration
+      : 0;
 
   const handleSubmitOffer = () => {
     makeOffer(
@@ -83,7 +90,8 @@ export default function ApplicationDetailPage({
         application_id: application.id,
         amount: numAmount,
         interest_rate: numRate,
-        duration: numDuration,
+        duration: isEmergency ? null : numDuration,
+        duration_days: isEmergency ? numDuration : null,
         required_documents: requiredDocs,
       },
       { onSuccess: () => { setShowOfferForm(false); setRequiredDocs([]); } },
@@ -132,7 +140,7 @@ export default function ApplicationDetailPage({
                 {formatCurrency(application.amount)}
               </p>
               <p className="text-xs text-muted-foreground capitalize">
-                {application.duration} months &middot; {application.loan_type}{" "}
+                {formatDuration(application.duration, application.duration_days)} &middot; {application.loan_type}{" "}
                 Loan
               </p>
             </div>
@@ -194,11 +202,13 @@ export default function ApplicationDetailPage({
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs font-bold uppercase tracking-wider text-gray-500">
-                  Duration (months)
+                  {isEmergency ? "Duration (days)" : "Duration (months)"}
                 </Label>
                 <Input
                   type="number"
-                  placeholder={String(application.duration)}
+                  min={isEmergency ? 1 : undefined}
+                  max={isEmergency ? 29 : undefined}
+                  placeholder={String(application.duration_days ?? application.duration)}
                   value={duration}
                   onChange={(e) => setDuration(e.target.value)}
                 />
@@ -230,7 +240,7 @@ export default function ApplicationDetailPage({
             {numAmount > 0 && numDuration > 0 && (
               <div className="flex gap-6 text-sm text-gray-600 dark:text-gray-400">
                 <span>
-                  Monthly payment:{" "}
+                  {isEmergency ? "Repayment due" : "Monthly payment"}:{" "}
                   <strong className="text-[#1B2B3A] dark:text-white">
                     {formatCurrency(Math.round(monthlyPayment))}
                   </strong>

@@ -12,7 +12,7 @@ import {
   useMakeOffer,
   useSkipApplication,
 } from "@/hooks/use-lender";
-import { formatCurrency, formatRate, getInitials } from "@/lib/format";
+import { formatCurrency, formatDuration, getInitials } from "@/lib/format";
 import { DOCUMENT_LABEL_OPTIONS } from "@/lib/document-labels";
 import type { MarketplaceApplication } from "@/lib/types";
 import { FadeSwap } from "@/components/motion/fade-swap";
@@ -75,7 +75,8 @@ export default function ApplicationsPage() {
         application_id: offerModal.id,
         amount: offerModal.amount,
         interest_rate: Number(rate),
-        duration: offerModal.duration,
+        duration: offerModal.duration_days != null ? null : offerModal.duration,
+        duration_days: offerModal.duration_days,
         required_documents: requiredDocs,
       },
       { onSuccess: () => { setOfferModal(null); setRequiredDocs([]); } },
@@ -171,7 +172,7 @@ export default function ApplicationsPage() {
                 <p className="font-bold text-[#1B2B3A] dark:text-white">
                   {formatCurrency(app.amount)}
                 </p>
-                <p className="text-xs text-gray-400">{app.duration} months</p>
+                <p className="text-xs text-gray-400">{formatDuration(app.duration, app.duration_days)}</p>
               </div>
 
               {/* Actions */}
@@ -232,7 +233,7 @@ export default function ApplicationsPage() {
               <div className="flex justify-between">
                 <span className="text-gray-500">Duration</span>
                 <span className="font-medium text-[#1B2B3A] dark:text-white">
-                  {offerModal.duration} months
+                  {formatDuration(offerModal.duration, offerModal.duration_days)}
                 </span>
               </div>
               <div className="flex items-center justify-between">

@@ -6,7 +6,7 @@ import { BorrowerPageHeader } from "@/components/top-nav";
 import { InfoTip } from "@/components/info-tip";
 import { useApplicationDetail } from "@/hooks/use-lender";
 import { useRespondToOffer } from "@/hooks/use-offers";
-import { formatCurrency, formatRate } from "@/lib/format";
+import { formatCurrency, formatRate, formatDuration } from "@/lib/format";
 import { CardSkeleton } from "@/components/skeletons";
 import { RequiredDocumentsChecklist } from "@/components/required-documents-checklist";
 import { AllOffersList } from "@/components/all-offers-list";
@@ -95,7 +95,7 @@ function OffersReceivedContent() {
           #{application.id}
         </span>{" "}
         · {formatCurrency(application.amount)} · {application.loan_type} ·{" "}
-        {application.duration} months
+        {formatDuration(application.duration, application.duration_days)}
       </p>
 
       {acceptedGuarantors < REQUIRED_ACCEPTED_GUARANTORS && (
@@ -143,8 +143,9 @@ function OffersReceivedContent() {
                       {offer.lender_name ?? "Lender"}
                     </p>
                     <p className="text-lg font-extrabold text-[#2BB5A0] mt-1">
-                      {formatRate(offer.interest_rate)} · {offer.duration}{" "}
-                      months · {formatCurrency(offer.amount)}
+                      {formatRate(offer.interest_rate)} ·{" "}
+                      {formatDuration(offer.duration, offer.duration_days)} ·{" "}
+                      {formatCurrency(offer.amount)}
                     </p>
                     <p className="text-xs text-gray-500">
                       Total repayable:{" "}

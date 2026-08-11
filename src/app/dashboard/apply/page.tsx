@@ -16,15 +16,16 @@ import {
   useDeleteApplication,
 } from "@/hooks/use-application";
 import { useSearchGuarantorCandidate, useAttachGuarantors } from "@/hooks/use-guarantors";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, formatDuration } from "@/lib/format";
 
 const STEPS = ["Loan Details", "Guarantors", "Review"];
 // Backend enforces duration >= 1 month (repository/models.py's
-// LoanApplicationCreate) — every installment is a monthly cycle
-// (routers/loans.py advances next_payment_date by 30 days per instalment),
-// so sub-month terms (days/weeks) aren't representable without rebuilding
-// the repayment schedule itself; 1 month is the real floor.
-const DURATIONS = ["1 mo", "2 mo", "3 mo", "4 mo", "6 mo", "12 mo"];
+// LoanApplicationCreate) — every installment is a flat 30-day cycle
+// (routers/loans.py advances next_payment_date by timedelta(days=30) per
+// instalment, not a real calendar month), so sub-month terms (days/weeks)
+// aren't representable without a dedicated bullet-repayment path; 1 month
+// is the real floor for now.
+const DURATIONS = Array.from({ length: 12 }, (_, i) => `${i + 1} mo`);
 const LOAN_TYPES = [
   { label: "Business", value: "business" },
   { label: "Personal", value: "personal" },
@@ -87,13 +88,18 @@ function StepperHeader({ currentStep }: { currentStep: number }) {
 function LoanCalculator({
   amount,
   duration,
+  durationDays,
 }: {
   amount: number;
   duration: number;
+  durationDays: number | null;
 }) {
-  const totalInterest = amount * (PLATFORM_RATE_PER_MONTH / 100) * duration;
+  const isEmergency = durationDays != null;
+  const totalInterest = isEmergency
+    ? amount * (PLATFORM_RATE_PER_MONTH / 100) * (durationDays / 30)
+    : amount * (PLATFORM_RATE_PER_MONTH / 100) * duration;
   const totalRepayable = amount + totalInterest;
-  const monthly = duration > 0 ? totalRepayable / duration : 0;
+  const monthly = isEmergency ? totalRepayable : duration > 0 ? totalRepayable / duration : 0;
 
   return (
     <Card className="border border-[#9DDAD1] bg-[#E6F4F2]">
@@ -115,7 +121,7 @@ function LoanCalculator({
           <div className="flex justify-between">
             <span className="text-gray-500">Duration</span>
             <span className="font-semibold text-[#1B2B3A]">
-              {duration} months
+              {formatDuration(duration, durationDays)}
             </span>
           </div>
           <div className="flex justify-between">
@@ -125,7 +131,9 @@ function LoanCalculator({
             </span>
           </div>
           <div className="flex justify-between">
-            <span className="font-bold text-[#1B2B3A]">Monthly Payment</span>
+            <span className="font-bold text-[#1B2B3A]">
+              {isEmergency ? "Repayment Due" : "Monthly Payment"}
+            </span>
             <span className="font-bold text-[#1B2B3A]">
               {formatCurrency(Math.round(monthly))}
             </span>
@@ -141,7 +149,9 @@ function LoanCalculator({
           </div>
         </div>
         <p className="text-xs text-gray-500">
-          Final rate may vary — this is the current platform default.
+          {isEmergency
+            ? "One repayment, due in full — final rate may vary from this platform default."
+            : "Final rate may vary — this is the current platform default."}
         </p>
       </CardContent>
     </Card>
@@ -151,12 +161,16 @@ function LoanCalculator({
 const MIN_AMOUNT = 1000;
 const MAX_AMOUNT = 50000000;
 
+const EMERGENCY_DAY_PRESETS = [1, 3, 7, 14];
+
 function Step1({
   amount,
   setAmount,
   amountError,
   duration,
   setDuration,
+  durationDays,
+  setDurationDays,
   loanType,
   setLoanType,
   purpose,
@@ -172,6 +186,8 @@ function Step1({
   amountError: string | null;
   duration: number;
   setDuration: (v: number) => void;
+  durationDays: number | null;
+  setDurationDays: (v: number | null) => void;
   loanType: string;
   setLoanType: (v: string) => void;
   purpose: string;
@@ -182,6 +198,10 @@ function Step1({
   validUntil: string;
   setValidUntil: (v: string) => void;
 }) {
+  const isEmergency = loanType === "emergency";
+  const [customDays, setCustomDays] = useState(
+    durationDays != null && !EMERGENCY_DAY_PRESETS.includes(durationDays) ? String(durationDays) : "",
+  );
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_420px]">
       <Card className="border border-gray-200 bg-white">
@@ -226,31 +246,6 @@ function Step1({
 
           <div>
             <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-gray-500">
-              Duration
-            </label>
-            <div className="flex flex-wrap gap-2">
-              {DURATIONS.map((d) => {
-                const months = parseInt(d, 10);
-                const active = months === duration;
-                return (
-                  <button
-                    key={d}
-                    onClick={() => setDuration(months)}
-                    className={`rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
-                      active
-                        ? "border-[#2BB5A0] bg-[#E6F4F2] text-[#149D8E]"
-                        : "border-gray-300 bg-white text-[#1B2B3A] hover:border-[#2BB5A0]"
-                    }`}
-                  >
-                    {d}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          <div>
-            <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-gray-500">
               Loan Type
             </label>
             <div className="flex flex-wrap gap-2">
@@ -259,7 +254,20 @@ function Step1({
                 return (
                   <button
                     key={t.value}
-                    onClick={() => setLoanType(t.value)}
+                    onClick={() => {
+                      setLoanType(t.value);
+                      // Emergency = short-term, single bullet repayment;
+                      // anything else = the standard monthly-instalment
+                      // path. Switching resets duration to that mode's
+                      // default rather than leaving a stale value from
+                      // the other mode.
+                      if (t.value === "emergency") {
+                        setDurationDays(durationDays ?? EMERGENCY_DAY_PRESETS[0]);
+                      } else {
+                        setDurationDays(null);
+                        setDuration(duration || 3);
+                      }
+                    }}
                     className={`rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
                       active
                         ? "border-[#2BB5A0] bg-[#E6F4F2] text-[#149D8E]"
@@ -271,6 +279,83 @@ function Step1({
                 );
               })}
             </div>
+            {isEmergency && (
+              <p className="mt-1.5 text-xs text-gray-400">
+                Short-term request — one repayment in full, due when the term ends. Interest is
+                prorated from the platform&apos;s monthly rate.
+              </p>
+            )}
+          </div>
+
+          <div>
+            <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-gray-500">
+              Duration
+            </label>
+            {isEmergency ? (
+              <div className="space-y-2">
+                <div className="flex flex-wrap gap-2">
+                  {EMERGENCY_DAY_PRESETS.map((d) => {
+                    const active = d === durationDays;
+                    return (
+                      <button
+                        key={d}
+                        onClick={() => {
+                          setDurationDays(d);
+                          setCustomDays("");
+                        }}
+                        className={`rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
+                          active
+                            ? "border-[#2BB5A0] bg-[#E6F4F2] text-[#149D8E]"
+                            : "border-gray-300 bg-white text-[#1B2B3A] hover:border-[#2BB5A0]"
+                        }`}
+                      >
+                        {d} day{d === 1 ? "" : "s"}
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    min={1}
+                    max={29}
+                    value={customDays}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setCustomDays(v);
+                      const n = parseInt(v, 10);
+                      if (!Number.isNaN(n) && n >= 1 && n <= 29) setDurationDays(n);
+                    }}
+                    placeholder="Custom (1-29 days)"
+                    className="w-44 rounded-lg border border-gray-300 px-3 py-2 text-sm text-[#1B2B3A] outline-none focus:ring-2 focus:ring-[#2BB5A0]"
+                  />
+                  <span className="text-xs text-gray-400">days</span>
+                </div>
+                <p className="text-xs text-gray-400">
+                  30 days or more? Switch the loan type above — that&apos;s a standard request.
+                </p>
+              </div>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {DURATIONS.map((d) => {
+                  const months = parseInt(d, 10);
+                  const active = months === duration;
+                  return (
+                    <button
+                      key={d}
+                      onClick={() => setDuration(months)}
+                      className={`rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
+                        active
+                          ? "border-[#2BB5A0] bg-[#E6F4F2] text-[#149D8E]"
+                          : "border-gray-300 bg-white text-[#1B2B3A] hover:border-[#2BB5A0]"
+                      }`}
+                    >
+                      {d}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           <div>
@@ -324,7 +409,7 @@ function Step1({
         </CardContent>
       </Card>
 
-      <LoanCalculator amount={Number(amount) || 0} duration={duration} />
+      <LoanCalculator amount={Number(amount) || 0} duration={duration} durationDays={durationDays} />
     </div>
   );
 }
@@ -462,17 +547,22 @@ function Step2({
 function Step3({
   amount,
   duration,
+  durationDays,
   loanType,
   guarantors,
   validUntil,
 }: {
   amount: number;
   duration: number;
+  durationDays: number | null;
   loanType: string;
   guarantors: GuarantorInput[];
   validUntil: string;
 }) {
-  const totalInterest = amount * (PLATFORM_RATE_PER_MONTH / 100) * duration;
+  const isEmergency = durationDays != null;
+  const totalInterest = isEmergency
+    ? amount * (PLATFORM_RATE_PER_MONTH / 100) * (durationDays / 30)
+    : amount * (PLATFORM_RATE_PER_MONTH / 100) * duration;
   const totalRepayable = amount + totalInterest;
   const loanTypeLabel =
     LOAN_TYPES.find((t) => t.value === loanType)?.label ?? loanType;
@@ -492,7 +582,7 @@ function Step3({
           {[
             ["Amount", formatCurrency(amount)],
             ["Type", loanTypeLabel],
-            ["Duration", `${duration} months`],
+            ["Duration", formatDuration(duration, durationDays)],
             ["Rate", `${PLATFORM_RATE_PER_MONTH}%/month`],
             ["Total Repayable", formatCurrency(Math.round(totalRepayable))],
             [
@@ -602,6 +692,7 @@ export default function ApplyPage() {
 
   const [amount, setAmount] = useState("");
   const [duration, setDuration] = useState(3);
+  const [durationDays, setDurationDays] = useState<number | null>(null);
   const [loanType, setLoanType] = useState("business");
   const [purpose, setPurpose] = useState("");
   const [maxInterestRate, setMaxInterestRate] = useState("");
@@ -631,7 +722,11 @@ export default function ApplyPage() {
       setReferenceNumber(draft.reference_number);
       setResumedFromDraft(true);
       setAmount(String(draft.amount));
-      setDuration(draft.duration);
+      if (draft.duration_days != null) {
+        setDurationDays(draft.duration_days);
+      } else if (draft.duration != null) {
+        setDuration(draft.duration);
+      }
       setLoanType(draft.loan_type);
       setPurpose(draft.purpose ?? "");
       setMaxInterestRate(draft.max_interest_rate != null ? String(draft.max_interest_rate) : "");
@@ -689,7 +784,8 @@ export default function ApplyPage() {
           id: applicationId,
           data: {
             amount: numAmount,
-            duration,
+            duration: durationDays == null ? duration : null,
+            duration_days: durationDays,
             loan_type: loanType,
             purpose,
             max_interest_rate: maxInterestRate ? Number(maxInterestRate) : null,
@@ -699,7 +795,8 @@ export default function ApplyPage() {
       } else {
         const res = await submitApplication.mutateAsync({
           amount: numAmount,
-          duration,
+          duration: durationDays == null ? duration : undefined,
+          duration_days: durationDays ?? undefined,
           loan_type: loanType,
           purpose: purpose || undefined,
           max_interest_rate: maxInterestRate ? Number(maxInterestRate) : undefined,
@@ -760,6 +857,7 @@ export default function ApplyPage() {
       setResumedFromDraft(false);
       setAmount("");
       setDuration(3);
+      setDurationDays(null);
       setLoanType("business");
       setPurpose("");
       setMaxInterestRate("");
@@ -835,6 +933,8 @@ export default function ApplyPage() {
                   amountError={amountError}
                   duration={duration}
                   setDuration={setDuration}
+                  durationDays={durationDays}
+                  setDurationDays={setDurationDays}
                   loanType={loanType}
                   setLoanType={setLoanType}
                   purpose={purpose}
@@ -859,6 +959,7 @@ export default function ApplyPage() {
                 <Step3
                   amount={Number(amount) || 0}
                   duration={duration}
+                  durationDays={durationDays}
                   loanType={loanType}
                   guarantors={guarantors}
                   validUntil={validUntil}
