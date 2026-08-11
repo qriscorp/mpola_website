@@ -24,15 +24,10 @@ const LOAN_TYPES = [
   "Salary Advance",
 ];
 const DOCUMENTS = DOCUMENT_LABEL_OPTIONS;
-const DURATIONS = [
-  "1 month",
-  "2 months",
-  "3 months",
-  "6 months",
-  "12 months",
-  "18 months",
-  "24 months",
-];
+// Mirrors the borrower apply wizard's DURATIONS exactly (dashboard/apply/page.tsx) —
+// borrowers can only ever pick 1-12 months, so a lender's max_duration should
+// be pickable at the same granularity, not a curated subset up to 24.
+const DURATIONS = Array.from({ length: 12 }, (_, i) => `${i + 1} month${i === 0 ? "" : "s"}`);
 
 export default function PostOfferPage() {
   return (

@@ -89,15 +89,19 @@ function LoanCalculator({
   amount,
   duration,
   durationDays,
+  maxInterestRate,
 }: {
   amount: number;
   duration: number;
   durationDays: number | null;
+  maxInterestRate: string;
 }) {
+  const hasCap = maxInterestRate.trim() !== "";
+  const displayRate = hasCap ? Number(maxInterestRate) : PLATFORM_RATE_PER_MONTH;
   const isEmergency = durationDays != null;
   const totalInterest = isEmergency
-    ? amount * (PLATFORM_RATE_PER_MONTH / 100) * (durationDays / 30)
-    : amount * (PLATFORM_RATE_PER_MONTH / 100) * duration;
+    ? amount * (displayRate / 100) * (durationDays / 30)
+    : amount * (displayRate / 100) * duration;
   const totalRepayable = amount + totalInterest;
   const monthly = isEmergency ? totalRepayable : duration > 0 ? totalRepayable / duration : 0;
 
@@ -113,9 +117,11 @@ function LoanCalculator({
             </span>
           </div>
           <div className="flex justify-between">
-            <span className="text-gray-500">Interest Rate</span>
+            <span className="text-gray-500">
+              {hasCap ? "Your Rate Cap" : "Interest Rate (estimate)"}
+            </span>
             <span className="font-semibold text-[#1B2B3A]">
-              {PLATFORM_RATE_PER_MONTH}%/month
+              {displayRate}%/month
             </span>
           </div>
           <div className="flex justify-between">
@@ -149,9 +155,11 @@ function LoanCalculator({
           </div>
         </div>
         <p className="text-xs text-gray-500">
-          {isEmergency
-            ? "One repayment, due in full — final rate may vary from this platform default."
-            : "Final rate may vary — this is the current platform default."}
+          {hasCap
+            ? isEmergency
+              ? "One repayment, due in full — this is only an estimate at your rate cap. Nothing is submitted from this calculator."
+              : "This is only an estimate at your rate cap. Nothing is submitted from this calculator."
+            : `You left the rate blank — your request will match any lender's offer. This estimate uses the platform average (${PLATFORM_RATE_PER_MONTH}%/month) just so you can see roughly what you'd repay; it isn't saved anywhere.`}
         </p>
       </CardContent>
     </Card>
@@ -416,7 +424,12 @@ function Step1({
         </CardContent>
       </Card>
 
-      <LoanCalculator amount={Number(amount) || 0} duration={duration} durationDays={durationDays} />
+      <LoanCalculator
+        amount={Number(amount) || 0}
+        duration={duration}
+        durationDays={durationDays}
+        maxInterestRate={maxInterestRate}
+      />
     </div>
   );
 }
@@ -558,6 +571,7 @@ function Step3({
   loanType,
   guarantors,
   validUntil,
+  maxInterestRate,
 }: {
   amount: number;
   duration: number;
@@ -565,11 +579,14 @@ function Step3({
   loanType: string;
   guarantors: GuarantorInput[];
   validUntil: string;
+  maxInterestRate: string;
 }) {
+  const hasCap = maxInterestRate.trim() !== "";
+  const displayRate = hasCap ? Number(maxInterestRate) : PLATFORM_RATE_PER_MONTH;
   const isEmergency = durationDays != null;
   const totalInterest = isEmergency
-    ? amount * (PLATFORM_RATE_PER_MONTH / 100) * (durationDays / 30)
-    : amount * (PLATFORM_RATE_PER_MONTH / 100) * duration;
+    ? amount * (displayRate / 100) * (durationDays / 30)
+    : amount * (displayRate / 100) * duration;
   const totalRepayable = amount + totalInterest;
   const loanTypeLabel =
     LOAN_TYPES.find((t) => t.value === loanType)?.label ?? loanType;
@@ -590,7 +607,10 @@ function Step3({
             ["Amount", formatCurrency(amount)],
             ["Type", loanTypeLabel],
             ["Duration", formatDuration(duration, durationDays)],
-            ["Rate", `${PLATFORM_RATE_PER_MONTH}%/month`],
+            [
+              hasCap ? "Your Rate Cap" : "Rate (uncapped, est.)",
+              `${displayRate}%/month`,
+            ],
             ["Total Repayable", formatCurrency(Math.round(totalRepayable))],
             [
               "Valid Until",
@@ -973,6 +993,7 @@ export default function ApplyPage() {
                   loanType={loanType}
                   guarantors={guarantors}
                   validUntil={validUntil}
+                  maxInterestRate={maxInterestRate}
                 />
               )}
             </motion.div>
