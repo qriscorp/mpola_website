@@ -864,6 +864,24 @@ export const api = {
     a.remove();
     window.URL.revokeObjectURL(url);
   },
+  downloadDisbursementReceipt: async (loanId: string): Promise<void> => {
+    const token = getCookie("lf_token");
+    const res = await fetch(`${API_BASE_URL}/loans/${loanId}/disbursement-receipt`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (!res.ok) {
+      throw new Error("Receipt not available");
+    }
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `mpola-disbursement-${loanId}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+  },
   getMyActiveLoans: async (): Promise<ActiveLoan[]> => {
     const res = await apiAuthGet<{ total: number; loans: ActiveLoan[] }>(
       "/loans/active?limit=100",

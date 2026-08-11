@@ -67,6 +67,19 @@ export default function ApplicationsPage() {
   const filtered = tab === "All" || tab === "Pending" ? applications : [];
 
   const rateInvalid = rate !== "" && (Number(rate) < 0.1 || Number(rate) > 25);
+  const isEmergency = offerModal?.duration_days != null;
+  const offerNumRate = Number(rate) || 0;
+  const offerTotalInterest = offerModal
+    ? isEmergency
+      ? offerModal.amount * (offerNumRate / 100) * ((offerModal.duration_days ?? 0) / 30)
+      : offerModal.amount * (offerNumRate / 100) * (offerModal.duration ?? 0)
+    : 0;
+  const offerTotalRepayable = (offerModal?.amount ?? 0) + offerTotalInterest;
+  const offerMonthlyPayment = isEmergency
+    ? offerTotalRepayable
+    : offerModal?.duration
+      ? offerTotalRepayable / offerModal.duration
+      : 0;
 
   function confirmOffer() {
     if (!offerModal || rate === "" || rateInvalid) return;
@@ -253,6 +266,21 @@ export default function ApplicationsPage() {
               )}
             </div>
 
+            {rate !== "" && !rateInvalid && (
+              <div className="mt-3 rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 p-3 space-y-1 text-xs">
+                <div className="flex justify-between text-gray-600 dark:text-gray-400">
+                  <span>{isEmergency ? "Repayment due" : "Monthly payment"}</span>
+                  <span className="font-medium text-[#1B2B3A] dark:text-white">
+                    {formatCurrency(Math.round(offerMonthlyPayment))}
+                  </span>
+                </div>
+                <div className="flex justify-between font-semibold text-[#1B2B3A] dark:text-white pt-1 border-t border-gray-200 dark:border-gray-700">
+                  <span>Total repayable</span>
+                  <span>{formatCurrency(Math.round(offerTotalRepayable))}</span>
+                </div>
+              </div>
+            )}
+
             <div className="mt-4">
               <p className="text-sm font-medium text-[#1B2B3A] dark:text-white mb-2">
                 Documents required to accept (optional)
@@ -276,8 +304,8 @@ export default function ApplicationsPage() {
             </div>
 
             <p className="text-xs text-gray-400 mt-3">
-              If the borrower accepts, funds are disbursed automatically to
-              their mobile money.
+              If the borrower accepts, you&apos;ll need to approve
+              disbursement from your Portfolio to release the funds.
             </p>
 
             <div className="flex gap-3 mt-6 justify-end">

@@ -23,15 +23,13 @@ const TYPE_LABEL: Record<WalletTransactionType, string> = {
   top_up: "Top-up",
 };
 
-// Money moving into the wallet vs out of it, for the +/- and color treatment.
-const CREDIT_TYPES = new Set<WalletTransactionType>([
-  "deposit",
-  "disbursement",
-  "top_up",
-]);
-
-function TransactionTypeBadge({ type }: { type: WalletTransactionType }) {
-  const isCredit = CREDIT_TYPES.has(type);
+function TransactionTypeBadge({
+  type,
+  isCredit,
+}: {
+  type: WalletTransactionType;
+  isCredit: boolean;
+}) {
   return (
     <Badge
       variant="outline"
@@ -123,7 +121,7 @@ export function WalletTransactionList({
         </TableHeader>
         <TableBody>
           {transactions.map((tx) => {
-            const isCredit = CREDIT_TYPES.has(tx.type);
+            const isCredit = tx.direction === "credit";
             return (
               <TableRow
                 key={tx.id}
@@ -145,7 +143,7 @@ export function WalletTransactionList({
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    <TransactionTypeBadge type={tx.type} />
+                    <TransactionTypeBadge type={tx.type} isCredit={isCredit} />
                     <StatusBadge status={tx.status} />
                   </div>
                 </TableCell>

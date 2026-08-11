@@ -7,6 +7,7 @@ import { LenderPageHeader } from "@/components/lender-top-nav";
 import { TableSkeleton } from "@/components/skeletons";
 import { useLenderActiveLoans, useApproveDisbursement } from "@/hooks/use-lender";
 import { formatCurrency, formatRate } from "@/lib/format";
+import { calcPlatformFee } from "@/lib/fees";
 import type { ActiveLoan } from "@/lib/types";
 import { FadeSwap } from "@/components/motion/fade-swap";
 import { RequiredDocumentsChecklist } from "@/components/required-documents-checklist";
@@ -302,6 +303,23 @@ export default function LenderPortfolioPage() {
               </strong>{" "}
               right now. This can&apos;t be undone.
             </p>
+
+            <div className="mt-4 rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 p-3 space-y-1 text-xs">
+              <div className="flex justify-between text-gray-600 dark:text-gray-400">
+                <span>Loan amount to borrower</span>
+                <span>{formatCurrency(confirmingLoan.amount)}</span>
+              </div>
+              <div className="flex justify-between text-gray-600 dark:text-gray-400">
+                <span>Platform fee (0.5%)</span>
+                <span>{formatCurrency(calcPlatformFee(confirmingLoan.amount))}</span>
+              </div>
+              <div className="flex justify-between font-semibold text-[#1B2B3A] dark:text-white pt-1 border-t border-gray-200 dark:border-gray-700">
+                <span>Total debited from your wallet</span>
+                <span>
+                  {formatCurrency(confirmingLoan.amount + calcPlatformFee(confirmingLoan.amount))}
+                </span>
+              </div>
+            </div>
 
             <div className="flex gap-3 mt-6 justify-end">
               <button

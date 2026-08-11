@@ -238,21 +238,24 @@ export default function ApplicationDetailPage({
             </div>
 
             {numAmount > 0 && numDuration > 0 && (
-              <div className="flex gap-6 text-sm text-gray-600 dark:text-gray-400">
-                <span>
-                  {isEmergency ? "Repayment due" : "Monthly payment"}:{" "}
-                  <strong className="text-[#1B2B3A] dark:text-white">
+              <div className="rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 p-3 space-y-1 text-xs">
+                <div className="flex justify-between text-gray-600 dark:text-gray-400">
+                  <span>{isEmergency ? "Repayment due" : "Monthly payment"}</span>
+                  <span className="font-medium text-[#1B2B3A] dark:text-white">
                     {formatCurrency(Math.round(monthlyPayment))}
-                  </strong>
-                </span>
-                <span>
-                  Total repayable:{" "}
-                  <strong className="text-[#1B2B3A] dark:text-white">
-                    {formatCurrency(Math.round(totalRepayable))}
-                  </strong>
-                </span>
+                  </span>
+                </div>
+                <div className="flex justify-between font-semibold text-[#1B2B3A] dark:text-white pt-1 border-t border-gray-200 dark:border-gray-700">
+                  <span>Total repayable</span>
+                  <span>{formatCurrency(Math.round(totalRepayable))}</span>
+                </div>
               </div>
             )}
+
+            <p className="text-xs text-gray-400">
+              If the borrower accepts, you&apos;ll need to approve
+              disbursement from your Portfolio to release the funds.
+            </p>
 
             <div className="flex gap-3">
               <Button

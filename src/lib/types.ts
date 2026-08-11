@@ -162,6 +162,10 @@ export interface WalletTransaction {
   id: string;
   amount: number;
   type: WalletTransactionType;
+  // "repayment"/"disbursement" share the same `type` on both the sender's
+  // and receiver's row (wallet-to-wallet) — this is the explicit signal for
+  // +/- and color, not `type` or `amount` (always stored positive).
+  direction: "credit" | "debit";
   status: WalletTransactionStatus;
   description: string | null;
   reference: string | null;
@@ -185,6 +189,7 @@ export interface TransactionLoanSummary {
 }
 
 export interface TransactionRepaymentSummary {
+  id: string;
   instalment_number: number;
   payment_method: string | null;
 }

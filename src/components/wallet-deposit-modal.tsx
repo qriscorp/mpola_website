@@ -156,6 +156,29 @@ export function WalletDepositModal({
           </p>
         )}
 
+        {Number(amount) > 0 && (
+          <div className="rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 p-3 space-y-1 text-xs">
+            <div className="flex justify-between text-gray-600 dark:text-gray-400">
+              <span>You&apos;re depositing</span>
+              <span className="font-medium text-[#1B2B3A] dark:text-white">
+                UGX {Number(amount).toLocaleString()}
+              </span>
+            </div>
+            <div className="flex justify-between text-gray-600 dark:text-gray-400">
+              <span>Via</span>
+              <span className="font-medium text-[#1B2B3A] dark:text-white">
+                {method === "mobile_money"
+                  ? `${carrier === "MTN" ? "MTN Mobile Money" : "Airtel Money"}${phone.length === 9 ? ` · +256${phone}` : ""}`
+                  : "Card"}
+              </span>
+            </div>
+            <div className="flex justify-between font-semibold text-[#1B2B3A] dark:text-white pt-1 border-t border-gray-200 dark:border-gray-700">
+              <span>Deposit fee</span>
+              <span>Free</span>
+            </div>
+          </div>
+        )}
+
         {cardDeposit.isPending && (
           <p className="text-sm text-amber-600">
             Waiting for payment confirmation…
