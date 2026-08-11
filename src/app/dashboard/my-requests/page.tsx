@@ -13,7 +13,7 @@ import {
   useFreezeApplication,
   useUnfreezeApplication,
 } from "@/hooks/use-application";
-import { formatCurrency, getApplicationStatusColor, getApplicationStatusLabel } from "@/lib/format";
+import { formatCurrency, formatRate, getApplicationStatusColor, getApplicationStatusLabel } from "@/lib/format";
 import { TableSkeleton } from "@/components/skeletons";
 import { StaggerList, StaggerItem } from "@/components/motion/stagger";
 import type { Guarantor, LoanApplication } from "@/lib/types";
@@ -22,7 +22,7 @@ import { toast } from "sonner";
 const tabs = ["All", "Pending", "Funded", "Closed"] as const;
 type Tab = (typeof tabs)[number];
 
-const EDIT_DURATIONS = [3, 4, 6, 12];
+const EDIT_DURATIONS = [1, 2, 3, 4, 6, 12];
 const EDIT_LOAN_TYPES = [
   { label: "Business", value: "business" },
   { label: "Personal", value: "personal" },
@@ -44,6 +44,53 @@ const guarantorBadge: Record<Guarantor["status"], string> = {
   accepted: "bg-emerald-50 text-emerald-600",
   declined: "bg-red-50 text-red-600",
 };
+
+function DetailRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex justify-between py-1.5 text-sm">
+      <span className="text-gray-500">{label}</span>
+      <span className="font-medium text-[#1B2B3A] dark:text-white">{value}</span>
+    </div>
+  );
+}
+
+function RequestDetailPanel({ app }: { app: LoanApplication }) {
+  return (
+    <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-800 divide-y divide-gray-100 dark:divide-gray-800">
+      <DetailRow label="Reference" value={app.reference_number} />
+      <DetailRow label="Amount" value={formatCurrency(app.amount)} />
+      <DetailRow label="Duration" value={`${app.duration} months`} />
+      <DetailRow
+        label="Loan Type"
+        value={app.loan_type.charAt(0).toUpperCase() + app.loan_type.slice(1)}
+      />
+      {app.purpose && <DetailRow label="Purpose" value={app.purpose} />}
+      {app.max_interest_rate != null && (
+        <DetailRow label="Your Rate Cap" value={`${formatRate(app.max_interest_rate)}/month`} />
+      )}
+      {app.interest_rate != null ? (
+        <>
+          <DetailRow label="Accepted Interest Rate" value={`${formatRate(app.interest_rate)}/month`} />
+          {app.monthly_payment != null && (
+            <DetailRow label="Monthly Payment" value={formatCurrency(app.monthly_payment)} />
+          )}
+          {app.total_repayable != null && (
+            <DetailRow label="Total Repayable" value={formatCurrency(app.total_repayable)} />
+          )}
+        </>
+      ) : (
+        <DetailRow
+          label="Offers"
+          value={`${app.offers_count} received${app.pending_offers_count ? ` (${app.pending_offers_count} pending)` : ""}`}
+        />
+      )}
+      <DetailRow
+        label="Submitted"
+        value={new Date(app.created_at).toLocaleDateString("en-UG", { day: "numeric", month: "short", year: "numeric" })}
+      />
+    </div>
+  );
+}
 
 function ReplaceGuarantorForm({
   applicationId,
@@ -463,6 +510,7 @@ function DiscardDraftLink({ applicationId }: { applicationId: string }) {
 export default function MyRequestsPage() {
   const { data: applications, isLoading } = useApplications();
   const [activeTab, setActiveTab] = useState<Tab>("All");
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
     if (!applications) return [];
@@ -580,15 +628,33 @@ export default function MyRequestsPage() {
                       </p>
                     )}
                   </div>
-                  {app.status === "pending" && (
-                    <Link
-                      href={`/dashboard/offers-received?applicationId=${app.id}`}
-                      className="px-5 py-2 rounded-xl bg-[#2BB5A0] text-white text-sm font-semibold hover:bg-[#239E8C] transition-colors whitespace-nowrap shrink-0"
+                  <div className="flex gap-2 shrink-0">
+                    {app.status === "pending" && (
+                      <Link
+                        href={`/dashboard/offers-received?applicationId=${app.id}`}
+                        className="px-5 py-2 rounded-xl bg-[#2BB5A0] text-white text-sm font-semibold hover:bg-[#239E8C] transition-colors whitespace-nowrap"
+                      >
+                        View Offers
+                      </Link>
+                    )}
+                    {app.status === "funded" && app.loan_status && app.loan_status !== "pending_disbursement" && (
+                      <Link
+                        href={`/dashboard/repayments/pay?loanId=${app.loan_id}`}
+                        className="px-5 py-2 rounded-xl bg-[#2BB5A0] text-white text-sm font-semibold hover:bg-[#239E8C] transition-colors whitespace-nowrap"
+                      >
+                        Make Payment
+                      </Link>
+                    )}
+                    <button
+                      onClick={() => setExpandedId(expandedId === app.id ? null : app.id)}
+                      className="px-4 py-2 rounded-xl border border-gray-300 text-sm font-medium text-gray-600 hover:border-[#2BB5A0] hover:text-[#2BB5A0] transition-colors whitespace-nowrap"
                     >
-                      View Offers
-                    </Link>
-                  )}
+                      {expandedId === app.id ? "Hide Details" : "Details"}
+                    </button>
+                  </div>
                 </div>
+
+                {expandedId === app.id && <RequestDetailPanel app={app} />}
 
                 {app.status === "awaiting_guarantors" && app.guarantors && app.guarantors.length > 0 && (
                   <GuarantorStatusList applicationId={app.id} guarantors={app.guarantors} />

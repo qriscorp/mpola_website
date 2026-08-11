@@ -1,9 +1,11 @@
 "use client";
 
 import { Suspense, useState } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { BorrowerPageHeader } from "@/components/top-nav";
 import { useLoanDetail, useMakeRepayment } from "@/hooks/use-repayments";
+import { useActiveLoan } from "@/hooks/use-dashboard";
 import { useWallet } from "@/hooks/use-wallet";
 import { formatCurrency } from "@/lib/format";
 import { FormSkeleton } from "@/components/skeletons";
@@ -14,9 +16,17 @@ type Method = "mobile_money" | "wallet";
 function MakePaymentContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const loanId = searchParams.get("loanId") ?? undefined;
+  const loanIdParam = searchParams.get("loanId") ?? undefined;
 
-  const { data: loan, isLoading: loanLoading } = useLoanDetail(loanId);
+  // The sidebar's "Make a Payment" link doesn't know which loan to pay —
+  // it links here with no loanId. Fall back to the borrower's current
+  // active loan in that case, same as the dashboard's "Pay Now" banner.
+  const { data: loanFromParam, isLoading: loanFromParamLoading } =
+    useLoanDetail(loanIdParam);
+  const { data: activeLoan, isLoading: activeLoanLoading } = useActiveLoan();
+  const loan = loanIdParam ? loanFromParam : activeLoan;
+  const loanLoading = loanIdParam ? loanFromParamLoading : activeLoanLoading;
+
   const { data: wallet } = useWallet();
   const { mutate: makeRepayment, isPending } = useMakeRepayment();
 
@@ -37,8 +47,18 @@ function MakePaymentContent() {
     return (
       <div className="space-y-6">
         <BorrowerPageHeader title="Make a Payment" />
-        <div className="rounded-2xl border border-gray-200 bg-white p-8 text-center text-gray-500">
-          Loan not found.
+        <div className="rounded-2xl border border-gray-200 bg-white p-8 text-center text-gray-500 space-y-3">
+          <p>
+            {loanIdParam
+              ? "That loan couldn't be found."
+              : "You don't have an active loan to repay yet."}
+          </p>
+          <Link
+            href="/dashboard/my-requests"
+            className="inline-block text-sm font-semibold text-[#2BB5A0] hover:underline"
+          >
+            View my requests →
+          </Link>
         </div>
       </div>
     );

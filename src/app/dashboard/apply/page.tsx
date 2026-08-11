@@ -19,10 +19,12 @@ import { useSearchGuarantorCandidate, useAttachGuarantors } from "@/hooks/use-gu
 import { formatCurrency } from "@/lib/format";
 
 const STEPS = ["Loan Details", "Guarantors", "Review"];
-// Backend enforces duration >= 3 months (repository/models.py's
-// LoanApplicationCreate) — 1/2 mo used to be offered here and would always
-// fail validation on submit.
-const DURATIONS = ["3 mo", "4 mo", "6 mo", "12 mo"];
+// Backend enforces duration >= 1 month (repository/models.py's
+// LoanApplicationCreate) — every installment is a monthly cycle
+// (routers/loans.py advances next_payment_date by 30 days per instalment),
+// so sub-month terms (days/weeks) aren't representable without rebuilding
+// the repayment schedule itself; 1 month is the real floor.
+const DURATIONS = ["1 mo", "2 mo", "3 mo", "4 mo", "6 mo", "12 mo"];
 const LOAN_TYPES = [
   { label: "Business", value: "business" },
   { label: "Personal", value: "personal" },
