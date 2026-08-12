@@ -57,6 +57,14 @@ function PostOfferContent() {
     "Bank Statement (3mo)",
     "Payslip / Business Proof",
   ]);
+  const [customDocInput, setCustomDocInput] = useState("");
+  const customDocs = selectedDocs.filter((d) => !DOCUMENTS.includes(d));
+  const addCustomDoc = () => {
+    const label = customDocInput.trim();
+    if (!label || selectedDocs.includes(label)) return;
+    setSelectedDocs((prev) => [...prev, label]);
+    setCustomDocInput("");
+  };
   const [unit, setUnit] = useState<"months" | "days">("months");
   const [duration, setDuration] = useState("6 months");
   const [durationDays, setDurationDays] = useState<number | null>(DAY_PRESETS[0]);
@@ -101,9 +109,7 @@ function PostOfferContent() {
         editingTemplate.accepted_loan_types.includes(t.toLowerCase()),
       ),
     );
-    setSelectedDocs(
-      DOCUMENTS.filter((d) => editingTemplate.required_documents.includes(d)),
-    );
+    setSelectedDocs(editingTemplate.required_documents);
     setDescription(editingTemplate.description ?? "");
     setValidUntil(
       editingTemplate.valid_until ? editingTemplate.valid_until.slice(0, 10) : "",
@@ -364,7 +370,44 @@ function PostOfferContent() {
                   toggle(selectedDocs, setSelectedDocs, d),
                 ),
               )}
+              {customDocs.map((d) => (
+                <button
+                  key={d}
+                  type="button"
+                  onClick={() => setSelectedDocs((prev) => prev.filter((x) => x !== d))}
+                  className="flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium border bg-[#C4A55A] border-[#C4A55A] text-white"
+                >
+                  {d}
+                  <span aria-hidden>×</span>
+                </button>
+              ))}
             </div>
+            <div className="flex gap-2 max-w-md">
+              <Input
+                placeholder="Other document (e.g. Business License)"
+                maxLength={255}
+                value={customDocInput}
+                onChange={(e) => setCustomDocInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    addCustomDoc();
+                  }
+                }}
+              />
+              <button
+                type="button"
+                onClick={addCustomDoc}
+                disabled={!customDocInput.trim()}
+                className="shrink-0 px-4 py-2 rounded-lg border border-gray-300 text-sm font-semibold text-gray-700 hover:border-gray-400 disabled:opacity-50"
+              >
+                + Add
+              </button>
+            </div>
+            <p className="text-xs text-gray-400">
+              A custom requirement won&apos;t match a fixed upload slot — the borrower will be able
+              to satisfy it with either a file or a written explanation.
+            </p>
           </div>
 
           {/* Description */}

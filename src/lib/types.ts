@@ -94,11 +94,22 @@ export interface RepaymentHistoryItem extends LoanRepayment {
   lender_name: string | null;
 }
 
+export interface LoanGuarantor {
+  id: string;
+  full_name: string | null;
+  username: string | null;
+  relationship_type: string | null;
+  status: "pending" | "accepted" | "declined";
+}
+
 export interface ActiveLoan {
   id: string;
+  application_id: string | null;
   borrower_id: string;
   lender_id: string;
   borrower_name: string | null;
+  borrower_phone: string | null;
+  borrower_email: string | null;
   lender_name: string | null;
   amount: number;
   interest_rate: number;
@@ -114,8 +125,10 @@ export interface ActiveLoan {
   status: "pending_disbursement" | "active" | "completed" | "overdue" | "defaulted";
   disbursed_at: string | null;
   created_at: string;
+  borrower_note: string | null;
   required_documents: string[];
   required_documents_status: RequiredDocumentStatus[];
+  guarantors: LoanGuarantor[];
   repayments?: LoanRepayment[];
 }
 
@@ -556,11 +569,15 @@ export interface BorrowerDocument {
 export interface RequiredDocumentStatus {
   label: string;
   type: string | null;
-  source: "kyc" | "borrower_doc" | null;
+  source: "kyc" | "borrower_doc" | "custom" | null;
   satisfied: boolean;
   file_url: string | null;
   file_name: string | null;
   verified: boolean;
+  // Only set for source === "custom" — a lender-specified "Other: ..."
+  // requirement fulfilled (fully or partly) by free text instead of/as
+  // well as a file.
+  text_response: string | null;
 }
 
 // ─── Lender Portal Types ───

@@ -41,6 +41,7 @@ function AcceptOfferContent() {
   const [accepted, setAccepted] = useState<boolean[]>(
     Array(TERMS.length).fill(false),
   );
+  const [note, setNote] = useState("");
 
   const allAccepted = accepted.every(Boolean);
   const offer = application?.offers?.find((o) => o.id === offerId);
@@ -77,7 +78,7 @@ function AcceptOfferContent() {
   }
 
   const handleSign = () => {
-    respond({ offerId: offer.id, applicationId, status: "accepted" });
+    respond({ offerId: offer.id, applicationId, status: "accepted", note: note.trim() || undefined });
   };
 
   const handleProceed = () => {
@@ -173,7 +174,7 @@ function AcceptOfferContent() {
                 </p>
               </CardHeader>
               <CardContent>
-                <RequiredDocumentsChecklist items={requiredDocs} />
+                <RequiredDocumentsChecklist items={requiredDocs} applicationId={applicationId} />
               </CardContent>
             </Card>
           )}
@@ -326,6 +327,21 @@ function AcceptOfferContent() {
                 <p className="text-xs text-amber-600 bg-amber-50 rounded-lg px-3 py-2">
                   Provide the documents this lender requires (above) before signing.
                 </p>
+              )}
+
+              {!isSuccess && (
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+                    Note for the lender (optional)
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={note}
+                    onChange={(e) => setNote(e.target.value)}
+                    placeholder="Anything worth flagging before they approve disbursement..."
+                    className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-[#1B2B3A] outline-none focus:ring-2 focus:ring-[#2BB5A0] resize-none dark:bg-gray-900 dark:border-gray-700 dark:text-white"
+                  />
+                </div>
               )}
 
               {!isSuccess && (

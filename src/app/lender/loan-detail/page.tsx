@@ -6,7 +6,14 @@ import { useSearchParams } from "next/navigation";
 import { LenderPageHeader } from "@/components/lender-top-nav";
 import { CardSkeleton } from "@/components/skeletons";
 import { useLenderLoanDetail } from "@/hooks/use-lender";
-import { formatCurrency, formatRate } from "@/lib/format";
+import { formatCurrency, formatRate, formatDuration } from "@/lib/format";
+import { RequiredDocumentsChecklist } from "@/components/required-documents-checklist";
+
+const guarantorStatusClass: Record<string, string> = {
+  accepted: "bg-emerald-50 text-emerald-600 border-emerald-200",
+  pending: "bg-amber-50 text-amber-600 border-amber-200",
+  declined: "bg-red-50 text-red-600 border-red-200",
+};
 
 const statusLabel: Record<string, string> = {
   active: "On Track",
@@ -111,6 +118,84 @@ function LoanDetailContent() {
           </div>
         </div>
       </div>
+
+      {/* Borrower contact + terms */}
+      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 sm:p-6">
+        <h3 className="font-semibold text-[#1B2B3A] dark:text-white mb-4">
+          Borrower &amp; Terms
+        </h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+          <div>
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Phone</p>
+            <p className="mt-0.5 text-[#1B2B3A] dark:text-white">{loan.borrower_phone ?? "—"}</p>
+          </div>
+          <div>
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Email</p>
+            <p className="mt-0.5 text-[#1B2B3A] dark:text-white">{loan.borrower_email ?? "—"}</p>
+          </div>
+          <div>
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Term</p>
+            <p className="mt-0.5 text-[#1B2B3A] dark:text-white">
+              {formatDuration(loan.duration, loan.duration_days)}
+            </p>
+          </div>
+          <div>
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Total Repayable</p>
+            <p className="mt-0.5 text-[#1B2B3A] dark:text-white">{formatCurrency(loan.total_repayable)}</p>
+          </div>
+        </div>
+        {loan.borrower_note && (
+          <div className="mt-4 rounded-lg bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 p-3">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">
+              Note from borrower
+            </p>
+            <p className="text-sm text-[#1B2B3A] dark:text-white italic">&ldquo;{loan.borrower_note}&rdquo;</p>
+          </div>
+        )}
+      </div>
+
+      {/* Guarantors */}
+      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 sm:p-6">
+        <h3 className="font-semibold text-[#1B2B3A] dark:text-white mb-4">
+          Guarantors ({loan.guarantors.length})
+        </h3>
+        {loan.guarantors.length === 0 ? (
+          <p className="text-sm text-gray-400">No guarantors on this loan.</p>
+        ) : (
+          <div className="space-y-2">
+            {loan.guarantors.map((g) => (
+              <div
+                key={g.id}
+                className="flex items-center justify-between py-2 border-b last:border-0 border-gray-100 dark:border-gray-800"
+              >
+                <div>
+                  <p className="text-sm font-medium text-[#1B2B3A] dark:text-white">
+                    {g.full_name ?? g.username}
+                  </p>
+                  <p className="text-xs text-gray-400">
+                    {g.relationship_type ?? "—"} &middot; @{g.username}
+                  </p>
+                </div>
+                <span
+                  className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border capitalize ${guarantorStatusClass[g.status] ?? guarantorStatusClass.pending}`}
+                >
+                  {g.status}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Required documents */}
+      {loan.required_documents_status.length > 0 && (
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 sm:p-6">
+          <h3 className="font-semibold text-[#1B2B3A] dark:text-white mb-4">
+            Documents Provided
+          </h3>
+          <RequiredDocumentsChecklist items={loan.required_documents_status} readOnly />
+        </div>
+      )}
 
       {/* Repayment history */}
       <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 sm:p-6">

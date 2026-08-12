@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { LenderPageHeader } from "@/components/lender-top-nav";
 import { TableSkeleton } from "@/components/skeletons";
 import { useLenderActiveLoans, useApproveDisbursement } from "@/hooks/use-lender";
-import { formatCurrency, formatRate } from "@/lib/format";
+import { formatCurrency, formatRate, formatDuration } from "@/lib/format";
 import { calcPlatformFee } from "@/lib/fees";
 import type { ActiveLoan } from "@/lib/types";
 import { FadeSwap } from "@/components/motion/fade-swap";
@@ -247,16 +247,24 @@ export default function LenderPortfolioPage() {
                               ? "Approving…"
                               : "Approve Disbursement"}
                           </button>
-                          {loan.required_documents.length > 0 && (
-                            <button
-                              onClick={() =>
-                                setExpandedLoanId(expandedLoanId === loan.id ? null : loan.id)
-                              }
+                          <div className="flex gap-3">
+                            {loan.required_documents.length > 0 && (
+                              <button
+                                onClick={() =>
+                                  setExpandedLoanId(expandedLoanId === loan.id ? null : loan.id)
+                                }
+                                className="text-xs font-medium text-gray-400 hover:text-[#C4A55A] underline whitespace-nowrap"
+                              >
+                                {expandedLoanId === loan.id ? "Hide documents" : "Review documents"}
+                              </button>
+                            )}
+                            <Link
+                              href={`/lender/loan-detail?loanId=${loan.id}`}
                               className="text-xs font-medium text-gray-400 hover:text-[#C4A55A] underline whitespace-nowrap"
                             >
-                              {expandedLoanId === loan.id ? "Hide documents" : "Review documents"}
-                            </button>
-                          )}
+                              View Details
+                            </Link>
+                          </div>
                         </div>
                       ) : (
                         <Link
@@ -318,6 +326,28 @@ export default function LenderPortfolioPage() {
                 <span>
                   {formatCurrency(confirmingLoan.amount + calcPlatformFee(confirmingLoan.amount))}
                 </span>
+              </div>
+            </div>
+
+            <div className="mt-3 rounded-xl bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-800 p-3 space-y-1 text-xs">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 mb-1">
+                What you&apos;ll earn back
+              </p>
+              <div className="flex justify-between text-gray-600 dark:text-gray-400">
+                <span>Interest rate</span>
+                <span>{formatRate(confirmingLoan.interest_rate)}</span>
+              </div>
+              <div className="flex justify-between text-gray-600 dark:text-gray-400">
+                <span>Term</span>
+                <span>{formatDuration(confirmingLoan.duration, confirmingLoan.duration_days)}</span>
+              </div>
+              <div className="flex justify-between text-gray-600 dark:text-gray-400">
+                <span>Total interest</span>
+                <span>{formatCurrency(confirmingLoan.total_repayable - confirmingLoan.amount)}</span>
+              </div>
+              <div className="flex justify-between font-semibold text-emerald-700 dark:text-emerald-400 pt-1 border-t border-emerald-200 dark:border-emerald-800">
+                <span>Total repayable to you</span>
+                <span>{formatCurrency(confirmingLoan.total_repayable)}</span>
               </div>
             </div>
 

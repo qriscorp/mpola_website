@@ -944,8 +944,33 @@ export const api = {
   respondToOffer: async (
     offerId: string,
     status: "accepted" | "declined",
+    note?: string,
   ): Promise<{ status: number; message: string }> => {
-    return apiAuthPut(`/loans/offers/${offerId}`, { status });
+    return apiAuthPut(`/loans/offers/${offerId}`, { status, note: note || undefined });
+  },
+  submitCustomDocumentResponse: async (
+    applicationId: string,
+    label: string,
+    data: { textResponse?: string; file?: File },
+  ): Promise<{ status: number; message: string }> => {
+    const token = getCookie("lf_token");
+    const formData = new FormData();
+    formData.append("label", label);
+    if (data.textResponse) formData.append("text_response", data.textResponse);
+    if (data.file) formData.append("file", data.file);
+    const res = await fetch(
+      `${API_BASE_URL}/loans/applications/${applicationId}/custom-document-response`,
+      {
+        method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: formData,
+      },
+    );
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: "Request failed" }));
+      throw new Error(extractErrorMessage(err, res.status));
+    }
+    return res.json();
   },
 
   // Repayments

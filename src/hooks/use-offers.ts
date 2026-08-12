@@ -10,11 +10,13 @@ export function useRespondToOffer() {
     mutationFn: ({
       offerId,
       status,
+      note,
     }: {
       offerId: string;
       applicationId: string;
       status: "accepted" | "declined";
-    }) => api.respondToOffer(offerId, status),
+      note?: string;
+    }) => api.respondToOffer(offerId, status, note),
     onSuccess: (_result, variables) => {
       if (variables.status === "accepted") {
         toast.success("Offer accepted! The lender has been notified to approve and release the funds.");

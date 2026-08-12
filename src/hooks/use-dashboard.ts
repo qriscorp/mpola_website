@@ -68,6 +68,29 @@ export function useUploadBorrowerDocument() {
   });
 }
 
+export function useSubmitCustomDocumentResponse() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      applicationId,
+      label,
+      textResponse,
+      file,
+    }: {
+      applicationId: string;
+      label: string;
+      textResponse?: string;
+      file?: File;
+    }) => api.submitCustomDocumentResponse(applicationId, label, { textResponse, file }),
+    onSuccess: () => {
+      toast.success("Saved");
+      qc.invalidateQueries({ queryKey: ["borrower", "offers-received"] });
+      qc.invalidateQueries({ queryKey: ["application"] });
+    },
+    onError: (err: Error) => toast.error(err.message || "Failed to save"),
+  });
+}
+
 export function useDashboardStats() {
   return useQuery({
     queryKey: ["dashboard-stats"],

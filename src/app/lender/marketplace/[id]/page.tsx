@@ -39,11 +39,20 @@ export default function ApplicationDetailPage({
   const [interestRate, setInterestRate] = useState("3");
   const [duration, setDuration] = useState("");
   const [requiredDocs, setRequiredDocs] = useState<string[]>([]);
+  const [customDocInput, setCustomDocInput] = useState("");
+  const customDocs = requiredDocs.filter((d) => !DOCUMENT_LABEL_OPTIONS.includes(d));
 
   function toggleDoc(label: string) {
     setRequiredDocs((prev) =>
       prev.includes(label) ? prev.filter((d) => d !== label) : [...prev, label],
     );
+  }
+
+  function addCustomDoc() {
+    const label = customDocInput.trim();
+    if (!label || requiredDocs.includes(label)) return;
+    setRequiredDocs((prev) => [...prev, label]);
+    setCustomDocInput("");
   }
 
   if (isLoading) {
@@ -234,6 +243,40 @@ export default function ApplicationDetailPage({
                     {label}
                   </button>
                 ))}
+                {customDocs.map((label) => (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={() => setRequiredDocs((prev) => prev.filter((d) => d !== label))}
+                    className="flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border bg-[#C4A55A] border-[#C4A55A] text-white"
+                  >
+                    {label}
+                    <span aria-hidden>×</span>
+                  </button>
+                ))}
+              </div>
+              <div className="flex gap-2 mt-2 max-w-xs">
+                <Input
+                  className="h-8 text-xs"
+                  placeholder="Other document..."
+                  maxLength={255}
+                  value={customDocInput}
+                  onChange={(e) => setCustomDocInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      addCustomDoc();
+                    }
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={addCustomDoc}
+                  disabled={!customDocInput.trim()}
+                  className="shrink-0 px-3 py-1 rounded-lg border border-gray-300 text-xs font-semibold text-gray-700 hover:border-gray-400 disabled:opacity-50"
+                >
+                  + Add
+                </button>
               </div>
             </div>
 

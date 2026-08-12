@@ -187,7 +187,10 @@ function OffersReceivedContent() {
                     <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
                       Documents this lender requires
                     </p>
-                    <RequiredDocumentsChecklist items={offer.required_documents_status} />
+                    <RequiredDocumentsChecklist
+                      items={offer.required_documents_status}
+                      applicationId={application.id}
+                    />
                   </div>
                 )}
               </div>
