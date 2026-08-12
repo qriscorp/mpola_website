@@ -1493,6 +1493,12 @@ export const api = {
     );
     return res.templates;
   },
+  getOfferTemplateMatches: async (templateId: string): Promise<LoanOffer[]> => {
+    const res = await apiAuthGet<{ offers: LoanOffer[] }>(
+      `/loans/offer-templates/${templateId}/matches`,
+    );
+    return res.offers;
+  },
   updateOfferTemplate: async (
     id: string,
     data: Partial<{

@@ -9,6 +9,7 @@ import { CardSkeleton } from "@/components/skeletons";
 import {
   useMyOffers,
   useOfferTemplates,
+  useOfferTemplateMatches,
   useDeleteOfferTemplate,
   useFreezeMyOfferTemplate,
   useUnfreezeMyOfferTemplate,
@@ -68,6 +69,77 @@ function statusBadge(s: OfferStatus) {
     <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-600 border border-amber-200">
       Pending
     </span>
+  );
+}
+
+function MatchedRequestsSection({
+  templateId,
+  matchedCount,
+  pendingCount,
+  acceptedCount,
+}: {
+  templateId: string;
+  matchedCount: number;
+  pendingCount: number;
+  acceptedCount: number;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const { data: matches, isLoading } = useOfferTemplateMatches(templateId, expanded);
+
+  return (
+    <div className="pt-3 border-t border-gray-100 dark:border-gray-800">
+      <button
+        onClick={() => setExpanded((e) => !e)}
+        className="flex items-center gap-2 text-sm font-medium text-[#1B2B3A] dark:text-white hover:text-[#C4A55A] transition-colors"
+      >
+        <span>
+          Matched Requests ({matchedCount})
+          {pendingCount > 0 && (
+            <span className="text-amber-600 font-normal"> · {pendingCount} awaiting borrower</span>
+          )}
+          {acceptedCount > 0 && (
+            <span className="text-emerald-600 font-normal"> · {acceptedCount} accepted</span>
+          )}
+        </span>
+        <span className="text-xs text-gray-400">{expanded ? "Hide ▲" : "View ▼"}</span>
+      </button>
+
+      {expanded && (
+        <div className="mt-3 space-y-2">
+          {isLoading ? (
+            <p className="text-xs text-gray-400">Loading…</p>
+          ) : !matches || matches.length === 0 ? (
+            <p className="text-xs text-gray-400">No matches yet.</p>
+          ) : (
+            matches.map((o) => (
+              <div
+                key={o.id}
+                className="flex items-center justify-between gap-3 rounded-lg bg-gray-50 dark:bg-gray-800/50 px-3 py-2"
+              >
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-[#1B2B3A] dark:text-white truncate">
+                    {o.borrower_name ?? "Unknown borrower"} · {formatCurrency(o.amount)}
+                  </p>
+                  <p className="text-xs text-gray-400">
+                    {o.loan_type ?? "loan"}
+                    {o.application_reference ? ` · #${o.application_reference}` : ""}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  {statusBadge(o.status)}
+                  <Link
+                    href={`/lender/marketplace/${o.application_id}`}
+                    className="text-xs font-semibold text-[#C4A55A] hover:underline"
+                  >
+                    View
+                  </Link>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -271,6 +343,15 @@ export default function MyOffersPage() {
                     )}
                   </div>
                 </div>
+
+                {t.matched_count > 0 && (
+                  <MatchedRequestsSection
+                    templateId={t.id}
+                    matchedCount={t.matched_count}
+                    pendingCount={t.pending_count}
+                    acceptedCount={t.accepted_count}
+                  />
+                )}
 
                 {t.status === "pending_review" && (
                   <div className="flex gap-3 pt-3 border-t border-gray-100 dark:border-gray-800">

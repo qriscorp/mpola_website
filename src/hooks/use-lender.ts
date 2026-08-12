@@ -131,6 +131,14 @@ export function useOfferTemplates() {
   });
 }
 
+export function useOfferTemplateMatches(templateId: string, enabled: boolean) {
+  return useQuery({
+    queryKey: ["lender", "offer-templates", templateId, "matches"],
+    queryFn: () => api.getOfferTemplateMatches(templateId),
+    enabled,
+  });
+}
+
 export function useLenderWallet() {
   return useQuery({
     queryKey: ["lender", "wallet"],
