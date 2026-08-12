@@ -13,6 +13,8 @@ export function notificationHref(
     case "loan_disbursed":
       return "/dashboard/wallet";
     case "offer_template_expired":
+    case "lender_offer_template":
+    case "auto_match_cooldown_lifted":
       return "/lender/offers";
     case "low_wallet_balance":
       return "/lender/wallet";
@@ -21,6 +23,10 @@ export function notificationHref(
     case "guarantor_still_pending":
     case "application_expired":
       return "/dashboard/my-requests";
+    case "offer_awaiting_response":
+      return "/dashboard/offers-received";
+    case "offer_expired":
+      return isLender ? "/lender/offers" : "/dashboard/offers-received";
     default:
       return null;
   }

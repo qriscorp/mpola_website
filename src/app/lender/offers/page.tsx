@@ -145,6 +145,7 @@ function MatchedRequestsSection({
 
 export default function MyOffersPage() {
   const [tab, setTab] = useState<"All" | OfferStatus>("All");
+  const [origin, setOrigin] = useState<"all" | "auto">("all");
   const { data: offers, isLoading } = useMyOffers();
   const { data: templates } = useOfferTemplates();
   const deleteTemplate = useDeleteOfferTemplate();
@@ -203,8 +204,11 @@ export default function MyOffersPage() {
   };
 
   const allOffers = offers ?? [];
+  const autoMatchedCount = allOffers.filter((o) => o.template_id).length;
+  const originFiltered =
+    origin === "auto" ? allOffers.filter((o) => o.template_id) : allOffers;
   const filtered =
-    tab === "All" ? allOffers : allOffers.filter((o) => o.status === tab);
+    tab === "All" ? originFiltered : originFiltered.filter((o) => o.status === tab);
 
   return (
     <FadeSwap
@@ -218,6 +222,34 @@ export default function MyOffersPage() {
     >
     <div className="space-y-6 max-w-5xl">
       <LenderPageHeader title="My Offers" />
+
+      {/* Origin filter — combined view across every standing offer's
+          matches, so a lender with several templates doesn't have to open
+          each one's card individually to see what's come in. */}
+      {autoMatchedCount > 0 && (
+        <div className="flex gap-2">
+          <button
+            onClick={() => setOrigin("all")}
+            className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors ${
+              origin === "all"
+                ? "bg-[#1B2B3A] border-[#1B2B3A] text-white"
+                : "bg-white border-gray-300 text-gray-600 hover:border-[#1B2B3A]"
+            }`}
+          >
+            All Offers ({allOffers.length})
+          </button>
+          <button
+            onClick={() => setOrigin("auto")}
+            className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors ${
+              origin === "auto"
+                ? "bg-[#1B2B3A] border-[#1B2B3A] text-white"
+                : "bg-white border-gray-300 text-gray-600 hover:border-[#1B2B3A]"
+            }`}
+          >
+            Auto-Matched Only ({autoMatchedCount})
+          </button>
+        </div>
+      )}
 
       {/* Tab filters */}
       <div className="flex gap-2 flex-wrap">
@@ -253,6 +285,11 @@ export default function MyOffersPage() {
                       <h3 className="text-2xl font-bold text-[#1B2B3A] dark:text-white">
                         {formatCurrency(offer.amount)}
                       </h3>
+                      {offer.template_id && (
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                          Auto-matched
+                        </span>
+                      )}
                     </div>
                     <p className="text-[#C4A55A] font-semibold text-sm mt-0.5">
                       {formatRate(offer.interest_rate)} ·{" "}

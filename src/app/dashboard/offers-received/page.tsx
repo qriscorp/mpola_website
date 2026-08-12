@@ -139,9 +139,19 @@ function OffersReceivedContent() {
                     {initials(offer.lender_name)}
                   </div>
                   <div className="flex-1">
-                    <p className="font-bold text-[#1B2B3A] dark:text-white">
-                      {offer.lender_name ?? "Lender"}
-                    </p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-bold text-[#1B2B3A] dark:text-white">
+                        {offer.lender_name ?? "Lender"}
+                      </p>
+                      {offer.template_id && (
+                        <span
+                          title="This lender's standing offer automatically matched your request — it wasn't manually reviewed."
+                          className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#2BB5A0]/10 text-[#2BB5A0]"
+                        >
+                          Auto-matched
+                        </span>
+                      )}
+                    </div>
                     <p className="text-lg font-extrabold text-[#2BB5A0] mt-1">
                       {formatRate(offer.interest_rate)} ·{" "}
                       {formatDuration(offer.duration, offer.duration_days)} ·{" "}

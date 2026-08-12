@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
@@ -14,19 +14,22 @@ export const metadata: Metadata = {
     "Lend me, grow together. Apply once. Compare offers from licensed lenders side-by-side.",
   applicationName: "Mpola",
   manifest: "/manifest.webmanifest",
-  themeColor: "#1B4332",
   icons: {
     icon: [
-      { url: "/mpola_logo-3.png", sizes: "192x192", type: "image/png" },
-      { url: "/mpola_logo-3.png", sizes: "512x512", type: "image/png" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
     ],
-    apple: [{ url: "/mpola_logo-3.png", sizes: "180x180", type: "image/png" }],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
   },
   appleWebApp: {
     capable: true,
     title: "Mpola",
     statusBarStyle: "default",
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#1B4332",
 };
 
 export default function RootLayout({

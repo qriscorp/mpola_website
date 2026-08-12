@@ -25,8 +25,8 @@ self.addEventListener("push", (event) => {
     self.registration.showNotification(title || "Mpola", {
       body,
       data,
-      icon: "/welend-icon-192.png",
-      badge: "/welend-icon-192.png",
+      icon: "/icon-192.png",
+      badge: "/icon-192.png",
       requireInteraction: !!urgent,
       // Distinct pattern for action-needed vs routine pushes — mirrors the
       // app's high-importance Android channel getting a vibration pattern

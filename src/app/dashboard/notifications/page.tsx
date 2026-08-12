@@ -32,6 +32,8 @@ const typeConfig: Record<
   loan_offer: { icon: Gift, iconBg: "bg-[#E6F4F2]", iconColor: "text-[#149D8E]" },
   offer_accepted: { icon: Gift, iconBg: "bg-[#E6F4F2]", iconColor: "text-[#149D8E]" },
   offer_declined: { icon: Gift, iconBg: "bg-gray-100", iconColor: "text-gray-600" },
+  offer_awaiting_response: { icon: Gift, iconBg: "bg-amber-50", iconColor: "text-amber-600" },
+  offer_expired: { icon: Clock, iconBg: "bg-gray-100", iconColor: "text-gray-600" },
   payment: { icon: CreditCard, iconBg: "bg-[#E6F4F2]", iconColor: "text-[#149D8E]" },
   repayment: { icon: CreditCard, iconBg: "bg-[#E6F4F2]", iconColor: "text-[#149D8E]" },
   guarantor_response: { icon: UserCheck, iconBg: "bg-blue-50", iconColor: "text-blue-600" },
@@ -48,7 +50,7 @@ const defaultTypeConfig = {
 };
 
 function categoryOf(type: string | null): "offers" | "payments" | "guarantors" | "other" {
-  if (type === "loan_offer" || type === "offer_accepted" || type === "offer_declined") return "offers";
+  if (type === "loan_offer" || type === "offer_accepted" || type === "offer_declined" || type === "offer_awaiting_response" || type === "offer_expired") return "offers";
   if (type === "payment" || type === "repayment") return "payments";
   if (type === "guarantor_response" || type === "guarantor_invite_received" || type === "guarantor_still_pending" || type === "guarantor_request_expired") return "guarantors";
   return "other";

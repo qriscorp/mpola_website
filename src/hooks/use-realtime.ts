@@ -87,6 +87,9 @@ export function useRealtimeNotifications() {
           queryClient.invalidateQueries({ queryKey: ["active-loan"] });
           queryClient.invalidateQueries({ queryKey: ["lender", "active-loans"] });
           queryClient.invalidateQueries({ queryKey: ["lender", "offer-templates"] });
+          queryClient.invalidateQueries({ queryKey: ["lender", "offers"] });
+          queryClient.invalidateQueries({ queryKey: ["borrower", "offers-received"] });
+          queryClient.invalidateQueries({ queryKey: ["application"] });
           queryClient.invalidateQueries({ queryKey: ["guarantor-requests"] });
 
           if (URGENT_NOTIFICATION_TYPES.has(msg.type)) {
@@ -111,6 +114,43 @@ export function useRealtimeNotifications() {
               action: {
                 label: "Update",
                 onClick: () => router.push("/lender/offers"),
+              },
+            });
+          } else if (msg.type === "lender_offer_template") {
+            toast.success(msg.title, {
+              description: msg.message,
+              duration: 15000,
+              action: {
+                label: "View",
+                onClick: () => router.push("/lender/offers"),
+              },
+            });
+          } else if (msg.type === "offer_awaiting_response") {
+            toast.warning(msg.title, {
+              description: msg.message,
+              duration: 15000,
+              action: {
+                label: "View",
+                onClick: () => router.push("/dashboard/offers-received"),
+              },
+            });
+          } else if (msg.type === "auto_match_cooldown_lifted") {
+            toast.info(msg.title, {
+              description: msg.message,
+              duration: 15000,
+              action: {
+                label: "View",
+                onClick: () => router.push("/lender/offers"),
+              },
+            });
+          } else if (msg.type === "offer_expired") {
+            const isLenderPath = pathnameRef.current?.startsWith("/lender");
+            toast.warning(msg.title, {
+              description: msg.message,
+              duration: 15000,
+              action: {
+                label: "View",
+                onClick: () => router.push(isLenderPath ? "/lender/offers" : "/dashboard/offers-received"),
               },
             });
           } else if (msg.type === "low_wallet_balance") {
