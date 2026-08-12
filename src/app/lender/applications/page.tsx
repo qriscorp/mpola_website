@@ -14,7 +14,7 @@ import {
 } from "@/hooks/use-lender";
 import { formatCurrency, formatDuration, getInitials } from "@/lib/format";
 import { DOCUMENT_LABEL_OPTIONS } from "@/lib/document-labels";
-import type { MarketplaceApplication } from "@/lib/types";
+import type { MarketplaceApplication, LoanOffer } from "@/lib/types";
 import { FadeSwap } from "@/components/motion/fade-swap";
 import { StaggerList, StaggerItem } from "@/components/motion/stagger";
 
@@ -35,6 +35,20 @@ function timeSince(dateStr: string) {
   if (days <= 0) return "today";
   if (days === 1) return "1 day ago";
   return `${days} days ago`;
+}
+
+// A lender's own standing offer may have already auto-matched this
+// application — while it's still pending and inside the 2-day cooldown
+// (see AUTO_MATCH_MANUAL_OFFER_COOLDOWN in routers/loans.py), they can't
+// also hand-craft a manual offer here. Purely informational/UX gating —
+// the backend is the real enforcement.
+function autoMatchCooldown(offer: LoanOffer | undefined): { hoursLeft: number } | null {
+  if (!offer || offer.status !== "pending" || !offer.template_id || !offer.auto_match_cooldown_ends_at) {
+    return null;
+  }
+  const msLeft = new Date(offer.auto_match_cooldown_ends_at).getTime() - Date.now();
+  if (msLeft <= 0) return null;
+  return { hoursLeft: Math.ceil(msLeft / 3_600_000) };
 }
 
 export default function ApplicationsPage() {
@@ -69,6 +83,9 @@ export default function ApplicationsPage() {
   const pendingOffersCount = (myOffers ?? []).filter(
     (o) => o.status === "pending",
   ).length;
+  const myOfferByApplicationId = new Map(
+    (myOffers ?? []).map((o) => [o.application_id, o]),
+  );
 
   // The marketplace only ever returns open (pending) applications — once a
   // lender's offer is accepted the application leaves the marketplace, so
@@ -199,15 +216,30 @@ export default function ApplicationsPage() {
 
               {/* Actions */}
               <div className="flex items-center gap-2 shrink-0">
-                <button
-                  onClick={() => {
-                    setRate("15");
-                    setOfferModal(app);
-                  }}
-                  className="px-3 py-1.5 rounded-lg bg-emerald-500 text-white text-xs font-semibold hover:bg-emerald-600 transition-colors"
-                >
-                  Make Offer
-                </button>
+                {(() => {
+                  const cooldown = autoMatchCooldown(myOfferByApplicationId.get(app.id));
+                  if (cooldown) {
+                    return (
+                      <span
+                        title={`Your standing offer already matched this request — you can make a manual offer in ${cooldown.hoursLeft}h if the borrower hasn't responded.`}
+                        className="px-3 py-1.5 rounded-lg bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 text-amber-700 text-xs font-medium cursor-help"
+                      >
+                        Awaiting borrower ({cooldown.hoursLeft}h)
+                      </span>
+                    );
+                  }
+                  return (
+                    <button
+                      onClick={() => {
+                        setRate("15");
+                        setOfferModal(app);
+                      }}
+                      className="px-3 py-1.5 rounded-lg bg-emerald-500 text-white text-xs font-semibold hover:bg-emerald-600 transition-colors"
+                    >
+                      Make Offer
+                    </button>
+                  );
+                })()}
                 <button
                   onClick={() =>
                     skipApplication.mutate(app.id, {

@@ -11,9 +11,21 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useApplicationDetail, useMakeOffer } from "@/hooks/use-lender";
+import { useUser } from "@/hooks/use-dashboard";
 import { formatCurrency, formatDuration, getApplicationStatusLabel } from "@/lib/format";
 import { DOCUMENT_LABEL_OPTIONS } from "@/lib/document-labels";
 import { CardSkeleton } from "@/components/skeletons";
+
+// A lender's own standing offer may have already auto-matched this
+// application — while it's still pending and inside the 2-day cooldown
+// (see AUTO_MATCH_MANUAL_OFFER_COOLDOWN in routers/loans.py), they can't
+// also hand-craft a manual offer here. Purely informational/UX gating — the
+// backend is the real enforcement.
+function autoMatchCooldownHoursLeft(endsAt: string | null | undefined): number | null {
+  if (!endsAt) return null;
+  const msLeft = new Date(endsAt).getTime() - Date.now();
+  return msLeft > 0 ? Math.ceil(msLeft / 3_600_000) : null;
+}
 
 function initials(name: string | null | undefined): string {
   if (!name) return "?";
@@ -32,6 +44,7 @@ export default function ApplicationDetailPage({
 }) {
   const { id } = use(params);
   const { data: application, isLoading } = useApplicationDetail(id);
+  const { data: user } = useUser();
   const { mutate: makeOffer, isPending } = useMakeOffer();
 
   const [showOfferForm, setShowOfferForm] = useState(false);
@@ -77,6 +90,11 @@ export default function ApplicationDetailPage({
   }
 
   const verified = application.borrower?.kyc_status === "verified";
+
+  const myPendingAutoOffer = application.offers?.find(
+    (o) => o.lender_id === user?.id && o.status === "pending" && o.template_id,
+  );
+  const cooldownHoursLeft = autoMatchCooldownHoursLeft(myPendingAutoOffer?.auto_match_cooldown_ends_at);
 
   const isEmergency = application.duration_days != null;
   const numAmount = Number(amount) || 0;
@@ -154,8 +172,15 @@ export default function ApplicationDetailPage({
               </p>
             </div>
 
-            <div className="flex flex-col gap-2">
-              {application.status === "pending" ? (
+            <div className="flex flex-col gap-2 items-end">
+              {application.status === "pending" && cooldownHoursLeft != null ? (
+                <div
+                  title={`Your standing offer already matched this request — you can make a manual offer in ${cooldownHoursLeft}h if the borrower hasn't responded.`}
+                  className="max-w-[220px] rounded-lg bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 px-3 py-2 text-xs text-amber-700 text-right"
+                >
+                  Awaiting borrower response — auto-matched, manual offer available in {cooldownHoursLeft}h
+                </div>
+              ) : application.status === "pending" ? (
                 <Button
                   onClick={() => setShowOfferForm(true)}
                   className="bg-[#C4A55A] hover:bg-[#b3944a] text-white"
