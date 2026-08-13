@@ -184,20 +184,20 @@ export default function VerifyPhonePage() {
   const verifying = draftId ? isVerifyingSignup : isVerifying;
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#f4f8f7]">
+    <div className="min-h-screen flex flex-col bg-[#f4f8f7] dark:bg-gray-950">
       <div className="h-1 bg-[#2BB5A0]" />
       <div className="flex-1 flex items-center justify-center p-6">
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 w-full max-w-md p-10">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 w-full max-w-md p-10 dark:border-gray-800 dark:bg-gray-900">
           <Logo />
 
           <div className="mt-8 flex flex-col items-center text-center">
-            <div className="w-14 h-14 bg-[#E8F8F5] rounded-full flex items-center justify-center mb-4">
+            <div className="w-14 h-14 bg-[#E8F8F5] dark:bg-[#2BB5A0]/10 rounded-full flex items-center justify-center mb-4">
               <Smartphone className="w-7 h-7 text-[#2BB5A0]" />
             </div>
-            <h1 className="text-2xl font-bold text-[#1B2B3A]">
+            <h1 className="text-2xl font-bold text-[#1B2B3A] dark:text-white">
               Verify your phone
             </h1>
-            <p className="text-gray-500 text-sm mt-2 leading-relaxed">
+            <p className="text-gray-500 text-sm mt-2 leading-relaxed dark:text-gray-400">
               {codeSent
                 ? "We sent a verification code via SMS to confirm your Ugandan phone number."
                 : "We'll send a verification code via SMS to confirm your Ugandan phone number."}
@@ -236,7 +236,7 @@ export default function VerifyPhonePage() {
             ) : (
               <form onSubmit={handleVerify} className="space-y-5">
                 <div>
-                  <Label className="mb-2 block text-center text-sm text-gray-500">
+                  <Label className="mb-2 block text-center text-sm text-gray-500 dark:text-gray-400">
                     Enter the 6-digit code sent to +256{phone}
                   </Label>
                   <div
@@ -270,7 +270,7 @@ export default function VerifyPhonePage() {
                   {verifying ? "Verifying…" : "Confirm Phone"}
                 </button>
 
-                <p className="text-center text-sm text-gray-500">
+                <p className="text-center text-sm text-gray-500 dark:text-gray-400">
                   Didn&apos;t receive it?{" "}
                   <button
                     type="button"

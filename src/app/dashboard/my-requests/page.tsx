@@ -40,15 +40,15 @@ function expiryNote(validUntil: string | null, status: string): string | null {
 }
 
 const guarantorBadge: Record<Guarantor["status"], string> = {
-  pending: "bg-amber-50 text-amber-600",
-  accepted: "bg-emerald-50 text-emerald-600",
-  declined: "bg-red-50 text-red-600",
+  pending: "bg-amber-50 text-amber-600 dark:text-amber-400 dark:bg-amber-900/20",
+  accepted: "bg-emerald-50 text-emerald-600 dark:text-emerald-400 dark:bg-emerald-900/20",
+  declined: "bg-red-50 text-red-600 dark:bg-red-900/20",
 };
 
 function DetailRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between py-1.5 text-sm">
-      <span className="text-gray-500">{label}</span>
+      <span className="text-gray-500 dark:text-gray-400">{label}</span>
       <span className="font-medium text-[#1B2B3A] dark:text-white">{value}</span>
     </div>
   );
@@ -136,7 +136,7 @@ function ReplaceGuarantorForm({
   const isPending = search.isPending || replace.isPending;
 
   return (
-    <div className="mt-2 rounded-lg border border-gray-200 dark:border-gray-700 p-3 space-y-2">
+    <div className="mt-2 rounded-lg border border-gray-200 dark:border-gray-700 p-3 space-y-2 dark:border-gray-800">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <input
           type="email"
@@ -146,7 +146,7 @@ function ReplaceGuarantorForm({
           className="rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-900 outline-none focus:ring-2 focus:ring-[#2BB5A0]"
         />
         <div className="flex items-center overflow-hidden rounded-lg border border-gray-300 dark:border-gray-700">
-          <span className="bg-[#E6F4F2] px-3 py-2 text-xs font-bold text-[#149D8E]">+256</span>
+          <span className="bg-[#E6F4F2] px-3 py-2 text-xs font-bold text-[#149D8E] dark:text-[#5EEAD4] dark:bg-[#149D8E]/20">+256</span>
           <input
             type="tel"
             value={phone}
@@ -288,7 +288,7 @@ function EditApplicationForm({ app, onDone }: { app: LoanApplication; onDone: ()
     <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-800 space-y-3">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
-          <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500">
+          <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
             Amount (UGX)
           </label>
           <input
@@ -297,14 +297,14 @@ function EditApplicationForm({ app, onDone }: { app: LoanApplication; onDone: ()
             max={50000000}
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#2BB5A0]"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#2BB5A0] dark:border-gray-700"
           />
           {amountInvalid && (
             <p className="mt-1 text-xs text-red-500">Between UGX 1,000 and UGX 50,000,000</p>
           )}
         </div>
         <div>
-          <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500">
+          <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
             Loan Type
           </label>
           <select
@@ -318,7 +318,7 @@ function EditApplicationForm({ app, onDone }: { app: LoanApplication; onDone: ()
                 setDurationDays(null);
               }
             }}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#2BB5A0]"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#2BB5A0] dark:border-gray-700"
           >
             {EDIT_LOAN_TYPES.map((t) => (
               <option key={t.value} value={t.value}>
@@ -328,7 +328,7 @@ function EditApplicationForm({ app, onDone }: { app: LoanApplication; onDone: ()
           </select>
         </div>
         <div>
-          <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500">
+          <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
             Duration
           </label>
           {isEmergency ? (
@@ -344,8 +344,8 @@ function EditApplicationForm({ app, onDone }: { app: LoanApplication; onDone: ()
                     }}
                     className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
                       durationDays === d
-                        ? "border-[#2BB5A0] bg-[#E6F4F2] text-[#149D8E]"
-                        : "border-gray-300 bg-white text-[#1B2B3A] hover:border-[#2BB5A0]"
+                        ? "border-[#2BB5A0] bg-[#E6F4F2] text-[#149D8E] dark:text-[#5EEAD4] dark:bg-[#149D8E]/20"
+                        : "border-gray-300 bg-white text-[#1B2B3A] hover:border-[#2BB5A0] dark:border-gray-700 dark:text-white dark:bg-gray-900"
                     }`}
                   >
                     {d}d
@@ -368,7 +368,7 @@ function EditApplicationForm({ app, onDone }: { app: LoanApplication; onDone: ()
                   setDurationDays(!Number.isNaN(n) && n >= 1 && n <= 29 ? n : null);
                 }}
                 placeholder="Custom days (1-29)"
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#2BB5A0]"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#2BB5A0] dark:border-gray-700"
               />
               {customDays !== "" && durationDays == null && (
                 <p className="text-xs text-red-500">Enter a whole number between 1 and 29</p>
@@ -378,7 +378,7 @@ function EditApplicationForm({ app, onDone }: { app: LoanApplication; onDone: ()
             <select
               value={duration}
               onChange={(e) => setDuration(Number(e.target.value))}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#2BB5A0]"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#2BB5A0] dark:border-gray-700"
             >
               {EDIT_DURATIONS.map((d) => (
                 <option key={d} value={d}>
@@ -389,7 +389,7 @@ function EditApplicationForm({ app, onDone }: { app: LoanApplication; onDone: ()
           )}
         </div>
         <div>
-          <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500">
+          <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
             Max Interest Rate (%/month)
           </label>
           <input
@@ -400,25 +400,25 @@ function EditApplicationForm({ app, onDone }: { app: LoanApplication; onDone: ()
             value={maxInterestRate}
             onChange={(e) => setMaxInterestRate(e.target.value)}
             placeholder="Any rate"
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#2BB5A0]"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#2BB5A0] dark:border-gray-700"
           />
           {rateInvalid && (
             <p className="mt-1 text-xs text-red-500">Between 0.1% and 25%, or leave blank</p>
           )}
         </div>
         <div>
-          <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500">
+          <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
             Purpose
           </label>
           <input
             type="text"
             value={purpose}
             onChange={(e) => setPurpose(e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#2BB5A0]"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#2BB5A0] dark:border-gray-700"
           />
         </div>
         <div>
-          <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500">
+          <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
             Valid Until
           </label>
           <input
@@ -426,14 +426,14 @@ function EditApplicationForm({ app, onDone }: { app: LoanApplication; onDone: ()
             value={validUntil}
             onChange={(e) => setValidUntil(e.target.value)}
             min={new Date().toISOString().slice(0, 10)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#2BB5A0]"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#2BB5A0] dark:border-gray-700"
           />
         </div>
       </div>
       <div className="flex gap-2">
         <button
           onClick={onDone}
-          className="px-4 py-1.5 rounded-lg border border-gray-300 text-sm font-medium text-gray-600 hover:border-gray-400 transition-colors"
+          className="px-4 py-1.5 rounded-lg border border-gray-300 text-sm font-medium text-gray-600 hover:border-gray-400 transition-colors dark:hover:border-gray-600 dark:border-gray-700 dark:text-gray-300"
         >
           Cancel
         </button>
@@ -493,7 +493,7 @@ function ApplicationActions({ app }: { app: LoanApplication }) {
       {!editLocked && (
         <button
           onClick={() => setEditing(true)}
-          className="px-3 py-1.5 rounded-lg border border-gray-300 text-xs font-medium text-gray-600 hover:border-[#2BB5A0] hover:text-[#2BB5A0] transition-colors"
+          className="px-3 py-1.5 rounded-lg border border-gray-300 text-xs font-medium text-gray-600 hover:border-[#2BB5A0] hover:text-[#2BB5A0] transition-colors dark:border-gray-700 dark:text-gray-300"
         >
           Edit
         </button>
@@ -510,7 +510,7 @@ function ApplicationActions({ app }: { app: LoanApplication }) {
         <button
           onClick={() => setConfirmAction("freeze")}
           disabled={freeze.isPending}
-          className="px-3 py-1.5 rounded-lg border border-gray-300 text-xs font-medium text-gray-600 hover:border-blue-300 hover:text-blue-600 transition-colors disabled:opacity-50"
+          className="px-3 py-1.5 rounded-lg border border-gray-300 text-xs font-medium text-gray-600 hover:border-blue-300 hover:text-blue-600 transition-colors disabled:opacity-50 dark:border-gray-700 dark:text-gray-300"
         >
           Freeze
         </button>
@@ -518,20 +518,20 @@ function ApplicationActions({ app }: { app: LoanApplication }) {
       <button
         onClick={() => setConfirmAction("withdraw")}
         disabled={deleteApplication.isPending}
-        className="px-3 py-1.5 rounded-lg border border-gray-300 text-xs font-medium text-gray-600 hover:border-red-300 hover:text-red-600 transition-colors disabled:opacity-50"
+        className="px-3 py-1.5 rounded-lg border border-gray-300 text-xs font-medium text-gray-600 hover:border-red-300 hover:text-red-600 transition-colors disabled:opacity-50 dark:border-gray-700 dark:text-gray-300"
       >
         Withdraw
       </button>
       {app.is_frozen && (
-        <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold border bg-blue-50 text-blue-600 border-blue-200">
+        <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold border bg-blue-50 text-blue-600 border-blue-200 dark:border-blue-800 dark:text-blue-400 dark:bg-blue-900/20">
           Frozen ({app.frozen_by === "admin" ? "by admin" : "by you"})
         </span>
       )}
       {app.is_frozen && app.frozen_by === "admin" && (
-        <p className="text-xs text-gray-400">Frozen by an admin — only they can unfreeze it.</p>
+        <p className="text-xs text-gray-400 dark:text-gray-500">Frozen by an admin — only they can unfreeze it.</p>
       )}
       {editLocked && (
-        <p className="text-xs text-gray-400">
+        <p className="text-xs text-gray-400 dark:text-gray-500">
           A guarantor has already approved — editing is locked, but you can still freeze or withdraw.
         </p>
       )}
@@ -571,7 +571,7 @@ function DiscardDraftLink({ applicationId }: { applicationId: string }) {
     <button
       onClick={handleDiscard}
       disabled={deleteApplication.isPending}
-      className="mt-3 text-xs font-medium text-gray-400 hover:text-red-500 disabled:opacity-50"
+      className="mt-3 text-xs font-medium text-gray-400 hover:text-red-500 disabled:opacity-50 dark:text-gray-500"
     >
       Discard draft
     </button>
@@ -598,7 +598,7 @@ export default function MyRequestsPage() {
   return (
     <div className="space-y-6">
       <BorrowerPageHeader title="My Requests" />
-      <p className="-mt-4 flex items-center gap-1.5 text-sm text-gray-500">
+      <p className="-mt-4 flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400">
         Awaiting Guarantors → Pending → Funded
         <InfoTip text="Awaiting Guarantors: waiting on your 2 chosen guarantors to approve. Pending: both approved, visible to lenders on the marketplace. Funded: you accepted an offer. You can freeze or withdraw a request any time before it's funded — editing is only possible until a guarantor actually approves, since their approval covers the exact terms they saw." />
       </p>
@@ -612,7 +612,7 @@ export default function MyRequestsPage() {
             className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors ${
               activeTab === tab
                 ? "bg-[#2BB5A0] text-white border-[#2BB5A0]"
-                : "bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-[#2BB5A0] hover:text-[#2BB5A0]"
+                : "bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-[#2BB5A0] hover:text-[#2BB5A0] dark:border-gray-700"
             }`}
           >
             {tab}
@@ -623,7 +623,7 @@ export default function MyRequestsPage() {
       {isLoading ? (
         <TableSkeleton rows={3} />
       ) : filtered.length === 0 ? (
-        <div className="rounded-2xl border border-gray-200 bg-white p-8 text-center text-gray-500">
+        <div className="rounded-2xl border border-gray-200 bg-white p-8 text-center text-gray-500 dark:border-gray-800 dark:text-gray-400 dark:bg-gray-900">
           No loan requests here yet.
         </div>
       ) : (
@@ -641,22 +641,22 @@ export default function MyRequestsPage() {
               return (
                 <StaggerItem
                   key={app.id}
-                  className="bg-white rounded-2xl border border-dashed border-gray-300 p-6"
+                  className="bg-white rounded-2xl border border-dashed border-gray-300 p-6 dark:border-gray-700 dark:bg-gray-900"
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-1">
-                        <span className="text-2xl sm:text-3xl leading-none font-black text-[#1B2B3A]">
+                        <span className="text-2xl sm:text-3xl leading-none font-black text-[#1B2B3A] dark:text-white">
                           {formatCurrency(app.amount)}
                         </span>
-                        <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-500">
+                        <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-500 dark:text-gray-400 dark:bg-gray-800">
                           Draft
                         </span>
                       </div>
-                      <p className="text-sm text-gray-500 capitalize">
+                      <p className="text-sm text-gray-500 capitalize dark:text-gray-400">
                         {app.loan_type} · {formatDuration(app.duration, app.duration_days)}
                       </p>
-                      <p className="text-xs text-gray-400 mt-1">Not yet submitted.</p>
+                      <p className="text-xs text-gray-400 mt-1 dark:text-gray-500">Not yet submitted.</p>
                     </div>
                     <Link
                       href="/dashboard/apply"
@@ -673,12 +673,12 @@ export default function MyRequestsPage() {
             return (
               <StaggerItem
                 key={app.id}
-                className="bg-white rounded-2xl border border-gray-200 p-6"
+                className="bg-white rounded-2xl border border-gray-200 p-6 dark:border-gray-800 dark:bg-gray-900"
               >
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-1">
-                      <span className="text-2xl sm:text-3xl leading-none font-black text-[#1B2B3A]">
+                      <span className="text-2xl sm:text-3xl leading-none font-black text-[#1B2B3A] dark:text-white">
                         {formatCurrency(app.amount)}
                       </span>
                       <span
@@ -687,14 +687,14 @@ export default function MyRequestsPage() {
                         {getApplicationStatusLabel(app.status, app.loan_status)}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-500 capitalize">
+                    <p className="text-sm text-gray-500 capitalize dark:text-gray-400">
                       {app.loan_type} · {formatDuration(app.duration, app.duration_days)} · #{app.id}
                       {expiryNote(app.valid_until, app.status) && (
-                        <> · <span className="text-amber-600 font-medium">{expiryNote(app.valid_until, app.status)}</span></>
+                        <> · <span className="text-amber-600 font-medium dark:text-amber-400">{expiryNote(app.valid_until, app.status)}</span></>
                       )}
                     </p>
                     {app.status === "awaiting_guarantors" && (
-                      <p className="text-xs text-amber-600 mt-1">
+                      <p className="text-xs text-amber-600 mt-1 dark:text-amber-400">
                         Waiting on your guarantors to approve before lenders can see this request.
                       </p>
                     )}
@@ -718,7 +718,7 @@ export default function MyRequestsPage() {
                     )}
                     <button
                       onClick={() => setExpandedId(expandedId === app.id ? null : app.id)}
-                      className="px-4 py-2 rounded-xl border border-gray-300 text-sm font-medium text-gray-600 hover:border-[#2BB5A0] hover:text-[#2BB5A0] transition-colors whitespace-nowrap"
+                      className="px-4 py-2 rounded-xl border border-gray-300 text-sm font-medium text-gray-600 hover:border-[#2BB5A0] hover:text-[#2BB5A0] transition-colors whitespace-nowrap dark:border-gray-700 dark:text-gray-300"
                     >
                       {expandedId === app.id ? "Hide Details" : "Details"}
                     </button>

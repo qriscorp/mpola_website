@@ -31,12 +31,12 @@ export default function SignInPage() {
     });
 
   return (
-    <div className="min-h-screen bg-[#F0F2F5] flex flex-col p-4">
+    <div className="min-h-screen bg-[#F0F2F5] dark:bg-gray-950 flex flex-col p-4">
       {/* Back to home */}
       <div className="w-full max-w-md mx-auto pt-4 pb-2">
         <Link
           href="/"
-          className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-[#1B2B3A] transition-colors"
+          className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-[#1B2B3A] transition-colors dark:hover:text-white dark:text-gray-400"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -57,38 +57,38 @@ export default function SignInPage() {
       </div>
 
       <div className="flex-1 flex items-center justify-center">
-        <div className="bg-white rounded-2xl shadow-sm w-full max-w-md p-8 sm:p-10">
+        <div className="bg-white rounded-2xl shadow-sm w-full max-w-md p-8 sm:p-10 dark:bg-gray-900">
           {/* Logo */}
           <div className="flex items-center gap-3 mb-8">
             <div className="w-12 h-12 rounded-xl bg-[#2BB5A0] flex items-center justify-center font-extrabold text-white text-xl">
               M
             </div>
             <div>
-              <p className="text-xl font-extrabold text-[#1B2B3A]">Mpola</p>
-              <p className="text-xs text-gray-400">Borrower Portal</p>
+              <p className="text-xl font-extrabold text-[#1B2B3A] dark:text-white">Mpola</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500">Borrower Portal</p>
             </div>
           </div>
 
-          <h1 className="text-2xl font-bold text-[#1B2B3A] mb-1">
+          <h1 className="text-2xl font-bold text-[#1B2B3A] mb-1 dark:text-white">
             Welcome back
           </h1>
-          <p className="text-sm text-gray-500 mb-8">
+          <p className="text-sm text-gray-500 mb-8 dark:text-gray-400">
             Sign in to borrow from Uganda&apos;s loan marketplace
           </p>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1.5">
+              <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1.5 dark:text-gray-400">
                 Phone Number
               </label>
-              <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-[#2BB5A0] focus-within:border-[#2BB5A0]">
-                <span className="px-4 py-3 bg-[#2BB5A0]/10 text-[#2BB5A0] text-sm font-semibold border-r border-gray-200">
+              <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-[#2BB5A0] focus-within:border-[#2BB5A0] dark:border-gray-700">
+                <span className="px-4 py-3 bg-[#2BB5A0]/10 text-[#2BB5A0] text-sm font-semibold border-r border-gray-200 dark:border-gray-800">
                   +256
                 </span>
                 <input
                   type="text"
                   placeholder="700 000 000"
-                  className="flex-1 px-4 py-3 text-sm text-[#1B2B3A] outline-none bg-white"
+                  className="flex-1 px-4 py-3 text-sm text-[#1B2B3A] outline-none bg-white dark:text-white dark:bg-gray-900"
                   aria-invalid={!!errors.phoneOrEmail}
                   {...register("phoneOrEmail")}
                 />
@@ -102,7 +102,7 @@ export default function SignInPage() {
 
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-bold uppercase tracking-wider text-gray-500">
+                <label className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
                   Password
                 </label>
                 <Link
@@ -115,7 +115,7 @@ export default function SignInPage() {
               <input
                 type="password"
                 placeholder="••••••••"
-                className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm text-[#1B2B3A] outline-none focus:ring-2 focus:ring-[#2BB5A0] focus:border-[#2BB5A0]"
+                className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm text-[#1B2B3A] outline-none focus:ring-2 focus:ring-[#2BB5A0] focus:border-[#2BB5A0] dark:border-gray-700 dark:text-white"
                 aria-invalid={!!errors.password}
                 {...register("password")}
               />
@@ -135,7 +135,7 @@ export default function SignInPage() {
             </button>
           </form>
 
-          <p className="text-center text-sm text-gray-500 mt-6">
+          <p className="text-center text-sm text-gray-500 mt-6 dark:text-gray-400">
             Don&apos;t have an account?{" "}
             <Link
               href="/auth/register"

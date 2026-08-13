@@ -142,16 +142,16 @@ export default function RegisterPage() {
   const accentHoverBgClass = isLender
     ? "hover:bg-[#b3944a]"
     : "hover:bg-[#239E8C]";
-  const accentTextClass = isLender ? "text-[#C4A55A]" : "text-[#149D8E]";
-  const accentSoftBgClass = isLender ? "bg-[#FFF8EC]" : "bg-[#F2FBF9]";
+  const accentTextClass = isLender ? "text-[#C4A55A]" : "text-[#149D8E] dark:text-[#5EEAD4]";
+  const accentSoftBgClass = isLender ? "bg-[#FFF8EC] dark:bg-[#C4A55A]/10" : "bg-[#F2FBF9] dark:bg-[#2BB5A0]/10";
   const accentSoftBorderClass = isLender
-    ? "border-[#E8D5A3]"
-    : "border-[#D5ECE8]";
-  const accentPrefixBgClass = isLender ? "bg-[#FFF8EC]" : "bg-[#E8F8F5]";
-  const accentPrefixTextClass = isLender ? "text-[#C4A55A]" : "text-[#149D8E]";
+    ? "border-[#E8D5A3] dark:border-[#C4A55A]/30"
+    : "border-[#D5ECE8] dark:border-[#2BB5A0]/30";
+  const accentPrefixBgClass = isLender ? "bg-[#FFF8EC] dark:bg-[#C4A55A]/10" : "bg-[#E8F8F5] dark:bg-[#2BB5A0]/10";
+  const accentPrefixTextClass = isLender ? "text-[#C4A55A]" : "text-[#149D8E] dark:text-[#5EEAD4]";
   const accentAsideClass = isLender
-    ? "border-[#E8D5A3] bg-[#FFF8EC]"
-    : "border-[#CBEAE4] bg-[#E8F8F5]";
+    ? "border-[#E8D5A3] bg-[#FFF8EC] dark:border-[#C4A55A]/30 dark:bg-[#C4A55A]/10"
+    : "border-[#CBEAE4] bg-[#E8F8F5] dark:border-[#2BB5A0]/30 dark:bg-[#2BB5A0]/10";
   const accentCheckboxClass = isLender
     ? "data-[state=checked]:border-[#C4A55A] data-[state=checked]:bg-[#C4A55A]"
     : "data-[state=checked]:border-[#2BB5A0] data-[state=checked]:bg-[#2BB5A0]";
@@ -415,13 +415,13 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[linear-gradient(180deg,#EEF8F6_0%,#F8FBFB_38%,#FFFFFF_100%)]">
+    <div className="min-h-screen bg-[linear-gradient(180deg,#EEF8F6_0%,#F8FBFB_38%,#FFFFFF_100%)] dark:bg-gray-950">
       <div className={`h-1 ${accentBgClass}`} />
 
       <div className="mx-auto w-full max-w-5xl px-4 py-5 sm:px-6">
         <Link
           href={signInHref}
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 transition-colors hover:text-[#1B2B3A]"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 transition-colors hover:text-[#1B2B3A] dark:hover:text-white dark:text-gray-400"
         >
           <ArrowLeft className="h-4 w-4" /> Back to sign in
         </Link>
@@ -435,12 +435,12 @@ export default function RegisterPage() {
           >
             {isLender ? "Lender Onboarding" : "Borrower Onboarding"}
           </p>
-          <h1 className="mt-2 text-3xl font-black leading-tight text-[#1B2B3A]">
+          <h1 className="mt-2 text-3xl font-black leading-tight text-[#1B2B3A] dark:text-white">
             {isLender
               ? "Create your lender account"
               : "Create your borrower account"}
           </h1>
-          <p className="mt-3 text-sm leading-relaxed text-gray-600">
+          <p className="mt-3 text-sm leading-relaxed text-gray-600 dark:text-gray-300">
             Complete registration in a few minutes and proceed to email and
             phone verification.
           </p>
@@ -453,7 +453,7 @@ export default function RegisterPage() {
             ].map((item) => (
               <div
                 key={item}
-                className="flex items-center gap-2 text-sm font-medium text-[#1B2B3A]"
+                className="flex items-center gap-2 text-sm font-medium text-[#1B2B3A] dark:text-white"
               >
                 <span className={`h-2 w-2 rounded-full ${accentBgClass}`} />
                 {item}
@@ -462,31 +462,31 @@ export default function RegisterPage() {
           </div>
         </aside>
 
-        <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
+        <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8 dark:border-gray-800 dark:bg-gray-900">
           <div className="mb-6">
             <div className="mb-3 flex gap-2">
               <span className={`h-1.5 flex-1 rounded-full ${accentBgClass}`} />
-              <span className="h-1.5 flex-1 rounded-full bg-gray-200" />
-              <span className="h-1.5 flex-1 rounded-full bg-gray-200" />
+              <span className="h-1.5 flex-1 rounded-full bg-gray-200 dark:bg-gray-700" />
+              <span className="h-1.5 flex-1 rounded-full bg-gray-200 dark:bg-gray-700" />
             </div>
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
               Step 1 of 3
             </p>
-            <h2 className="mt-1 text-2xl font-black text-[#1B2B3A]">
+            <h2 className="mt-1 text-2xl font-black text-[#1B2B3A] dark:text-white">
               Registration Details
             </h2>
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
               Choose your account type and fill in your legal information.
             </p>
           </div>
 
-          <div className="mb-5 inline-flex rounded-lg border border-gray-200 p-1">
+          <div className="mb-5 inline-flex rounded-lg border border-gray-200 p-1 dark:border-gray-800">
             <button
               type="button"
               className={`rounded-md px-4 py-2 text-sm font-semibold transition-colors ${
                 accountType === "individual"
                   ? `${accentBgClass} text-white`
-                  : "text-gray-600 hover:text-[#1B2B3A]"
+                  : "text-gray-600 hover:text-[#1B2B3A] dark:hover:text-white dark:text-gray-300"
               }`}
               onClick={() => setAccountType("individual")}
             >
@@ -497,7 +497,7 @@ export default function RegisterPage() {
               className={`rounded-md px-4 py-2 text-sm font-semibold transition-colors ${
                 accountType === "business"
                   ? `${accentBgClass} text-white`
-                  : "text-gray-600 hover:text-[#1B2B3A]"
+                  : "text-gray-600 hover:text-[#1B2B3A] dark:hover:text-white dark:text-gray-300"
               }`}
               onClick={() => setAccountType("business")}
             >
@@ -510,9 +510,9 @@ export default function RegisterPage() {
               <div
                 className={`rounded-lg border p-3.5 ${accentSoftBorderClass} ${accentSoftBgClass}`}
               >
-                <p className="text-xs text-gray-600">
+                <p className="text-xs text-gray-600 dark:text-gray-300">
                   Resume signup draft for{" "}
-                  <span className="font-semibold text-[#1B2B3A]">
+                  <span className="font-semibold text-[#1B2B3A] dark:text-white">
                     {draftEmail || "this account"}
                   </span>
                   .
@@ -533,7 +533,7 @@ export default function RegisterPage() {
                       clearSignupDraftCookies();
                       setHasDraft(false);
                     }}
-                    className="text-xs font-semibold text-gray-500 hover:underline"
+                    className="text-xs font-semibold text-gray-500 hover:underline dark:text-gray-400"
                   >
                     Start over
                   </button>
@@ -677,7 +677,7 @@ export default function RegisterPage() {
                 }
                 className={`mt-0.5 ${accentCheckboxClass}`}
               />
-              <p className="text-xs leading-relaxed text-gray-600">
+              <p className="text-xs leading-relaxed text-gray-600 dark:text-gray-300">
                 I agree to the{" "}
                 <Link
                   href="/platform-terms"
@@ -719,7 +719,7 @@ export default function RegisterPage() {
             </button>
           </form>
 
-          <p className="mt-6 text-center text-sm text-gray-500">
+          <p className="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
             Already have an account?{" "}
             <Link
               href={signInHref}

@@ -56,7 +56,7 @@ function MakePaymentContent() {
     return (
       <div className="space-y-6">
         <BorrowerPageHeader title="Make a Payment" />
-        <div className="rounded-2xl border border-gray-200 bg-white p-8 text-center text-gray-500 space-y-3">
+        <div className="rounded-2xl border border-gray-200 bg-white p-8 text-center text-gray-500 space-y-3 dark:border-gray-800 dark:text-gray-400 dark:bg-gray-900">
           <p>
             {loanIdParam
               ? "That loan couldn't be found."
@@ -134,61 +134,61 @@ function MakePaymentContent() {
 
       <div className="max-w-3xl space-y-5">
         {/* Loan summary */}
-        <div className="rounded-2xl border border-gray-200 bg-white p-6 sm:p-8">
+        <div className="rounded-2xl border border-gray-200 bg-white p-6 sm:p-8 dark:border-gray-800 dark:bg-gray-900">
           <div className="flex flex-wrap items-start justify-between gap-3">
-            <h2 className="text-xl font-black text-[#1B2B3A]">Loan Summary</h2>
-            <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-500">
+            <h2 className="text-xl font-black text-[#1B2B3A] dark:text-white">Loan Summary</h2>
+            <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-500 dark:text-gray-400 dark:bg-gray-800">
               {loan.id}
             </span>
           </div>
 
           <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">
+              <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
                 Principal
               </p>
-              <p className="mt-1 text-sm font-bold text-[#1B2B3A]">
+              <p className="mt-1 text-sm font-bold text-[#1B2B3A] dark:text-white">
                 {formatCurrency(loan.amount)}
               </p>
             </div>
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">
+              <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
                 Duration
               </p>
-              <p className="mt-1 text-sm font-bold text-[#1B2B3A]">
+              <p className="mt-1 text-sm font-bold text-[#1B2B3A] dark:text-white">
                 {formatDuration(loan.duration, loan.duration_days)}
               </p>
             </div>
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">
+              <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
                 Interest Rate
               </p>
-              <p className="mt-1 text-sm font-bold text-[#1B2B3A]">
+              <p className="mt-1 text-sm font-bold text-[#1B2B3A] dark:text-white">
                 {formatRate(loan.interest_rate)}
               </p>
             </div>
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">
+              <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
                 Disbursed
               </p>
-              <p className="mt-1 text-sm font-bold text-[#1B2B3A]">
+              <p className="mt-1 text-sm font-bold text-[#1B2B3A] dark:text-white">
                 {formatDate(loan.disbursed_at)}
               </p>
             </div>
           </div>
 
           <div className="mt-6">
-            <div className="flex items-center justify-between text-xs text-gray-500 mb-1.5">
+            <div className="flex items-center justify-between text-xs text-gray-500 mb-1.5 dark:text-gray-400">
               <span>
                 {isBulletLoan
                   ? "Repaid so far"
                   : `Instalments paid: ${loan.paid_instalments} of ${loan.total_instalments}`}
               </span>
-              <span className="font-semibold text-[#1B2B3A]">
+              <span className="font-semibold text-[#1B2B3A] dark:text-white">
                 {formatCurrency(loan.total_paid)} / {formatCurrency(loan.total_repayable)}
               </span>
             </div>
-            <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
+            <div className="h-2 rounded-full bg-gray-100 overflow-hidden dark:bg-gray-800">
               <div
                 className="h-full rounded-full bg-[#2BB5A0]"
                 style={{ width: `${progressPct}%` }}
@@ -198,27 +198,27 @@ function MakePaymentContent() {
         </div>
 
         {/* Payment due */}
-        <div className="rounded-2xl border border-gray-200 bg-white p-6 sm:p-8">
-          <h2 className="text-2xl font-black text-[#1B2B3A]">Make a Payment</h2>
+        <div className="rounded-2xl border border-gray-200 bg-white p-6 sm:p-8 dark:border-gray-800 dark:bg-gray-900">
+          <h2 className="text-2xl font-black text-[#1B2B3A] dark:text-white">Make a Payment</h2>
 
-          <div className="mt-6 rounded-2xl bg-[#E6F4F2] p-5">
+          <div className="mt-6 rounded-2xl bg-[#E6F4F2] p-5 dark:bg-[#149D8E]/20">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <p className="text-sm sm:text-base text-gray-500">
+                <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400">
                   {isBulletLoan
                     ? "Repayment Due"
                     : `Instalment #${instalmentNumber} of ${loan.total_instalments}`}
                 </p>
-                <p className="mt-1 text-2xl sm:text-3xl font-black text-[#1B2B3A]">
+                <p className="mt-1 text-2xl sm:text-3xl font-black text-[#1B2B3A] dark:text-white">
                   {formatCurrency(dueAmount)}
                 </p>
               </div>
               {loan.next_payment_date && (
                 <div className="text-right">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
                     Due Date
                   </p>
-                  <p className="mt-1 text-sm font-bold text-[#1B2B3A]">
+                  <p className="mt-1 text-sm font-bold text-[#1B2B3A] dark:text-white">
                     {formatDate(loan.next_payment_date)}
                   </p>
                 </div>
@@ -228,7 +228,7 @@ function MakePaymentContent() {
 
           {showPayoffOption && (
             <div className="mt-6">
-              <p className="mb-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-gray-500">
+              <p className="mb-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
                 How much would you like to pay?
               </p>
               <div className="flex flex-wrap gap-3">
@@ -236,14 +236,14 @@ function MakePaymentContent() {
                   onClick={() => setAmount(String(dueAmount))}
                   className={`flex-1 min-w-[180px] rounded-xl border p-4 text-left transition-colors ${
                     payMode === "instalment"
-                      ? "border-[#2BB5A0] bg-[#E6F4F2]"
-                      : "border-gray-200 bg-white hover:border-gray-300"
+                      ? "border-[#2BB5A0] bg-[#E6F4F2] dark:bg-[#149D8E]/20"
+                      : "border-gray-200 bg-white hover:border-gray-300 dark:border-gray-800 dark:bg-gray-900"
                   }`}
                 >
-                  <p className="text-sm font-semibold text-[#1B2B3A]">
+                  <p className="text-sm font-semibold text-[#1B2B3A] dark:text-white">
                     Pay this instalment
                   </p>
-                  <p className="mt-1 text-lg font-black text-[#1B2B3A]">
+                  <p className="mt-1 text-lg font-black text-[#1B2B3A] dark:text-white">
                     {formatCurrency(dueAmount)}
                   </p>
                 </button>
@@ -251,14 +251,14 @@ function MakePaymentContent() {
                   onClick={() => setAmount(String(remainingBalance))}
                   className={`flex-1 min-w-[180px] rounded-xl border p-4 text-left transition-colors ${
                     payMode === "full"
-                      ? "border-[#2BB5A0] bg-[#E6F4F2]"
-                      : "border-gray-200 bg-white hover:border-gray-300"
+                      ? "border-[#2BB5A0] bg-[#E6F4F2] dark:bg-[#149D8E]/20"
+                      : "border-gray-200 bg-white hover:border-gray-300 dark:border-gray-800 dark:bg-gray-900"
                   }`}
                 >
-                  <p className="text-sm font-semibold text-[#1B2B3A]">
+                  <p className="text-sm font-semibold text-[#1B2B3A] dark:text-white">
                     Pay off full balance
                   </p>
-                  <p className="mt-1 text-lg font-black text-[#1B2B3A]">
+                  <p className="mt-1 text-lg font-black text-[#1B2B3A] dark:text-white">
                     {formatCurrency(remainingBalance)}
                   </p>
                 </button>
@@ -268,36 +268,36 @@ function MakePaymentContent() {
 
           {/* Wallet payment — the only method offered for repayments */}
           <div className="mt-6 space-y-3">
-            <div className="flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
+            <div className="flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-800 dark:bg-gray-800/60">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">
+                <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
                   Paying from
                 </p>
-                <p className="text-sm font-bold text-[#1B2B3A]">Wallet</p>
+                <p className="text-sm font-bold text-[#1B2B3A] dark:text-white">Wallet</p>
               </div>
-              <p className="text-sm font-semibold text-[#1B2B3A]">
+              <p className="text-sm font-semibold text-[#1B2B3A] dark:text-white">
                 Balance: {formatCurrency(walletBalance)}
               </p>
             </div>
 
-            <div className="rounded-xl bg-gray-50 border border-gray-200 p-3 space-y-1 text-xs">
-              <div className="flex justify-between text-gray-600">
+            <div className="rounded-xl bg-gray-50 border border-gray-200 p-3 space-y-1 text-xs dark:border-gray-800 dark:bg-gray-800/60">
+              <div className="flex justify-between text-gray-600 dark:text-gray-300">
                 <span>Repayment amount</span>
                 <span>{formatCurrency(effectiveAmount)}</span>
               </div>
-              <div className="flex justify-between text-gray-600">
+              <div className="flex justify-between text-gray-600 dark:text-gray-300">
                 <span>Platform fee (0.5%)</span>
                 <span>{formatCurrency(walletFee)}</span>
               </div>
-              <div className="flex justify-between font-semibold text-[#1B2B3A] pt-1 border-t border-gray-200">
+              <div className="flex justify-between font-semibold text-[#1B2B3A] pt-1 border-t border-gray-200 dark:border-gray-800 dark:text-white">
                 <span>Total debited from wallet</span>
                 <span>{formatCurrency(walletTotalDebit)}</span>
               </div>
             </div>
 
             {insufficientBalance && (
-              <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 flex flex-wrap items-center justify-between gap-3">
-                <p className="text-sm text-amber-700">
+              <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 flex flex-wrap items-center justify-between gap-3 dark:border-amber-800 dark:bg-amber-900/20">
+                <p className="text-sm text-amber-700 dark:text-amber-400">
                   Your wallet balance is too low for this payment. Deposit at
                   least {formatCurrency(shortfall)} more to continue.
                 </p>
@@ -312,21 +312,21 @@ function MakePaymentContent() {
           </div>
 
           <div className="mt-6">
-            <label className="mb-2 block text-xs sm:text-sm font-bold uppercase tracking-wider text-gray-500">
+            <label className="mb-2 block text-xs sm:text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
               Amount to Pay
             </label>
-            <div className="flex items-center overflow-hidden rounded-xl border border-gray-300">
-              <span className="inline-flex h-full items-center px-4 py-3 text-base sm:text-lg font-bold text-gray-500">
+            <div className="flex items-center overflow-hidden rounded-xl border border-gray-300 dark:border-gray-700">
+              <span className="inline-flex h-full items-center px-4 py-3 text-base sm:text-lg font-bold text-gray-500 dark:text-gray-400">
                 UGX
               </span>
               <input
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder={String(dueAmount)}
-                className="w-full px-4 py-3 text-base text-[#1B2B3A] outline-none"
+                className="w-full px-4 py-3 text-base text-[#1B2B3A] outline-none dark:text-white"
               />
             </div>
-            <p className="mt-2 text-xs text-gray-400">
+            <p className="mt-2 text-xs text-gray-400 dark:text-gray-500">
               Defaults to the amount due. You can pay more to get ahead on
               your loan.
             </p>

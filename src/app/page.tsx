@@ -74,24 +74,24 @@ export default function LandingPage() {
 
         {/* Divider */}
         <div className="hidden lg:flex items-center">
-          <div className="bg-gray-200 text-gray-500 text-xs font-medium rounded-full w-8 h-8 flex items-center justify-center -mx-4 z-10">
+          <div className="bg-gray-200 text-gray-500 text-xs font-medium rounded-full w-8 h-8 flex items-center justify-center -mx-4 z-10 dark:text-gray-400 dark:bg-gray-700">
             OR
           </div>
         </div>
 
         {/* Right: For Borrowers */}
-        <div className="lg:w-1/2 bg-white flex flex-col justify-between p-8 lg:p-16">
+        <div className="lg:w-1/2 bg-white flex flex-col justify-between p-8 lg:p-16 dark:bg-gray-900">
           <div />
 
           <div>
             <p className="text-[#2BB5A0] text-xs font-semibold uppercase tracking-wider mb-4">
               For Borrowers
             </p>
-            <h1 className="text-4xl lg:text-5xl font-bold text-[#1B2B3A] leading-tight">
+            <h1 className="text-4xl lg:text-5xl font-bold text-[#1B2B3A] leading-tight dark:text-white">
               Fair credit,{" "}
               <span className="text-[#2BB5A0] italic">on your terms</span>.
             </h1>
-            <p className="mt-6 text-gray-500 leading-relaxed max-w-lg">
+            <p className="mt-6 text-gray-500 leading-relaxed max-w-lg dark:text-gray-400">
               Apply once. Compare offers from licensed lenders side-by-side. No
               hidden fees, transparent rates, and repayment schedules you can
               actually live with.
@@ -106,7 +106,7 @@ export default function LandingPage() {
               </Link>
               <Link
                 href="/how-it-works"
-                className="text-gray-700 px-6 py-3 rounded-lg font-medium text-sm border border-gray-200 hover:bg-gray-50 transition-colors"
+                className="text-gray-700 px-6 py-3 rounded-lg font-medium text-sm border border-gray-200 hover:bg-gray-50 transition-colors dark:hover:bg-gray-800 dark:border-gray-800 dark:text-gray-300"
               >
                 How it works
               </Link>
@@ -114,34 +114,34 @@ export default function LandingPage() {
 
             <div className="flex items-center gap-8 mt-12">
               <div>
-                <p className="text-2xl font-bold text-[#1B2B3A]">48h</p>
-                <p className="text-[10px] text-gray-400 uppercase tracking-wider mt-1">
+                <p className="text-2xl font-bold text-[#1B2B3A] dark:text-white">48h</p>
+                <p className="text-[10px] text-gray-400 uppercase tracking-wider mt-1 dark:text-gray-500">
                   Avg. to First Offer
                 </p>
               </div>
               <div>
-                <p className="text-2xl font-bold text-[#1B2B3A]">3–5</p>
-                <p className="text-[10px] text-gray-400 uppercase tracking-wider mt-1">
+                <p className="text-2xl font-bold text-[#1B2B3A] dark:text-white">3–5</p>
+                <p className="text-[10px] text-gray-400 uppercase tracking-wider mt-1 dark:text-gray-500">
                   Offers Per Application
                 </p>
               </div>
               <div>
-                <p className="text-2xl font-bold text-[#1B2B3A]">12.8%</p>
-                <p className="text-[10px] text-gray-400 uppercase tracking-wider mt-1">
+                <p className="text-2xl font-bold text-[#1B2B3A] dark:text-white">12.8%</p>
+                <p className="text-[10px] text-gray-400 uppercase tracking-wider mt-1 dark:text-gray-500">
                   Avg. Rate Secured
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="mt-8 lg:mt-0 flex items-center gap-6 text-xs text-gray-400">
-            <Link href="#" className="hover:text-gray-600">
+          <div className="mt-8 lg:mt-0 flex items-center gap-6 text-xs text-gray-400 dark:text-gray-500">
+            <Link href="#" className="hover:text-gray-600 dark:hover:text-gray-300">
               Privacy
             </Link>
-            <Link href="#" className="hover:text-gray-600">
+            <Link href="#" className="hover:text-gray-600 dark:hover:text-gray-300">
               Terms
             </Link>
-            <Link href="#" className="hover:text-gray-600">
+            <Link href="#" className="hover:text-gray-600 dark:hover:text-gray-300">
               Help Centre
             </Link>
             <span>© 2026 Mpola Uganda Ltd.</span>

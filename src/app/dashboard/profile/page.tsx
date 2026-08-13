@@ -9,8 +9,8 @@ import { KYCUploadSection } from "@/components/kyc-upload-section";
 
 const kycBadge: Record<string, { label: string; className: string }> = {
   verified: { label: "Verified", className: "bg-teal-50 text-[#2BB5A0]" },
-  pending: { label: "Pending", className: "bg-amber-50 text-amber-600" },
-  rejected: { label: "Rejected", className: "bg-red-50 text-red-600" },
+  pending: { label: "Pending", className: "bg-amber-50 text-amber-600 dark:text-amber-400 dark:bg-amber-900/20" },
+  rejected: { label: "Rejected", className: "bg-red-50 text-red-600 dark:bg-red-900/20" },
 };
 
 export default function ProfilePage() {
@@ -29,7 +29,7 @@ export default function ProfilePage() {
     return (
       <div className="space-y-6">
         <BorrowerPageHeader title="Profile & KYC" />
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-gray-500 dark:text-gray-400">
           Couldn&apos;t load your profile. Please try again.
         </p>
       </div>
@@ -57,8 +57,8 @@ export default function ProfilePage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Personal Information */}
-        <div className="bg-white rounded-2xl border border-gray-200 p-6">
-          <h2 className="text-xl sm:text-2xl leading-tight font-black text-[#1B2B3A] mb-5">
+        <div className="bg-white rounded-2xl border border-gray-200 p-6 dark:border-gray-800 dark:bg-gray-900">
+          <h2 className="text-xl sm:text-2xl leading-tight font-black text-[#1B2B3A] mb-5 dark:text-white">
             Personal Information
           </h2>
 
@@ -68,14 +68,14 @@ export default function ProfilePage() {
               {getInitials(user.fullName)}
             </div>
             <div>
-              <p className="text-xl sm:text-2xl leading-tight font-black text-[#1B2B3A]">
+              <p className="text-xl sm:text-2xl leading-tight font-black text-[#1B2B3A] dark:text-white">
                 {user.fullName}
               </p>
-              <p className="text-sm text-gray-400">{user.email}</p>
+              <p className="text-sm text-gray-400 dark:text-gray-500">{user.email}</p>
             </div>
             <button
               onClick={() => setEditing((v) => !v)}
-              className="ml-auto px-4 py-1.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:border-[#2BB5A0] hover:text-[#2BB5A0] transition-colors"
+              className="ml-auto px-4 py-1.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:border-[#2BB5A0] hover:text-[#2BB5A0] transition-colors dark:border-gray-700 dark:text-gray-300"
             >
               {editing ? "Cancel" : "Edit"}
             </button>
@@ -83,46 +83,46 @@ export default function ProfilePage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">
+              <label className="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1 dark:text-gray-500">
                 Full Name
               </label>
               <input
                 value={form.fullName}
                 onChange={(e) => setForm({ ...form, fullName: e.target.value })}
                 readOnly={!editing}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white text-[#1B2B3A] outline-none disabled:bg-gray-50"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white text-[#1B2B3A] outline-none disabled:bg-gray-50 dark:border-gray-700 dark:text-white dark:bg-gray-900"
               />
             </div>
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">
+              <label className="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1 dark:text-gray-500">
                 Phone
               </label>
               <input
                 value={form.phone}
                 onChange={(e) => setForm({ ...form, phone: e.target.value })}
                 readOnly={!editing}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white text-[#1B2B3A] outline-none"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white text-[#1B2B3A] outline-none dark:border-gray-700 dark:text-white dark:bg-gray-900"
               />
             </div>
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">
+              <label className="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1 dark:text-gray-500">
                 Email
               </label>
               <input
                 value={user.email}
                 readOnly
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-gray-50 text-[#1B2B3A] outline-none"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-gray-50 text-[#1B2B3A] outline-none dark:border-gray-700 dark:text-white dark:bg-gray-800/60"
               />
             </div>
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">
+              <label className="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1 dark:text-gray-500">
                 NIN
               </label>
               <input
                 value={form.nin}
                 onChange={(e) => setForm({ ...form, nin: e.target.value })}
                 readOnly={!editing}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white text-[#1B2B3A] outline-none"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white text-[#1B2B3A] outline-none dark:border-gray-700 dark:text-white dark:bg-gray-900"
               />
             </div>
           </div>
@@ -139,12 +139,12 @@ export default function ProfilePage() {
         </div>
 
         {/* KYC Status */}
-        <div className="bg-white rounded-2xl border border-gray-200 p-6 self-start">
-          <h2 className="text-xl sm:text-2xl leading-tight font-black text-[#1B2B3A] mb-5">
+        <div className="bg-white rounded-2xl border border-gray-200 p-6 self-start dark:border-gray-800 dark:bg-gray-900">
+          <h2 className="text-xl sm:text-2xl leading-tight font-black text-[#1B2B3A] mb-5 dark:text-white">
             KYC Status
           </h2>
           <div className="flex items-center justify-between">
-            <span className="text-sm text-[#1B2B3A]">Identity Verification</span>
+            <span className="text-sm text-[#1B2B3A] dark:text-white">Identity Verification</span>
             <span
               className={`px-3 py-1 rounded-full text-xs font-semibold ${badge.className}`}
             >
@@ -152,7 +152,7 @@ export default function ProfilePage() {
             </span>
           </div>
           {user.kycStatus !== "verified" && (
-            <p className="mt-3 text-xs text-gray-400">
+            <p className="mt-3 text-xs text-gray-400 dark:text-gray-500">
               Upload the documents below — an admin reviews them and you&apos;ll
               be notified once your account is verified.
             </p>

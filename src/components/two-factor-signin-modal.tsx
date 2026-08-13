@@ -62,12 +62,12 @@ export function TwoFactorSignInModal({ open, username, onClose }: Props) {
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
-          <DialogTitle className="text-[#1B2B3A]">
+          <DialogTitle className="text-[#1B2B3A] dark:text-white">
             Two-Factor Verification
           </DialogTitle>
         </DialogHeader>
 
-        <p className="text-sm text-gray-500 -mt-2 mb-4">
+        <p className="text-sm text-gray-500 -mt-2 mb-4 dark:text-gray-400">
           Enter the 6-digit code we just texted to your phone to finish
           signing in.
         </p>
@@ -100,7 +100,7 @@ export function TwoFactorSignInModal({ open, username, onClose }: Props) {
           </button>
         </form>
 
-        <p className="mt-3 text-center text-xs text-gray-400">
+        <p className="mt-3 text-center text-xs text-gray-400 dark:text-gray-500">
           Didn&apos;t get a code? Close this and sign in again to resend it.
         </p>
       </DialogContent>

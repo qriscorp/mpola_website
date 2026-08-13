@@ -32,12 +32,12 @@ export default function LenderSignInPage() {
     );
 
   return (
-    <div className="min-h-screen bg-[#F0F2F5] flex flex-col p-4">
+    <div className="min-h-screen bg-[#F0F2F5] dark:bg-gray-950 flex flex-col p-4">
       {/* Back to home */}
       <div className="w-full max-w-md mx-auto pt-4 pb-2">
         <Link
           href="/"
-          className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-[#1B2B3A] transition-colors"
+          className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-[#1B2B3A] transition-colors dark:hover:text-white dark:text-gray-400"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -58,42 +58,42 @@ export default function LenderSignInPage() {
       </div>
 
       <div className="flex-1 flex items-center justify-center">
-        <div className="w-full max-w-md bg-white rounded-2xl p-8 sm:p-10 shadow-sm">
+        <div className="w-full max-w-md bg-white rounded-2xl p-8 sm:p-10 shadow-sm dark:bg-gray-900">
           {/* Logo */}
           <div className="flex items-center gap-3 mb-8">
             <div className="w-12 h-12 rounded-xl bg-[#C4A55A] flex items-center justify-center shrink-0">
               <span className="text-white font-bold text-lg">M</span>
             </div>
             <div>
-              <p className="font-bold text-[#1B2B3A] text-xl leading-none">
+              <p className="font-bold text-[#1B2B3A] text-xl leading-none dark:text-white">
                 Mpola
               </p>
-              <p className="text-gray-400 text-sm mt-0.5">Lender Portal</p>
+              <p className="text-gray-400 text-sm mt-0.5 dark:text-gray-500">Lender Portal</p>
             </div>
           </div>
 
           {/* Heading */}
-          <h1 className="text-3xl font-bold text-[#1B2B3A] mb-1">
+          <h1 className="text-3xl font-bold text-[#1B2B3A] mb-1 dark:text-white">
             Welcome back
           </h1>
-          <p className="text-gray-500 text-sm mb-8">
+          <p className="text-gray-500 text-sm mb-8 dark:text-gray-400">
             Sign in to your lender account
           </p>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             {/* Phone number */}
             <div>
-              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 dark:text-gray-400">
                 Phone Number
               </label>
               <div className="flex gap-2">
-                <div className="flex items-center justify-center px-4 rounded-lg bg-[#FFF8EC] border border-[#E8D5A3] text-[#C4A55A] font-semibold text-sm shrink-0 h-12">
+                <div className="flex items-center justify-center px-4 rounded-lg bg-[#FFF8EC] border border-[#E8D5A3] text-[#C4A55A] font-semibold text-sm shrink-0 h-12 dark:bg-[#C4A55A]/15 dark:border-[#C4A55A]/30">
                   +256
                 </div>
                 <input
                   id="phoneOrEmail"
                   placeholder="700 000 000"
-                  className="flex-1 h-12 px-4 rounded-lg border border-gray-200 bg-gray-50 text-[#1B2B3A] text-sm placeholder:text-gray-400 outline-none focus:border-[#C4A55A] focus:ring-2 focus:ring-[#C4A55A]/20 transition-colors"
+                  className="flex-1 h-12 px-4 rounded-lg border border-gray-200 bg-gray-50 text-[#1B2B3A] text-sm placeholder:text-gray-400 outline-none focus:border-[#C4A55A] focus:ring-2 focus:ring-[#C4A55A]/20 transition-colors dark:border-gray-800 dark:text-white dark:bg-gray-800/60"
                   aria-invalid={!!errors.phoneOrEmail}
                   {...register("phoneOrEmail")}
                 />
@@ -107,14 +107,14 @@ export default function LenderSignInPage() {
 
             {/* Password */}
             <div>
-              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 dark:text-gray-400">
                 Password
               </label>
               <input
                 id="password"
                 type="password"
                 placeholder="••••••••"
-                className="w-full h-12 px-4 rounded-lg border border-gray-200 bg-gray-50 text-[#1B2B3A] text-sm placeholder:text-gray-400 outline-none focus:border-[#C4A55A] focus:ring-2 focus:ring-[#C4A55A]/20 transition-colors"
+                className="w-full h-12 px-4 rounded-lg border border-gray-200 bg-gray-50 text-[#1B2B3A] text-sm placeholder:text-gray-400 outline-none focus:border-[#C4A55A] focus:ring-2 focus:ring-[#C4A55A]/20 transition-colors dark:border-gray-800 dark:text-white dark:bg-gray-800/60"
                 aria-invalid={!!errors.password}
                 {...register("password")}
               />
@@ -146,7 +146,7 @@ export default function LenderSignInPage() {
           </form>
 
           {/* Register link */}
-          <p className="text-center text-sm text-gray-500 mt-6">
+          <p className="text-center text-sm text-gray-500 mt-6 dark:text-gray-400">
             Don&apos;t have an account?{" "}
             <Link
               href="/auth/lender-register"

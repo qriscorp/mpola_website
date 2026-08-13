@@ -23,7 +23,7 @@ export const metadata = {
 
 export default function LearnMorePage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-gray-900">
       {/* Nav */}
       <header className="sticky top-0 z-50 bg-[#1B2B3A] border-b border-white/10">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
@@ -88,10 +88,10 @@ export default function LearnMorePage() {
             <p className="text-[#C4A55A] text-xs font-semibold uppercase tracking-widest mb-3">
               Why Mpola
             </p>
-            <h2 className="text-3xl lg:text-4xl font-bold text-[#1B2B3A]">
+            <h2 className="text-3xl lg:text-4xl font-bold text-[#1B2B3A] dark:text-white">
               Built for serious lenders
             </h2>
-            <p className="mt-4 text-gray-500 max-w-xl mx-auto">
+            <p className="mt-4 text-gray-500 max-w-xl mx-auto dark:text-gray-400">
               Every feature is designed to minimize risk and maximize returns
               for licensed lending institutions and individuals.
             </p>
@@ -132,15 +132,15 @@ export default function LearnMorePage() {
             ].map((item) => (
               <div
                 key={item.title}
-                className="bg-gray-50 rounded-2xl p-8 hover:shadow-lg transition-shadow"
+                className="bg-gray-50 rounded-2xl p-8 hover:shadow-lg transition-shadow dark:bg-gray-800/60"
               >
                 <div className="h-12 w-12 rounded-xl bg-[#1B2B3A] flex items-center justify-center mb-5">
                   <item.icon className="h-6 w-6 text-[#C4A55A]" />
                 </div>
-                <h3 className="text-lg font-bold text-[#1B2B3A] mb-2">
+                <h3 className="text-lg font-bold text-[#1B2B3A] mb-2 dark:text-white">
                   {item.title}
                 </h3>
-                <p className="text-sm text-gray-500 leading-relaxed">
+                <p className="text-sm text-gray-500 leading-relaxed dark:text-gray-400">
                   {item.desc}
                 </p>
               </div>
@@ -150,13 +150,13 @@ export default function LearnMorePage() {
       </section>
 
       {/* How it Works for Lenders */}
-      <section className="py-20 lg:py-28 bg-[#F8FAFA]">
+      <section className="py-20 lg:py-28 bg-[#F8FAFA] dark:bg-gray-800/40">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <p className="text-[#C4A55A] text-xs font-semibold uppercase tracking-widest mb-3">
               How It Works
             </p>
-            <h2 className="text-3xl lg:text-4xl font-bold text-[#1B2B3A]">
+            <h2 className="text-3xl lg:text-4xl font-bold text-[#1B2B3A] dark:text-white">
               Start lending in 4 simple steps
             </h2>
           </div>
@@ -199,10 +199,10 @@ export default function LearnMorePage() {
                   <span className="text-[10px] text-[#C4A55A] font-bold uppercase tracking-widest">
                     Step {item.step}
                   </span>
-                  <h3 className="text-xl font-bold text-[#1B2B3A] mt-1">
+                  <h3 className="text-xl font-bold text-[#1B2B3A] mt-1 dark:text-white">
                     {item.title}
                   </h3>
-                  <p className="text-sm text-gray-500 mt-2 leading-relaxed max-w-lg">
+                  <p className="text-sm text-gray-500 mt-2 leading-relaxed max-w-lg dark:text-gray-400">
                     {item.desc}
                   </p>
                 </div>
@@ -226,7 +226,7 @@ export default function LearnMorePage() {
                 <p className="text-3xl lg:text-4xl font-bold text-[#C4A55A]">
                   {stat.value}
                 </p>
-                <p className="text-[11px] text-gray-400 uppercase tracking-wider mt-2">
+                <p className="text-[11px] text-gray-400 uppercase tracking-wider mt-2 dark:text-gray-500">
                   {stat.label}
                 </p>
               </div>
@@ -243,10 +243,10 @@ export default function LearnMorePage() {
               <p className="text-[#C4A55A] text-xs font-semibold uppercase tracking-widest mb-3">
                 Safety & Compliance
               </p>
-              <h2 className="text-3xl font-bold text-[#1B2B3A]">
+              <h2 className="text-3xl font-bold text-[#1B2B3A] dark:text-white">
                 Regulated lending, reduced risk
               </h2>
-              <p className="mt-4 text-gray-500 leading-relaxed">
+              <p className="mt-4 text-gray-500 leading-relaxed dark:text-gray-400">
                 Mpola operates under a Bank of Uganda Tier IV Credit
                 Institution licence. All lending activities comply with Ugandan
                 financial regulation and consumer protection law.
@@ -264,7 +264,7 @@ export default function LearnMorePage() {
               ].map((item) => (
                 <div key={item} className="flex items-center gap-3">
                   <CheckCircle2 className="h-5 w-5 text-[#C4A55A] shrink-0" />
-                  <p className="text-sm text-gray-700 font-medium">{item}</p>
+                  <p className="text-sm text-gray-700 font-medium dark:text-gray-300">{item}</p>
                 </div>
               ))}
             </div>
@@ -280,14 +280,14 @@ export default function LearnMorePage() {
               <Star key={i} className="h-5 w-5 text-[#C4A55A] fill-[#C4A55A]" />
             ))}
           </div>
-          <blockquote className="text-xl lg:text-2xl font-medium text-[#1B2B3A] italic leading-relaxed">
+          <blockquote className="text-xl lg:text-2xl font-medium text-[#1B2B3A] italic leading-relaxed dark:text-white">
             &ldquo;Mpola has transformed how I deploy capital. The borrower
             vetting is thorough, the guarantor system gives me confidence, and
             the dashboard makes tracking effortless.&rdquo;
           </blockquote>
           <div className="mt-6">
-            <p className="font-bold text-[#1B2B3A]">Joseph M.</p>
-            <p className="text-sm text-gray-500">
+            <p className="font-bold text-[#1B2B3A] dark:text-white">Joseph M.</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
               Licensed Individual Lender · Kampala
             </p>
           </div>

@@ -54,14 +54,14 @@ function StepperHeader({ currentStep }: { currentStep: number }) {
                 className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold transition-colors ${
                   isCompleted || isActive
                     ? "bg-[#2BB5A0] text-white"
-                    : "border-2 border-gray-300 bg-white text-gray-400"
+                    : "border-2 border-gray-300 bg-white text-gray-400 dark:border-gray-700 dark:text-gray-500 dark:bg-gray-900"
                 }`}
               >
                 {isCompleted ? <Check className="h-4 w-4" /> : stepNum}
               </div>
               <span
                 className={`mt-1 whitespace-nowrap text-xs font-medium ${
-                  isCompleted || isActive ? "text-[#2BB5A0]" : "text-gray-400"
+                  isCompleted || isActive ? "text-[#2BB5A0]" : "text-gray-400 dark:text-gray-500"
                 }`}
               >
                 {step}
@@ -71,7 +71,7 @@ function StepperHeader({ currentStep }: { currentStep: number }) {
             {idx < STEPS.length - 1 && (
               <div
                 className={`mx-2 mb-5 h-px w-16 transition-colors sm:w-24 ${
-                  isCompleted ? "bg-[#2BB5A0]" : "bg-gray-200"
+                  isCompleted ? "bg-[#2BB5A0]" : "bg-gray-200 dark:bg-gray-700"
                 }`}
               />
             )}
@@ -106,55 +106,55 @@ function LoanCalculator({
   const monthly = isEmergency ? totalRepayable : duration > 0 ? totalRepayable / duration : 0;
 
   return (
-    <Card className="border border-[#9DDAD1] bg-[#E6F4F2]">
+    <Card className="border border-[#9DDAD1] bg-[#E6F4F2] dark:border-[#149D8E]/40 dark:bg-[#149D8E]/20">
       <CardContent className="space-y-4 p-6">
-        <h3 className="text-lg font-bold text-[#149D8E]">Loan Calculator</h3>
+        <h3 className="text-lg font-bold text-[#149D8E] dark:text-[#5EEAD4]">Loan Calculator</h3>
         <div className="space-y-3 text-sm">
           <div className="flex justify-between">
-            <span className="text-gray-500">Principal</span>
-            <span className="font-semibold text-[#1B2B3A]">
+            <span className="text-gray-500 dark:text-gray-400">Principal</span>
+            <span className="font-semibold text-[#1B2B3A] dark:text-white">
               {formatCurrency(amount)}
             </span>
           </div>
           <div className="flex justify-between">
-            <span className="text-gray-500">
+            <span className="text-gray-500 dark:text-gray-400">
               {hasCap ? "Your Rate Cap" : "Interest Rate (not set)"}
             </span>
-            <span className="font-semibold text-[#1B2B3A]">
+            <span className="font-semibold text-[#1B2B3A] dark:text-white">
               {displayRate}%/month
             </span>
           </div>
           <div className="flex justify-between">
-            <span className="text-gray-500">Duration</span>
-            <span className="font-semibold text-[#1B2B3A]">
+            <span className="text-gray-500 dark:text-gray-400">Duration</span>
+            <span className="font-semibold text-[#1B2B3A] dark:text-white">
               {formatDuration(duration, durationDays)}
             </span>
           </div>
           <div className="flex justify-between">
-            <span className="text-gray-500">Total Interest</span>
-            <span className="font-semibold text-[#149D8E]">
+            <span className="text-gray-500 dark:text-gray-400">Total Interest</span>
+            <span className="font-semibold text-[#149D8E] dark:text-[#5EEAD4]">
               {formatCurrency(Math.round(totalInterest))}
             </span>
           </div>
           <div className="flex justify-between">
-            <span className="font-bold text-[#1B2B3A]">
+            <span className="font-bold text-[#1B2B3A] dark:text-white">
               {isEmergency ? "Repayment Due" : "Monthly Payment"}
             </span>
-            <span className="font-bold text-[#1B2B3A]">
+            <span className="font-bold text-[#1B2B3A] dark:text-white">
               {formatCurrency(Math.round(monthly))}
             </span>
           </div>
           <div className="h-px bg-[#9DDAD1]" />
           <div className="flex justify-between">
-            <span className="text-2xl font-black text-[#1B2B3A]">
+            <span className="text-2xl font-black text-[#1B2B3A] dark:text-white">
               Total Repayable
             </span>
-            <span className="text-3xl font-black text-[#149D8E]">
+            <span className="text-3xl font-black text-[#149D8E] dark:text-[#5EEAD4]">
               {formatCurrency(Math.round(totalRepayable))}
             </span>
           </div>
         </div>
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-gray-500 dark:text-gray-400">
           {hasCap
             ? isEmergency
               ? "One repayment, due in full — this is only an estimate at your rate cap. Nothing is submitted from this calculator."
@@ -212,25 +212,25 @@ function Step1({
   );
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_420px]">
-      <Card className="border border-gray-200 bg-white">
+      <Card className="border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
         <CardContent className="space-y-6 p-6">
-          <h2 className="flex items-center gap-2 text-2xl font-black text-[#1B2B3A]">
+          <h2 className="flex items-center gap-2 text-2xl font-black text-[#1B2B3A] dark:text-white">
             Loan Details
             <InfoTip text="Here's the flow: you submit this request, your 2 guarantors approve it, then lenders on the marketplace can send you offers. Each offer lists the documents that lender needs — you provide those when you're ready to accept. Nothing is funded until then." />
           </h2>
 
           <div>
-            <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-gray-500">
+            <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
               How much do you need?
             </label>
             <div
               className={`flex items-center overflow-hidden rounded-lg border focus-within:ring-2 ${
                 amountError
                   ? "border-red-300 focus-within:ring-red-300"
-                  : "border-gray-300 focus-within:ring-[#2BB5A0]"
+                  : "border-gray-300 focus-within:ring-[#2BB5A0] dark:border-gray-700"
               }`}
             >
-              <span className="border-r border-gray-300 bg-gray-50 px-4 py-3 text-sm font-medium text-gray-500">
+              <span className="border-r border-gray-300 bg-gray-50 px-4 py-3 text-sm font-medium text-gray-500 dark:border-gray-700 dark:text-gray-400 dark:bg-gray-800/60">
                 UGX
               </span>
               <input
@@ -240,20 +240,20 @@ function Step1({
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder={`e.g. ${MIN_AMOUNT.toLocaleString()}`}
-                className="flex-1 px-4 py-3 text-sm font-medium text-[#1B2B3A] outline-none"
+                className="flex-1 px-4 py-3 text-sm font-medium text-[#1B2B3A] outline-none dark:text-white"
               />
             </div>
             {amountError ? (
               <p className="mt-1.5 text-xs text-red-500">{amountError}</p>
             ) : (
-              <p className="mt-1.5 text-xs text-gray-400">
+              <p className="mt-1.5 text-xs text-gray-400 dark:text-gray-500">
                 Between {formatCurrency(MIN_AMOUNT)} and {formatCurrency(MAX_AMOUNT)}.
               </p>
             )}
           </div>
 
           <div>
-            <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-gray-500">
+            <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
               Loan Type
             </label>
             <div className="flex flex-wrap gap-2">
@@ -278,8 +278,8 @@ function Step1({
                     }}
                     className={`rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
                       active
-                        ? "border-[#2BB5A0] bg-[#E6F4F2] text-[#149D8E]"
-                        : "border-gray-300 bg-white text-[#1B2B3A] hover:border-[#2BB5A0]"
+                        ? "border-[#2BB5A0] bg-[#E6F4F2] text-[#149D8E] dark:text-[#5EEAD4] dark:bg-[#149D8E]/20"
+                        : "border-gray-300 bg-white text-[#1B2B3A] hover:border-[#2BB5A0] dark:border-gray-700 dark:text-white dark:bg-gray-900"
                     }`}
                   >
                     {t.label}
@@ -288,7 +288,7 @@ function Step1({
               })}
             </div>
             {isEmergency && (
-              <p className="mt-1.5 text-xs text-gray-400">
+              <p className="mt-1.5 text-xs text-gray-400 dark:text-gray-500">
                 Short-term request — one repayment in full, due when the term ends. Interest is
                 prorated from the platform&apos;s monthly rate.
               </p>
@@ -296,7 +296,7 @@ function Step1({
           </div>
 
           <div>
-            <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-gray-500">
+            <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
               Duration
             </label>
             {isEmergency ? (
@@ -313,8 +313,8 @@ function Step1({
                         }}
                         className={`rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
                           active
-                            ? "border-[#2BB5A0] bg-[#E6F4F2] text-[#149D8E]"
-                            : "border-gray-300 bg-white text-[#1B2B3A] hover:border-[#2BB5A0]"
+                            ? "border-[#2BB5A0] bg-[#E6F4F2] text-[#149D8E] dark:text-[#5EEAD4] dark:bg-[#149D8E]/20"
+                            : "border-gray-300 bg-white text-[#1B2B3A] hover:border-[#2BB5A0] dark:border-gray-700 dark:text-white dark:bg-gray-900"
                         }`}
                       >
                         {d} day{d === 1 ? "" : "s"}
@@ -339,14 +339,14 @@ function Step1({
                       setDurationDays(!Number.isNaN(n) && n >= 1 && n <= 29 ? n : null);
                     }}
                     placeholder="Custom (1-29 days)"
-                    className="w-44 rounded-lg border border-gray-300 px-3 py-2 text-sm text-[#1B2B3A] outline-none focus:ring-2 focus:ring-[#2BB5A0]"
+                    className="w-44 rounded-lg border border-gray-300 px-3 py-2 text-sm text-[#1B2B3A] outline-none focus:ring-2 focus:ring-[#2BB5A0] dark:border-gray-700 dark:text-white"
                   />
-                  <span className="text-xs text-gray-400">days</span>
+                  <span className="text-xs text-gray-400 dark:text-gray-500">days</span>
                 </div>
                 {customDays !== "" && durationDays == null && (
                   <p className="text-xs text-red-500">Enter a whole number between 1 and 29</p>
                 )}
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-gray-400 dark:text-gray-500">
                   30 days or more? Switch the loan type above — that&apos;s a standard request.
                 </p>
               </div>
@@ -361,8 +361,8 @@ function Step1({
                       onClick={() => setDuration(months)}
                       className={`rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
                         active
-                          ? "border-[#2BB5A0] bg-[#E6F4F2] text-[#149D8E]"
-                          : "border-gray-300 bg-white text-[#1B2B3A] hover:border-[#2BB5A0]"
+                          ? "border-[#2BB5A0] bg-[#E6F4F2] text-[#149D8E] dark:text-[#5EEAD4] dark:bg-[#149D8E]/20"
+                          : "border-gray-300 bg-white text-[#1B2B3A] hover:border-[#2BB5A0] dark:border-gray-700 dark:text-white dark:bg-gray-900"
                       }`}
                     >
                       {d}
@@ -374,7 +374,7 @@ function Step1({
           </div>
 
           <div>
-            <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-gray-500">
+            <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
               Purpose
             </label>
             <textarea
@@ -382,12 +382,12 @@ function Step1({
               onChange={(e) => setPurpose(e.target.value)}
               placeholder="Briefly describe what you need the loan for..."
               rows={4}
-              className="w-full resize-none rounded-lg border border-gray-300 px-4 py-3 text-sm text-[#1B2B3A] outline-none focus:ring-2 focus:ring-[#2BB5A0]"
+              className="w-full resize-none rounded-lg border border-gray-300 px-4 py-3 text-sm text-[#1B2B3A] outline-none focus:ring-2 focus:ring-[#2BB5A0] dark:border-gray-700 dark:text-white"
             />
           </div>
 
           <div>
-            <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-gray-500">
+            <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
               Max Interest Rate (%/month, optional)
             </label>
             <input
@@ -398,7 +398,7 @@ function Step1({
               value={maxInterestRate}
               onChange={(e) => setMaxInterestRate(e.target.value)}
               placeholder="e.g. 3 — leave blank to accept any rate"
-              className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm text-[#1B2B3A] outline-none focus:ring-2 focus:ring-[#2BB5A0]"
+              className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm text-[#1B2B3A] outline-none focus:ring-2 focus:ring-[#2BB5A0] dark:border-gray-700 dark:text-white"
             />
             {maxInterestRateError && (
               <p className="mt-1.5 text-xs text-red-500">{maxInterestRateError}</p>
@@ -406,7 +406,7 @@ function Step1({
           </div>
 
           <div>
-            <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-gray-500">
+            <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
               Valid Until (optional)
             </label>
             <input
@@ -414,9 +414,9 @@ function Step1({
               value={validUntil}
               onChange={(e) => setValidUntil(e.target.value)}
               min={new Date().toISOString().slice(0, 10)}
-              className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm text-[#1B2B3A] outline-none focus:ring-2 focus:ring-[#2BB5A0]"
+              className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm text-[#1B2B3A] outline-none focus:ring-2 focus:ring-[#2BB5A0] dark:border-gray-700 dark:text-white"
             />
-            <p className="mt-1.5 text-xs text-gray-400">
+            <p className="mt-1.5 text-xs text-gray-400 dark:text-gray-500">
               If you need funds urgently, set a date — your request stops being shown to lenders
               after this if it hasn&apos;t been funded. Leave blank for no deadline.
             </p>
@@ -472,13 +472,13 @@ function Step2({
   };
 
   return (
-    <Card className="border border-gray-200 bg-white">
+    <Card className="border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
       <CardContent className="space-y-6 p-6">
-        <h2 className="flex items-center gap-2 text-2xl font-black text-[#1B2B3A]">
+        <h2 className="flex items-center gap-2 text-2xl font-black text-[#1B2B3A] dark:text-white">
           Add Guarantors
           <InfoTip text="If one declines, you can search for a replacement from My Requests after submitting. You can still edit the amount, duration, or type later — but only until a guarantor actually approves; once someone has committed to these exact terms, editing locks and you'd need to withdraw and resubmit instead." />
         </h2>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-gray-500 dark:text-gray-400">
           Add exactly 2 guarantors — they must already have a Mpola account.
           They&apos;ll each get a request to approve or decline once you
           submit, and your application won&apos;t be shown to lenders until
@@ -488,7 +488,7 @@ function Step2({
         {guarantors.map((g, idx) => (
           <div
             key={g.user_id}
-            className="flex items-center justify-between rounded-xl border-2 border-[#2BB5A0] bg-[#E6F4F2] p-4"
+            className="flex items-center justify-between rounded-xl border-2 border-[#2BB5A0] bg-[#E6F4F2] p-4 dark:bg-[#149D8E]/20"
           >
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#149D8E] text-sm font-bold text-white">
@@ -500,8 +500,8 @@ function Step2({
                   .slice(0, 2)}
               </div>
               <div>
-                <p className="text-lg font-bold text-[#1B2B3A]">{g.full_name ?? g.username}</p>
-                <p className="text-sm text-gray-500">@{g.username}</p>
+                <p className="text-lg font-bold text-[#1B2B3A] dark:text-white">{g.full_name ?? g.username}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">@{g.username}</p>
               </div>
             </div>
             <button
@@ -514,10 +514,10 @@ function Step2({
         ))}
 
         {guarantors.length < 2 && (
-          <div className="rounded-xl border border-gray-200 p-4">
+          <div className="rounded-xl border border-gray-200 p-4 dark:border-gray-800">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
-                <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500">
+                <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
                   Guarantor&apos;s Email
                 </label>
                 <input
@@ -525,16 +525,16 @@ function Step2({
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="their.email@example.com"
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-[#1B2B3A] outline-none focus:ring-2 focus:ring-[#2BB5A0]"
+                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-[#1B2B3A] outline-none focus:ring-2 focus:ring-[#2BB5A0] dark:border-gray-700 dark:text-white"
                 />
               </div>
 
               <div>
-                <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500">
+                <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
                   Guarantor&apos;s Phone (MTN/Airtel)
                 </label>
-                <div className="flex items-center overflow-hidden rounded-lg border border-gray-300 focus-within:ring-2 focus-within:ring-[#2BB5A0]">
-                  <span className="bg-[#E6F4F2] px-4 py-2.5 text-sm font-bold text-[#149D8E]">
+                <div className="flex items-center overflow-hidden rounded-lg border border-gray-300 focus-within:ring-2 focus-within:ring-[#2BB5A0] dark:border-gray-700">
+                  <span className="bg-[#E6F4F2] px-4 py-2.5 text-sm font-bold text-[#149D8E] dark:text-[#5EEAD4] dark:bg-[#149D8E]/20">
                     +256
                   </span>
                   <input
@@ -542,7 +542,7 @@ function Step2({
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="700 000 000"
-                    className="flex-1 px-4 py-2.5 text-sm text-[#1B2B3A] outline-none"
+                    className="flex-1 px-4 py-2.5 text-sm text-[#1B2B3A] outline-none dark:text-white"
                   />
                 </div>
               </div>
@@ -595,15 +595,15 @@ function Step3({
     LOAN_TYPES.find((t) => t.value === loanType)?.label ?? loanType;
 
   return (
-    <Card className="border border-gray-200 bg-white">
+    <Card className="border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
       <CardContent className="space-y-6 p-6">
-        <h2 className="text-2xl font-black text-[#1B2B3A]">
+        <h2 className="text-2xl font-black text-[#1B2B3A] dark:text-white">
           Review &amp; Submit
         </h2>
 
-        <div className="overflow-hidden rounded-xl border border-[#9DDAD1]">
-          <div className="border-b border-[#9DDAD1] bg-[#E6F4F2] px-4 py-3">
-            <p className="font-bold text-[#149D8E]">Loan Terms</p>
+        <div className="overflow-hidden rounded-xl border border-[#9DDAD1] dark:border-[#149D8E]/40">
+          <div className="border-b border-[#9DDAD1] bg-[#E6F4F2] px-4 py-3 dark:border-[#149D8E]/40 dark:bg-[#149D8E]/20">
+            <p className="font-bold text-[#149D8E] dark:text-[#5EEAD4]">Loan Terms</p>
           </div>
 
           {[
@@ -634,11 +634,11 @@ function Step3({
           ].map(([k, v]) => (
             <div
               key={String(k)}
-              className="border-b last:border-b-0 border-gray-200 px-4 py-3 text-sm flex items-center justify-between"
+              className="border-b last:border-b-0 border-gray-200 px-4 py-3 text-sm flex items-center justify-between dark:border-gray-800"
             >
-              <span className="text-gray-500">{k}</span>
+              <span className="text-gray-500 dark:text-gray-400">{k}</span>
               <span
-                className={`font-bold ${k === "Rate" || k === "Total Repayable" ? "text-[#149D8E]" : "text-[#1B2B3A]"}`}
+                className={`font-bold ${k === "Rate" || k === "Total Repayable" ? "text-[#149D8E] dark:text-[#5EEAD4]" : "text-[#1B2B3A] dark:text-white"}`}
               >
                 {v}
               </span>
@@ -646,12 +646,12 @@ function Step3({
           ))}
         </div>
 
-        <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700">
+        <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700 dark:border-blue-800 dark:text-blue-400 dark:bg-blue-900/20">
           Once lenders send offers, each one will list the documents it needs — you provide those
           (or reuse ones already on file) when you accept a specific offer.
         </div>
 
-        <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+        <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-700 dark:border-amber-800 dark:text-amber-400 dark:bg-amber-900/20">
           By submitting, you agree to Mpola&apos;s terms and confirm the
           information above is accurate.
         </div>
@@ -663,22 +663,22 @@ function Step3({
 function SuccessView({ reference }: { reference: string }) {
   return (
     <div className="flex flex-col items-center justify-center space-y-6 py-16 text-center">
-      <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[#E6F4F2]">
+      <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[#E6F4F2] dark:bg-[#149D8E]/20">
         <Check className="h-10 w-10 text-[#2BB5A0]" />
       </div>
       <div>
-        <h2 className="text-3xl font-black text-[#1B2B3A]">
+        <h2 className="text-3xl font-black text-[#1B2B3A] dark:text-white">
           Application Submitted!
         </h2>
-        <p className="mt-1 text-gray-500">
+        <p className="mt-1 text-gray-500 dark:text-gray-400">
           Reference:{" "}
-          <span className="font-semibold text-[#1B2B3A]">#{reference}</span>
+          <span className="font-semibold text-[#1B2B3A] dark:text-white">#{reference}</span>
         </p>
       </div>
 
-      <div className="inline-flex items-center gap-2 rounded-lg border border-[#9DDAD1] bg-[#E6F4F2] px-6 py-3">
+      <div className="inline-flex items-center gap-2 rounded-lg border border-[#9DDAD1] bg-[#E6F4F2] px-6 py-3 dark:border-[#149D8E]/40 dark:bg-[#149D8E]/20">
         <span className="h-2 w-2 rounded-full bg-[#2BB5A0]" />
-        <span className="text-sm font-semibold text-[#149D8E]">
+        <span className="text-sm font-semibold text-[#149D8E] dark:text-[#5EEAD4]">
           Open on the marketplace
         </span>
       </div>
@@ -686,7 +686,7 @@ function SuccessView({ reference }: { reference: string }) {
       <div className="mt-4 flex gap-3">
         <a
           href="/dashboard"
-          className="inline-flex items-center justify-center rounded-md border border-[#1B2B3A] px-4 py-2 text-sm font-medium text-[#1B2B3A] transition-colors hover:bg-gray-50"
+          className="inline-flex items-center justify-center rounded-md border border-[#1B2B3A] px-4 py-2 text-sm font-medium text-[#1B2B3A] transition-colors hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-800 dark:text-white"
         >
           Back to Dashboard
         </a>
@@ -938,7 +938,7 @@ export default function ApplyPage() {
               <button
                 onClick={handleStartOver}
                 disabled={isSubmitting}
-                className="text-xs font-medium text-gray-400 hover:text-red-500 disabled:opacity-50"
+                className="text-xs font-medium text-gray-400 hover:text-red-500 disabled:opacity-50 dark:text-gray-500"
               >
                 Discard &amp; start over
               </button>
@@ -946,7 +946,7 @@ export default function ApplyPage() {
           </div>
 
           {resumedFromDraft && (
-            <div className="-mt-2 rounded-lg border border-blue-200 bg-blue-50 px-4 py-2.5 text-sm text-blue-700">
+            <div className="-mt-2 rounded-lg border border-blue-200 bg-blue-50 px-4 py-2.5 text-sm text-blue-700 dark:border-blue-800 dark:text-blue-400 dark:bg-blue-900/20">
               Continuing your unfinished loan request right where you left off.
             </div>
           )}
@@ -1007,7 +1007,7 @@ export default function ApplyPage() {
               variant="outline"
               onClick={handleBack}
               disabled={isSubmitting}
-              className="border-gray-300 text-[#1B2B3A]"
+              className="border-gray-300 text-[#1B2B3A] dark:border-gray-700 dark:text-white"
             >
               Back
             </Button>

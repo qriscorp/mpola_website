@@ -70,7 +70,7 @@ function SuccessContent() {
   if (!applicationId || error) {
     return (
       <div className="max-w-2xl mx-auto text-center py-8">
-        <p className="text-gray-500">
+        <p className="text-gray-500 dark:text-gray-400">
           {error
             ? "This application couldn't be found."
             : "No application selected."}{" "}
@@ -97,27 +97,27 @@ function SuccessContent() {
         <CheckCircle2 className="w-8 h-8 text-white" />
       </div>
 
-      <h1 className="text-4xl font-bold text-[#1B2B3A]">
+      <h1 className="text-4xl font-bold text-[#1B2B3A] dark:text-white">
         Application submitted!
       </h1>
-      <p className="text-gray-500 mt-3">
+      <p className="text-gray-500 mt-3 dark:text-gray-400">
         {offersCount > 0
           ? `You've received ${offersCount} offer${offersCount > 1 ? "s" : ""} so far.`
           : "Your application is now visible to lenders. You'll be notified as offers come in."}
       </p>
 
-      <div className="inline-flex items-center gap-2 mt-6 border border-gray-200 rounded-lg px-4 py-2">
-        <span className="text-xs text-gray-400 uppercase tracking-wider font-semibold">
+      <div className="inline-flex items-center gap-2 mt-6 border border-gray-200 rounded-lg px-4 py-2 dark:border-gray-800">
+        <span className="text-xs text-gray-400 uppercase tracking-wider font-semibold dark:text-gray-500">
           Reference
         </span>
-        <span className="text-lg font-bold text-[#1B2B3A]">
+        <span className="text-lg font-bold text-[#1B2B3A] dark:text-white">
           {application.reference_number}
         </span>
       </div>
 
-      <Card className="bg-white mt-8 text-left">
+      <Card className="bg-white mt-8 text-left dark:bg-gray-900">
         <CardContent className="p-6">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-4">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-4 dark:text-gray-500">
             What Happens Next
           </p>
 
@@ -128,7 +128,7 @@ function SuccessContent() {
                 <div className="flex flex-col items-center">
                   <div
                     className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0
-                      ${item.status === "done" ? "bg-[#2BB5A0]" : item.status === "current" ? "bg-[#2BB5A0]/20 border-2 border-[#2BB5A0]" : "bg-gray-100 border-2 border-gray-200"}`}
+                      ${item.status === "done" ? "bg-[#2BB5A0]" : item.status === "current" ? "bg-[#2BB5A0]/20 border-2 border-[#2BB5A0]" : "bg-gray-100 border-2 border-gray-200 dark:border-gray-800 dark:bg-gray-800"}`}
                   >
                     {item.status === "done" && (
                       <CheckCircle2 className="w-3.5 h-3.5 text-white" />
@@ -140,17 +140,17 @@ function SuccessContent() {
                   {i < timeline.length - 1 && (
                     <div
                       className={`w-0.5 flex-1 my-1 ${
-                        item.status === "done" ? "bg-[#2BB5A0]" : "bg-gray-200"
+                        item.status === "done" ? "bg-[#2BB5A0]" : "bg-gray-200 dark:bg-gray-700"
                       }`}
                     />
                   )}
                 </div>
 
                 <div className="pb-6">
-                  <p className="font-semibold text-sm text-[#1B2B3A]">
+                  <p className="font-semibold text-sm text-[#1B2B3A] dark:text-white">
                     {item.title}
                   </p>
-                  <p className="text-xs text-gray-500 mt-0.5">{item.desc}</p>
+                  <p className="text-xs text-gray-500 mt-0.5 dark:text-gray-400">{item.desc}</p>
                 </div>
               </div>
             ))}

@@ -43,7 +43,7 @@ function PaymentFailedContent({
       <BorrowerPageHeader title="Payment Failed" />
 
       <div className="mx-auto max-w-3xl space-y-4">
-        <div className="rounded-2xl border-2 border-red-300 bg-red-50 p-8">
+        <div className="rounded-2xl border-2 border-red-300 bg-red-50 p-8 dark:bg-red-900/20">
           <div className="mb-5 flex flex-col items-center">
             <div className="mb-3 flex h-20 w-20 items-center justify-center rounded-full bg-red-100">
               <svg
@@ -56,10 +56,10 @@ function PaymentFailedContent({
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </div>
-            <h2 className="text-2xl sm:text-3xl leading-tight font-black text-[#1B2B3A]">
+            <h2 className="text-2xl sm:text-3xl leading-tight font-black text-[#1B2B3A] dark:text-white">
               Payment Failed
             </h2>
-            <p className="max-w-md text-center text-sm sm:text-base text-gray-500">
+            <p className="max-w-md text-center text-sm sm:text-base text-gray-500 dark:text-gray-400">
               {reason}
             </p>
           </div>
@@ -74,15 +74,15 @@ function PaymentFailedContent({
                 key={String(label)}
                 className="flex items-center justify-between border-b border-red-200 py-3 last:border-b-0"
               >
-                <span className="text-sm text-gray-500">{label}</span>
-                <span className="text-sm font-semibold text-[#1B2B3A]">
+                <span className="text-sm text-gray-500 dark:text-gray-400">{label}</span>
+                <span className="text-sm font-semibold text-[#1B2B3A] dark:text-white">
                   {value}
                 </span>
               </div>
             ))}
           </div>
 
-          <p className="mt-4 text-xs text-gray-400">
+          <p className="mt-4 text-xs text-gray-400 dark:text-gray-500">
             Nothing was charged — you can try again with the same or a different payment method.
           </p>
         </div>
@@ -90,7 +90,7 @@ function PaymentFailedContent({
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <Link
             href="/dashboard/repayments"
-            className="rounded-xl border border-gray-300 bg-white px-4 py-3 text-center text-sm font-semibold text-[#1B2B3A] transition-colors hover:bg-gray-50"
+            className="rounded-xl border border-gray-300 bg-white px-4 py-3 text-center text-sm font-semibold text-[#1B2B3A] transition-colors hover:bg-gray-50 dark:hover:bg-gray-800 dark:border-gray-700 dark:text-white dark:bg-gray-900"
           >
             View Schedule
           </Link>
@@ -126,11 +126,11 @@ function PaymentSuccessContent({
       <BorrowerPageHeader title="Payment Receipt" />
 
       <div className="mx-auto max-w-3xl space-y-4">
-        <div className="rounded-2xl border-2 border-[#19A44B] bg-[#E6F4F2] p-8">
+        <div className="rounded-2xl border-2 border-[#19A44B] bg-[#E6F4F2] p-8 dark:bg-[#149D8E]/20">
           <div className="mb-5 flex flex-col items-center">
-            <div className="mb-3 flex h-20 w-20 items-center justify-center rounded-full bg-[#DCEDEA]">
+            <div className="mb-3 flex h-20 w-20 items-center justify-center rounded-full bg-[#DCEDEA] dark:bg-[#149D8E]/20">
               <svg
-                className="h-10 w-10 text-[#149D8E]"
+                className="h-10 w-10 text-[#149D8E] dark:text-[#5EEAD4]"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -143,10 +143,10 @@ function PaymentSuccessContent({
                 />
               </svg>
             </div>
-            <h2 className="text-2xl sm:text-3xl leading-tight font-black text-[#1B2B3A]">
+            <h2 className="text-2xl sm:text-3xl leading-tight font-black text-[#1B2B3A] dark:text-white">
               Payment Successful
             </h2>
-            <p className="text-sm sm:text-base text-gray-500">
+            <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400">
               Transaction confirmed
             </p>
           </div>
@@ -162,15 +162,15 @@ function PaymentSuccessContent({
                 key={String(label)}
                 className="flex items-center justify-between border-b border-[#B9DDD7] py-3"
               >
-                <span className="text-sm text-gray-500">{label}</span>
-                <span className="text-sm font-semibold text-[#1B2B3A]">
+                <span className="text-sm text-gray-500 dark:text-gray-400">{label}</span>
+                <span className="text-sm font-semibold text-[#1B2B3A] dark:text-white">
                   {value}
                 </span>
               </div>
             ))}
 
             <div className="flex items-center justify-between pt-2">
-              <span className="text-lg sm:text-xl font-bold text-[#1B2B3A]">
+              <span className="text-lg sm:text-xl font-bold text-[#1B2B3A] dark:text-white">
                 Amount Paid
               </span>
               <span className="text-2xl sm:text-3xl leading-none font-black text-[#19A44B]">
@@ -191,7 +191,7 @@ function PaymentSuccessContent({
                 .downloadRepaymentReceipt(repaymentId)
                 .catch(() => toast.error("Couldn't download the receipt. Please try again."));
             }}
-            className="rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm font-semibold text-[#1B2B3A] transition-colors hover:bg-gray-50"
+            className="rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm font-semibold text-[#1B2B3A] transition-colors hover:bg-gray-50 dark:hover:bg-gray-800 dark:border-gray-700 dark:text-white dark:bg-gray-900"
           >
             Download Receipt
           </button>

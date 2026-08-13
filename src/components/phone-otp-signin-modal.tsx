@@ -80,14 +80,14 @@ export function PhoneOtpSigninModal({ open, onClose, portal }: Props) {
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
-          <DialogTitle className="text-[#1B2B3A]">
+          <DialogTitle className="text-[#1B2B3A] dark:text-white">
             {step === "phone" ? "Sign in with OTP" : "Enter Code"}
           </DialogTitle>
         </DialogHeader>
 
         {step === "phone" && (
           <>
-            <p className="text-sm text-gray-500 -mt-2 mb-4">
+            <p className="text-sm text-gray-500 -mt-2 mb-4 dark:text-gray-400">
               Enter your registered phone number and we&apos;ll send you a
               one-time sign-in code.
             </p>
@@ -124,9 +124,9 @@ export function PhoneOtpSigninModal({ open, onClose, portal }: Props) {
 
         {step === "otp" && (
           <>
-            <p className="text-sm text-gray-500 -mt-2 mb-4">
+            <p className="text-sm text-gray-500 -mt-2 mb-4 dark:text-gray-400">
               Enter the 6-digit code sent to{" "}
-              <span className="font-medium text-[#1B2B3A]">+256 {phone}</span>.
+              <span className="font-medium text-[#1B2B3A] dark:text-white">+256 {phone}</span>.
               If you don&apos;t receive a code, the number may not be
               registered.
             </p>
@@ -164,7 +164,7 @@ export function PhoneOtpSigninModal({ open, onClose, portal }: Props) {
                 setCode(["", "", "", "", "", ""]);
                 setStep("phone");
               }}
-              className="mt-1 w-full text-sm text-gray-500 hover:text-[#2BB5A0]"
+              className="mt-1 w-full text-sm text-gray-500 hover:text-[#2BB5A0] dark:text-gray-400"
             >
               Use a different number
             </button>

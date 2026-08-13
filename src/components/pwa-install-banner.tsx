@@ -72,7 +72,7 @@ export function PwaInstallBanner() {
   }
 
   return (
-    <div className="fixed inset-x-0 top-0 z-50 border-b border-[#BDE8E2] bg-[#EAF9F6] px-3 py-2 text-[#0B2A29]">
+    <div className="fixed inset-x-0 top-0 z-50 border-b border-[#BDE8E2] dark:border-[#2BB5A0]/30 bg-[#EAF9F6] dark:bg-[#0B2A29] px-3 py-2 text-[#0B2A29] dark:text-[#8CD8CF]">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
         <p className="text-xs font-semibold sm:text-sm">
           Install Mpola on your desktop for a faster app-like experience.
@@ -80,7 +80,7 @@ export function PwaInstallBanner() {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            className="rounded-md border border-[#8CD8CF] bg-white px-2.5 py-1 text-xs font-semibold text-[#165652]"
+            className="rounded-md border border-[#8CD8CF] dark:border-[#2BB5A0]/40 bg-white dark:bg-[#0B2A29] px-2.5 py-1 text-xs font-semibold text-[#165652] dark:text-[#8CD8CF]"
             onClick={() => setDismissed(true)}
           >
             Not now

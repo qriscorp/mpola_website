@@ -15,10 +15,10 @@ const guarantorColors = ["bg-emerald-600", "bg-amber-700", "bg-blue-700"];
 
 function guarantorBadge(status: string) {
   if (status === "accepted")
-    return "bg-emerald-50 text-emerald-600 border border-emerald-200";
+    return "bg-emerald-50 text-emerald-600 border border-emerald-200 dark:border-emerald-800 dark:text-emerald-400 dark:bg-emerald-900/20";
   if (status === "declined")
-    return "bg-red-50 text-red-600 border border-red-200";
-  return "bg-amber-50 text-amber-600 border border-amber-200";
+    return "bg-red-50 text-red-600 border border-red-200 dark:bg-red-900/20";
+  return "bg-amber-50 text-amber-600 border border-amber-200 dark:border-amber-800 dark:text-amber-400 dark:bg-amber-900/20";
 }
 
 function guarantorLabel(status: string) {
@@ -37,7 +37,7 @@ function ApplicantContent() {
 
   if (!applicationId || error) {
     return (
-      <p className="text-sm text-gray-500">
+      <p className="text-sm text-gray-500 dark:text-gray-400">
         {error
           ? "This application couldn't be found. "
           : ""}
@@ -62,7 +62,7 @@ function ApplicantContent() {
       {/* LEFT: 2/3 wide */}
       <div className="lg:col-span-2 space-y-4">
         {/* Profile card */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className="bg-white rounded-xl border border-gray-200 p-6 dark:border-gray-800 dark:bg-gray-900">
           <div className="flex items-start gap-5">
             <div className="h-16 w-16 rounded-full bg-[#1B2B3A] flex items-center justify-center shrink-0">
               <span className="text-white text-xl font-bold">
@@ -72,10 +72,10 @@ function ApplicantContent() {
             <div className="flex-1 min-w-0">
               <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                 <div>
-                  <h2 className="text-2xl font-bold text-[#1B2B3A]">
+                  <h2 className="text-2xl font-bold text-[#1B2B3A] dark:text-white">
                     {borrower?.full_name ?? "Unknown borrower"}
                   </h2>
-                  <p className="text-sm text-gray-400 mt-0.5 capitalize">
+                  <p className="text-sm text-gray-400 mt-0.5 capitalize dark:text-gray-500">
                     {application.loan_type} Loan · #{application.reference_number}
                   </p>
                 </div>
@@ -101,7 +101,7 @@ function ApplicantContent() {
                         })
                       }
                       disabled={skipApplication.isPending}
-                      className="px-4 py-1.5 rounded-lg border border-gray-300 text-sm font-medium text-gray-600 hover:border-red-300 hover:text-red-500 transition-colors disabled:opacity-50"
+                      className="px-4 py-1.5 rounded-lg border border-gray-300 text-sm font-medium text-gray-600 hover:border-red-300 hover:text-red-500 transition-colors disabled:opacity-50 dark:border-gray-700 dark:text-gray-300"
                     >
                       Decline
                     </button>
@@ -123,7 +123,7 @@ function ApplicantContent() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-x-8 gap-y-5 mt-6 pt-6 border-t border-gray-100">
+          <div className="grid grid-cols-2 gap-x-8 gap-y-5 mt-6 pt-6 border-t border-gray-100 dark:border-gray-800">
             {[
               { label: "AMOUNT", value: formatCurrency(application.amount), big: true },
               { label: "DURATION", value: formatDuration(application.duration, application.duration_days), big: true },
@@ -135,7 +135,7 @@ function ApplicantContent() {
               },
             ].map(({ label, value, big }) => (
               <div key={label}>
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider dark:text-gray-500">
                   {label}
                 </p>
                 <p
@@ -153,12 +153,12 @@ function ApplicantContent() {
       {/* RIGHT: 1/3 */}
       <div className="space-y-4">
         {/* Guarantors */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <h3 className="font-bold text-[#1B2B3A] text-lg mb-4">
+        <div className="bg-white rounded-xl border border-gray-200 p-6 dark:border-gray-800 dark:bg-gray-900">
+          <h3 className="font-bold text-[#1B2B3A] text-lg mb-4 dark:text-white">
             Guarantors
           </h3>
           {guarantors.length === 0 ? (
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-gray-400 dark:text-gray-500">
               No guarantors added for this application yet.
             </p>
           ) : (
@@ -173,10 +173,10 @@ function ApplicantContent() {
                     </span>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-[#1B2B3A]">
+                    <p className="text-sm font-semibold text-[#1B2B3A] dark:text-white">
                       {g.full_name ?? g.username}
                     </p>
-                    <p className="text-xs text-gray-400 capitalize">
+                    <p className="text-xs text-gray-400 capitalize dark:text-gray-500">
                       {g.relationship_type ?? "—"}
                     </p>
                   </div>
@@ -192,11 +192,11 @@ function ApplicantContent() {
         </div>
 
         {/* Loan History */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <h3 className="font-bold text-[#1B2B3A] text-lg mb-3">
+        <div className="bg-white rounded-xl border border-gray-200 p-6 dark:border-gray-800 dark:bg-gray-900">
+          <h3 className="font-bold text-[#1B2B3A] text-lg mb-3 dark:text-white">
             Loan History
           </h3>
-          <p className="text-sm text-gray-400">
+          <p className="text-sm text-gray-400 dark:text-gray-500">
             Borrower loan history isn&apos;t available yet.
           </p>
         </div>

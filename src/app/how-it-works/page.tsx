@@ -23,9 +23,9 @@ export const metadata = {
 
 export default function HowItWorksPage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-gray-900">
       {/* Nav */}
-      <header className="sticky top-0 z-50 bg-white border-b border-gray-100">
+      <header className="sticky top-0 z-50 bg-white border-b border-gray-100 dark:border-gray-800 dark:bg-gray-900">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
           <Link href="/" className="flex items-center gap-3">
             <Logo asLink={false} />
@@ -33,7 +33,7 @@ export default function HowItWorksPage() {
           <div className="flex items-center gap-3">
             <Link
               href="/"
-              className="text-gray-500 hover:text-gray-900 text-sm font-medium transition-colors inline-flex items-center gap-1"
+              className="text-gray-500 hover:text-gray-900 text-sm font-medium transition-colors inline-flex items-center gap-1 dark:text-gray-400"
             >
               <ArrowLeft className="w-4 h-4" />
               Home
@@ -54,11 +54,11 @@ export default function HowItWorksPage() {
           <p className="text-[#2BB5A0] text-xs font-semibold uppercase tracking-widest mb-4">
             For Borrowers
           </p>
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-[#1B2B3A] leading-tight">
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-[#1B2B3A] leading-tight dark:text-white">
             Fair credit,{" "}
             <span className="text-[#2BB5A0] italic">made simple</span>
           </h1>
-          <p className="mt-6 text-lg text-gray-500 max-w-2xl mx-auto leading-relaxed">
+          <p className="mt-6 text-lg text-gray-500 max-w-2xl mx-auto leading-relaxed dark:text-gray-400">
             Apply once, get multiple offers from licensed lenders, compare rates
             transparently, and receive funds directly to your wallet. No hidden
             fees, no surprises.
@@ -72,7 +72,7 @@ export default function HowItWorksPage() {
             </Link>
             <Link
               href="/auth/signin"
-              className="text-gray-700 px-8 py-3.5 rounded-lg font-medium text-sm border border-gray-200 hover:bg-gray-50 transition-colors"
+              className="text-gray-700 px-8 py-3.5 rounded-lg font-medium text-sm border border-gray-200 hover:bg-gray-50 transition-colors dark:hover:bg-gray-800 dark:border-gray-800 dark:text-gray-300"
             >
               Already Applied? Sign In
             </Link>
@@ -87,7 +87,7 @@ export default function HowItWorksPage() {
             <p className="text-[#2BB5A0] text-xs font-semibold uppercase tracking-widest mb-3">
               Your Journey
             </p>
-            <h2 className="text-3xl lg:text-4xl font-bold text-[#1B2B3A]">
+            <h2 className="text-3xl lg:text-4xl font-bold text-[#1B2B3A] dark:text-white">
               From application to funds in 5 steps
             </h2>
           </div>
@@ -137,16 +137,16 @@ export default function HowItWorksPage() {
                   >
                     <item.icon className="h-6 w-6 text-white" />
                   </div>
-                  {i < 4 && <div className="w-0.5 h-16 bg-gray-200 my-2" />}
+                  {i < 4 && <div className="w-0.5 h-16 bg-gray-200 my-2 dark:bg-gray-700" />}
                 </div>
                 <div className="pb-12">
                   <span className="text-[10px] text-[#2BB5A0] font-bold uppercase tracking-widest">
                     Step {item.step}
                   </span>
-                  <h3 className="text-xl font-bold text-[#1B2B3A] mt-1">
+                  <h3 className="text-xl font-bold text-[#1B2B3A] mt-1 dark:text-white">
                     {item.title}
                   </h3>
-                  <p className="text-sm text-gray-500 mt-2 leading-relaxed max-w-lg">
+                  <p className="text-sm text-gray-500 mt-2 leading-relaxed max-w-lg dark:text-gray-400">
                     {item.desc}
                   </p>
                 </div>
@@ -157,13 +157,13 @@ export default function HowItWorksPage() {
       </section>
 
       {/* What You Need */}
-      <section className="py-20 lg:py-28 bg-[#F8FAFA]">
+      <section className="py-20 lg:py-28 bg-[#F8FAFA] dark:bg-gray-800/40">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold text-[#1B2B3A]">
+            <h2 className="text-3xl lg:text-4xl font-bold text-[#1B2B3A] dark:text-white">
               What you&apos;ll need
             </h2>
-            <p className="mt-4 text-gray-500 max-w-xl mx-auto">
+            <p className="mt-4 text-gray-500 max-w-xl mx-auto dark:text-gray-400">
               Have these ready before you start your application.
             </p>
           </div>
@@ -203,13 +203,13 @@ export default function HowItWorksPage() {
             ].map((item) => (
               <div
                 key={item.title}
-                className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-md transition-shadow"
+                className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-md transition-shadow dark:border-gray-800 dark:bg-gray-900"
               >
                 <span className="text-3xl">{item.icon}</span>
-                <h3 className="text-base font-bold text-[#1B2B3A] mt-3 mb-1">
+                <h3 className="text-base font-bold text-[#1B2B3A] mt-3 mb-1 dark:text-white">
                   {item.title}
                 </h3>
-                <p className="text-sm text-gray-500">{item.desc}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{item.desc}</p>
               </div>
             ))}
           </div>
@@ -223,7 +223,7 @@ export default function HowItWorksPage() {
             <p className="text-[#2BB5A0] text-xs font-semibold uppercase tracking-widest mb-3">
               Why Mpola
             </p>
-            <h2 className="text-3xl lg:text-4xl font-bold text-[#1B2B3A]">
+            <h2 className="text-3xl lg:text-4xl font-bold text-[#1B2B3A] dark:text-white">
               Borrowing that respects you
             </h2>
           </div>
@@ -262,14 +262,14 @@ export default function HowItWorksPage() {
               },
             ].map((item) => (
               <div key={item.title} className="flex gap-4">
-                <div className="h-10 w-10 rounded-xl bg-[#E8F8F5] flex items-center justify-center shrink-0">
+                <div className="h-10 w-10 rounded-xl bg-[#E8F8F5] dark:bg-[#2BB5A0]/10 flex items-center justify-center shrink-0">
                   <item.icon className="h-5 w-5 text-[#2BB5A0]" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-[#1B2B3A] mb-1">
+                  <h3 className="font-bold text-[#1B2B3A] mb-1 dark:text-white">
                     {item.title}
                   </h3>
-                  <p className="text-sm text-gray-500 leading-relaxed">
+                  <p className="text-sm text-gray-500 leading-relaxed dark:text-gray-400">
                     {item.desc}
                   </p>
                 </div>
@@ -304,7 +304,7 @@ export default function HowItWorksPage() {
       <section className="py-20 lg:py-28">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-[#1B2B3A]">
+            <h2 className="text-3xl font-bold text-[#1B2B3A] dark:text-white">
               Frequently asked questions
             </h2>
           </div>
@@ -334,10 +334,10 @@ export default function HowItWorksPage() {
             ].map((faq) => (
               <div
                 key={faq.q}
-                className="border border-gray-100 rounded-xl p-6"
+                className="border border-gray-100 rounded-xl p-6 dark:border-gray-800"
               >
-                <h3 className="font-bold text-[#1B2B3A] mb-2">{faq.q}</h3>
-                <p className="text-sm text-gray-500 leading-relaxed">{faq.a}</p>
+                <h3 className="font-bold text-[#1B2B3A] mb-2 dark:text-white">{faq.q}</h3>
+                <p className="text-sm text-gray-500 leading-relaxed dark:text-gray-400">{faq.a}</p>
               </div>
             ))}
           </div>

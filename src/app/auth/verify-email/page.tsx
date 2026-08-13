@@ -182,22 +182,22 @@ export default function VerifyEmailPage() {
   const verifying = draftId ? isVerifyingSignup : isVerifying;
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#f4f8f7]">
+    <div className="min-h-screen flex flex-col bg-[#f4f8f7] dark:bg-gray-950">
       <div className="h-1 bg-[#2BB5A0]" />
       <div className="flex-1 flex items-center justify-center p-6">
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 w-full max-w-md p-10">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 w-full max-w-md p-10 dark:border-gray-800 dark:bg-gray-900">
           <Logo />
 
           <div className="mt-8 flex flex-col items-center text-center">
-            <div className="w-14 h-14 bg-[#E8F8F5] rounded-full flex items-center justify-center mb-4">
+            <div className="w-14 h-14 bg-[#E8F8F5] dark:bg-[#2BB5A0]/10 rounded-full flex items-center justify-center mb-4">
               <MailCheck className="w-7 h-7 text-[#2BB5A0]" />
             </div>
-            <h1 className="text-2xl font-bold text-[#1B2B3A]">
+            <h1 className="text-2xl font-bold text-[#1B2B3A] dark:text-white">
               Verify your email
             </h1>
-            <p className="text-gray-500 text-sm mt-2 leading-relaxed">
+            <p className="text-gray-500 text-sm mt-2 leading-relaxed dark:text-gray-400">
               We sent a 6-digit code to{" "}
-              <span className="font-medium text-[#1B2B3A]">
+              <span className="font-medium text-[#1B2B3A] dark:text-white">
                 {email || "your registered email"}
               </span>
               . Enter it below.
@@ -233,7 +233,7 @@ export default function VerifyEmailPage() {
             </button>
           </form>
 
-          <p className="text-center text-sm text-gray-500 mt-6">
+          <p className="text-center text-sm text-gray-500 mt-6 dark:text-gray-400">
             Didn&apos;t receive it?{" "}
             <button
               onClick={handleResend}

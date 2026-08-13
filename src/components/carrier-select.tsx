@@ -25,7 +25,7 @@ export function CarrierSelect({ value, onChange }: CarrierSelectProps) {
           className={`flex-1 py-2 rounded-lg text-xs font-semibold border transition-colors ${
             value === o.id
               ? "bg-[#1B2B3A] border-[#1B2B3A] text-white"
-              : "bg-white border-gray-300 text-gray-600 hover:border-[#1B2B3A]/40"
+              : "bg-white border-gray-300 text-gray-600 hover:border-[#1B2B3A]/40 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:border-gray-500"
           }`}
         >
           {o.label}

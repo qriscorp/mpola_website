@@ -18,7 +18,7 @@ type Step = "request" | "verify" | "reset";
 
 export default function ForgotPasswordPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-white" />}>
+    <Suspense fallback={<div className="min-h-screen bg-white dark:bg-gray-900" />}>
       <ForgotPasswordContent />
     </Suspense>
   );
@@ -152,7 +152,7 @@ function ForgotPasswordContent() {
 
   return (
     <div
-      className={`min-h-screen ${
+      className={`min-h-screen dark:bg-gray-950 ${
         isLender
           ? "bg-[linear-gradient(180deg,#F9F6EE_0%,#F8FAFB_46%,#FFFFFF_100%)]"
           : "bg-[linear-gradient(180deg,#EEF8F6_0%,#F8FBFB_46%,#FFFFFF_100%)]"
@@ -163,27 +163,27 @@ function ForgotPasswordContent() {
       <div className="mx-auto flex w-full max-w-md items-center justify-between px-4 pb-2 pt-5">
         <Link
           href={backHref}
-          className="inline-flex items-center gap-1 text-sm font-medium text-gray-500 transition-colors hover:text-[#1B2B3A]"
+          className="inline-flex items-center gap-1 text-sm font-medium text-gray-500 transition-colors hover:text-[#1B2B3A] dark:hover:text-white dark:text-gray-400"
         >
           <ArrowLeft className="h-4 w-4" /> Back to Sign In
         </Link>
       </div>
 
       <div className="mx-auto w-full max-w-md px-4 pb-10">
-        <div className="rounded-2xl border border-gray-200 bg-white p-7 shadow-sm sm:p-9">
+        <div className="rounded-2xl border border-gray-200 bg-white p-7 shadow-sm sm:p-9 dark:border-gray-800 dark:bg-gray-900">
           <Logo asLink={false} />
 
           <p
             className={`mt-5 text-[11px] font-semibold uppercase tracking-wider ${
-              isLender ? "text-[#9F7F34]" : "text-[#149D8E]"
+              isLender ? "text-[#9F7F34]" : "text-[#149D8E] dark:text-[#5EEAD4]"
             }`}
           >
             {portalLabel} Password Recovery
           </p>
-          <h1 className="mt-1 text-2xl font-black text-[#1B2B3A]">
+          <h1 className="mt-1 text-2xl font-black text-[#1B2B3A] dark:text-white">
             Reset your password
           </h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
             Complete the steps below to securely update your credentials.
           </p>
 
@@ -196,7 +196,7 @@ function ForgotPasswordContent() {
                       ? isLender
                         ? "bg-[#C4A55A] text-white"
                         : "bg-[#2BB5A0] text-white"
-                      : "bg-gray-100 text-gray-400"
+                      : "bg-gray-100 text-gray-400 dark:text-gray-500 dark:bg-gray-800"
                   }`}
                 >
                   {i + 1}
@@ -208,7 +208,7 @@ function ForgotPasswordContent() {
                         ? isLender
                           ? "bg-[#C4A55A]"
                           : "bg-[#2BB5A0]"
-                        : "bg-gray-200"
+                        : "bg-gray-200 dark:bg-gray-700"
                     }`}
                   />
                 )}
@@ -218,7 +218,7 @@ function ForgotPasswordContent() {
 
           {step === "request" && (
             <>
-              <p className="mb-5 text-sm text-gray-500">
+              <p className="mb-5 text-sm text-gray-500 dark:text-gray-400">
                 Enter the email and phone number on your account. We&apos;ll
                 verify both belong to the same account, then send a one-time
                 reset code.
@@ -244,8 +244,8 @@ function ForgotPasswordContent() {
                     <span
                       className={`inline-flex items-center rounded-l-lg border border-r-0 px-3 text-sm font-semibold ${
                         isLender
-                          ? "border-[#E7D9B7] bg-[#FCF8EE] text-[#9F7F34]"
-                          : "border-[#D5ECE8] bg-[#F2FBF9] text-[#149D8E]"
+                          ? "border-[#E7D9B7] bg-[#FCF8EE] text-[#9F7F34] dark:bg-[#C4A55A]/10"
+                          : "border-[#D5ECE8] dark:border-[#149D8E]/40 bg-[#F2FBF9] dark:bg-[#149D8E]/15 text-[#149D8E] dark:text-[#5EEAD4]"
                       }`}
                     >
                       +256
@@ -281,7 +281,7 @@ function ForgotPasswordContent() {
 
           {step === "verify" && (
             <>
-              <p className="mb-5 text-sm text-gray-500">
+              <p className="mb-5 text-sm text-gray-500 dark:text-gray-400">
                 Enter the 6-digit verification code we sent{" "}
                 {sentChannel === "phone" ? "via SMS." : "to your email."}
               </p>
@@ -334,7 +334,7 @@ function ForgotPasswordContent() {
                 className={`mt-4 w-full text-sm font-medium ${
                   isLender
                     ? "text-[#9F7F34] hover:text-[#876B2E]"
-                    : "text-[#149D8E] hover:text-[#108477]"
+                    : "text-[#149D8E] hover:text-[#108477] dark:text-[#5EEAD4]"
                 }`}
               >
                 Did not receive it? Go back and resend
@@ -344,7 +344,7 @@ function ForgotPasswordContent() {
 
           {step === "reset" && (
             <>
-              <p className="mb-5 text-sm text-gray-500">
+              <p className="mb-5 text-sm text-gray-500 dark:text-gray-400">
                 Set a new password with at least 8 characters.
               </p>
 
@@ -364,7 +364,7 @@ function ForgotPasswordContent() {
                     <button
                       type="button"
                       onClick={() => setShowPw((value) => !value)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 transition-colors hover:text-gray-600"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 transition-colors hover:text-gray-600 dark:hover:text-gray-300 dark:text-gray-500"
                     >
                       {showPw ? (
                         <EyeOff className="h-4 w-4" />
