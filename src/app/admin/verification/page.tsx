@@ -85,7 +85,7 @@ export default function AdminVerificationPage() {
           <CardContent className="p-4">
             <p className="text-xs text-muted-foreground">Awaiting Verification</p>
             <p className="text-2xl font-bold text-amber-500">
-              {stats ? stats.users.total - stats.users.verified : "—"}
+              {stats?.users.awaiting_review ?? "—"}
             </p>
           </CardContent>
         </Card>

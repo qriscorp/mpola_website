@@ -11,6 +11,10 @@ export interface User {
   registrationNumber?: string;
   profilePic?: string;
   kycStatus: "pending" | "verified" | "rejected";
+  // When kycStatus last became "verified" — starts the 2-year re-upload
+  // lock that KYCUploadSection enforces client-side (backend is the source
+  // of truth; see KYC_REVERIFICATION_LOCK_DAYS in routers/users.py).
+  kycVerifiedAt: string | null;
   location?: string;
   twoFactorEnabled?: boolean;
   notifNewApplication?: boolean;
@@ -289,6 +293,10 @@ export interface AdminStats {
     active: number;
     suspended: number;
     verified: number;
+    // Not-yet-verified users who've actually uploaded at least one KYC
+    // document — the genuine review queue, as opposed to `total - verified`
+    // which also counts everyone who hasn't touched the KYC page at all.
+    awaiting_review: number;
   };
   applications: {
     total: number;
@@ -570,6 +578,7 @@ export interface KYCDocument {
   file_url: string;
   file_name: string | null;
   verified: boolean;
+  rejection_reason: string | null;
 }
 
 // Account-wide, reusable supporting documents (bank statement, payslip/

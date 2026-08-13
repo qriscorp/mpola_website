@@ -54,15 +54,22 @@ export default function AdminUserDetailPage({
   const deactivate = useDeactivateUser();
   const reviewKyc = useReviewKyc(username);
   const verifyKycDocument = useVerifyKycDocument(username);
-  const [tab, setTab] = useState<"borrower" | "lender">("borrower");
   const [adjustModalOpen, setAdjustModalOpen] = useState(false);
+
+  const handleBack = () => {
+    if (typeof window !== "undefined" && window.history.length > 1) {
+      router.back();
+    } else {
+      router.push("/admin/users");
+    }
+  };
 
   if (error) {
     return (
       <div className="space-y-6">
-        <Link href="/admin/users" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-[#2BB5A0]">
-          <ArrowLeft className="h-4 w-4" /> Back to Users
-        </Link>
+        <button onClick={handleBack} className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-[#2BB5A0]">
+          <ArrowLeft className="h-4 w-4" /> Back
+        </button>
         <p className="text-sm text-muted-foreground">Couldn&apos;t load this user.</p>
       </div>
     );
@@ -77,6 +84,7 @@ export default function AdminUserDetailPage({
   }
 
   const { profile, loans_as_borrower, loans_as_lender, applications, documents, kyc_documents, wallet, transactions } = data;
+  const userLoans = profile.role === "lender" ? loans_as_lender : loans_as_borrower;
 
   const handleApproveKyc = () => {
     if (!confirm(`Approve KYC for ${profile.username}?`)) return;
@@ -121,12 +129,12 @@ export default function AdminUserDetailPage({
 
   return (
     <div className="space-y-6">
-      <Link
-        href="/admin/users"
+      <button
+        onClick={handleBack}
         className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-[#2BB5A0]"
       >
-        <ArrowLeft className="h-4 w-4" /> Back to Users
-      </Link>
+        <ArrowLeft className="h-4 w-4" /> Back
+      </button>
 
       {/* Profile header */}
       <Card className="bg-white dark:bg-gray-900">
@@ -185,7 +193,7 @@ export default function AdminUserDetailPage({
       </Card>
 
       {/* Quick stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
         <Card className="bg-white dark:bg-gray-900">
           <CardContent className="p-4">
             <p className="text-xs text-muted-foreground">KYC Status</p>
@@ -217,17 +225,11 @@ export default function AdminUserDetailPage({
         </Card>
         <Card className="bg-white dark:bg-gray-900">
           <CardContent className="p-4">
-            <p className="text-xs text-muted-foreground">Loans as Borrower</p>
-            <p className="text-lg font-bold text-[#1B2B3A] dark:text-white">
-              {loans_as_borrower.length}
+            <p className="text-xs text-muted-foreground">
+              {profile.role === "lender" ? "Loans Funded" : "Loans Borrowed"}
             </p>
-          </CardContent>
-        </Card>
-        <Card className="bg-white dark:bg-gray-900">
-          <CardContent className="p-4">
-            <p className="text-xs text-muted-foreground">Loans as Lender</p>
             <p className="text-lg font-bold text-[#1B2B3A] dark:text-white">
-              {loans_as_lender.length}
+              {profile.role === "lender" ? loans_as_lender.length : loans_as_borrower.length}
             </p>
           </CardContent>
         </Card>
@@ -335,6 +337,11 @@ export default function AdminUserDetailPage({
                       <p className="text-xs text-muted-foreground truncate">
                         {d.file_name ?? "—"}
                       </p>
+                      {d.rejection_reason && !d.verified && (
+                        <p className="text-xs mt-0.5 text-red-600 dark:text-red-400">
+                          Rejected: {d.rejection_reason}
+                        </p>
+                      )}
                     </div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
@@ -347,17 +354,37 @@ export default function AdminUserDetailPage({
                       <ExternalLink className="h-3.5 w-3.5" />
                       View
                     </a>
-                    <Button
-                      size="sm"
-                      variant={d.verified ? "outline" : "default"}
-                      className={d.verified ? "" : "bg-emerald-500 hover:bg-emerald-600 text-white"}
-                      disabled={verifyKycDocument.isPending}
-                      onClick={() =>
-                        verifyKycDocument.mutate({ documentId: d.id, verified: !d.verified })
-                      }
-                    >
-                      {d.verified ? "Verified ✓" : "Mark Verified"}
-                    </Button>
+                    {d.verified ? (
+                      <Button size="sm" variant="outline" disabled className="opacity-100">
+                        Verified ✓
+                      </Button>
+                    ) : (
+                      <>
+                        <Button
+                          size="sm"
+                          className="bg-emerald-500 hover:bg-emerald-600 text-white"
+                          disabled={verifyKycDocument.isPending}
+                          onClick={() => verifyKycDocument.mutate({ documentId: d.id, verified: true })}
+                        >
+                          Verify
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-red-600 hover:text-red-700 border-red-200 hover:border-red-300"
+                          disabled={verifyKycDocument.isPending}
+                          onClick={() => {
+                            const reason = window.prompt(
+                              `Reason for rejecting this ${d.document_type.replace(/_/g, " ")} (shown to the user)?`,
+                            );
+                            if (!reason || !reason.trim()) return;
+                            verifyKycDocument.mutate({ documentId: d.id, verified: false, reason: reason.trim() });
+                          }}
+                        >
+                          {d.rejection_reason ? "Reject Again" : "Reject"}
+                        </Button>
+                      </>
+                    )}
                   </div>
                 </div>
               ))}
@@ -463,40 +490,21 @@ export default function AdminUserDetailPage({
       {/* Loans */}
       <Card className="bg-white dark:bg-gray-900">
         <CardHeader>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setTab("borrower")}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                tab === "borrower"
-                  ? "bg-[#2BB5A0] border-[#2BB5A0] text-white"
-                  : "bg-white border-gray-300 text-gray-600 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
-              }`}
-            >
-              As Borrower ({loans_as_borrower.length})
-            </button>
-            <button
-              onClick={() => setTab("lender")}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                tab === "lender"
-                  ? "bg-[#2BB5A0] border-[#2BB5A0] text-white"
-                  : "bg-white border-gray-300 text-gray-600 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
-              }`}
-            >
-              As Lender ({loans_as_lender.length})
-            </button>
-          </div>
+          <h2 className="font-semibold text-[#1B2B3A] dark:text-white">
+            {profile.role === "lender" ? "Loans Funded" : "Loans Borrowed"}
+          </h2>
         </CardHeader>
         <CardContent className="overflow-x-auto">
-          {(tab === "borrower" ? loans_as_borrower : loans_as_lender).length === 0 ? (
+          {userLoans.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-6">
-              No loans {tab === "borrower" ? "borrowed" : "funded"} yet.
+              No loans {profile.role === "lender" ? "funded" : "borrowed"} yet.
             </p>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead className="text-xs uppercase text-muted-foreground">
-                    {tab === "borrower" ? "Lender" : "Borrower"}
+                    {profile.role === "lender" ? "Borrower" : "Lender"}
                   </TableHead>
                   <TableHead className="text-xs uppercase text-muted-foreground">Amount</TableHead>
                   <TableHead className="text-xs uppercase text-muted-foreground">Rate</TableHead>
@@ -505,7 +513,7 @@ export default function AdminUserDetailPage({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {(tab === "borrower" ? loans_as_borrower : loans_as_lender).map((l) => (
+                {userLoans.map((l) => (
                   <TableRow key={l.id}>
                     <TableCell className="text-sm">{l.other_party ?? "Unknown"}</TableCell>
                     <TableCell className="text-sm">{formatCurrency(l.amount)}</TableCell>

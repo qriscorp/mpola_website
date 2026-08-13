@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAdjustWalletBalance } from "@/hooks/use-admin";
@@ -24,6 +24,12 @@ export function AdminWalletAdjustModal({
   const [amount, setAmount] = useState("");
   const [reason, setReason] = useState("");
   const adjust = useAdjustWalletBalance(username);
+
+  // Prefill with the current balance every time the modal opens, so the
+  // admin sees where they're starting from instead of a blank field.
+  useEffect(() => {
+    if (open) setAmount(currentBalance > 0 ? String(currentBalance) : "");
+  }, [open, currentBalance]);
 
   if (!open) return null;
 

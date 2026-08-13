@@ -36,7 +36,10 @@ export function useSuspendUser() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (username: string) => api.suspendUser(username),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "users"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin", "user-detail"] });
+      qc.invalidateQueries({ queryKey: ["admin", "users"] });
+    },
   });
 }
 
@@ -45,7 +48,10 @@ export function useChangeUserRole() {
   return useMutation({
     mutationFn: ({ username, role }: { username: string; role: string }) =>
       api.changeUserRole(username, role),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "users"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin", "user-detail"] });
+      qc.invalidateQueries({ queryKey: ["admin", "users"] });
+    },
   });
 }
 
@@ -70,7 +76,10 @@ export function useDeactivateUser() {
   return useMutation({
     mutationFn: ({ username, reason }: { username: string; reason?: string }) =>
       api.deactivateUser(username, reason),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "users"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin", "user-detail"] });
+      qc.invalidateQueries({ queryKey: ["admin", "users"] });
+    },
   });
 }
 
@@ -114,8 +123,8 @@ export function useVerifyDocument(username: string) {
 export function useVerifyKycDocument(username: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ documentId, verified }: { documentId: string; verified: boolean }) =>
-      api.verifyKycDocument(documentId, verified),
+    mutationFn: ({ documentId, verified, reason }: { documentId: string; verified: boolean; reason?: string }) =>
+      api.verifyKycDocument(documentId, verified, reason),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "user-detail", username] }),
   });
 }

@@ -301,6 +301,7 @@ function mapAuthUser(data: AuthResponse): User {
     nin: "",
     accountType: "individual",
     kycStatus: (user.kyc_status as User["kycStatus"]) || "pending",
+    kycVerifiedAt: null,
     creditScore: user.credit_score ?? 0,
     // Not part of the lean auth-response payload — the full profile
     // (with real licence/terms state) loads right after via useUser().
@@ -321,6 +322,7 @@ interface RawUserProfile {
   account_type: string;
   profile_pic: string | null;
   kyc_status: string;
+  kyc_verified_at: string | null;
   two_factor_enabled?: boolean;
   notif_new_application?: boolean;
   notif_repayment_received?: boolean;
@@ -351,6 +353,7 @@ function mapUserProfile(u: RawUserProfile): User {
     notifLoginAlerts: u.notif_login_alerts ?? true,
     profilePic: u.profile_pic ?? undefined,
     kycStatus: u.kyc_status as User["kycStatus"],
+    kycVerifiedAt: u.kyc_verified_at,
     creditScore: u.credit_score ?? 0,
     createdAt: u.created_at,
     termsAcceptedAt: u.terms_accepted_at,
@@ -1406,8 +1409,9 @@ export const api = {
   verifyKycDocument: async (
     documentId: string,
     verified: boolean,
-  ): Promise<{ success: boolean; document_id: string; verified: boolean }> => {
-    return apiAuthPut(`/admin/kyc-documents/${documentId}/verify`, { verified });
+    reason?: string,
+  ): Promise<{ success: boolean; document_id: string; verified: boolean; rejection_reason: string | null }> => {
+    return apiAuthPut(`/admin/kyc-documents/${documentId}/verify`, { verified, reason });
   },
 
   getAdminAuditLogs: async (
