@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Bell,
@@ -14,16 +14,24 @@ import {
 import {
   useMarkAllRead,
   useMarkRead,
-  useNotifications,
+  useNotificationsPage,
 } from "@/hooks/use-notifications";
 import { BorrowerPageHeader } from "@/components/top-nav";
 import { CardSkeleton } from "@/components/skeletons";
 import { StaggerList, StaggerItem } from "@/components/motion/stagger";
 import { WebPushPrompt } from "@/components/web-push-prompt";
 import { notificationHref } from "@/lib/notifications";
-import type { Notification } from "@/lib/types";
+import { PaginationControls } from "@/components/ui/pagination-controls";
+
+const PAGE_SIZE = 20;
 
 type FilterKey = "all" | "unread" | "offers" | "payments" | "guarantors";
+
+const CATEGORY_TYPES: Record<Exclude<FilterKey, "all" | "unread">, string[]> = {
+  offers: ["loan_offer", "offer_accepted", "offer_declined", "offer_awaiting_response", "offer_expired"],
+  payments: ["payment", "repayment"],
+  guarantors: ["guarantor_response", "guarantor_invite_received", "guarantor_still_pending", "guarantor_request_expired"],
+};
 
 const typeConfig: Record<
   string,
@@ -49,13 +57,6 @@ const defaultTypeConfig = {
   iconColor: "text-gray-600 dark:text-gray-300",
 };
 
-function categoryOf(type: string | null): "offers" | "payments" | "guarantors" | "other" {
-  if (type === "loan_offer" || type === "offer_accepted" || type === "offer_declined" || type === "offer_awaiting_response" || type === "offer_expired") return "offers";
-  if (type === "payment" || type === "repayment") return "payments";
-  if (type === "guarantor_response" || type === "guarantor_invite_received" || type === "guarantor_still_pending" || type === "guarantor_request_expired") return "guarantors";
-  return "other";
-}
-
 function timeSince(dateStr: string) {
   const diffMs = Date.now() - new Date(dateStr).getTime();
   const mins = Math.floor(diffMs / 60000);
@@ -68,22 +69,27 @@ function timeSince(dateStr: string) {
 
 export default function NotificationsPage() {
   const router = useRouter();
-  const { data: items = [], isLoading } = useNotifications();
+  const [filter, setFilter] = useState<FilterKey>("all");
+  const [page, setPage] = useState(1);
+  const filterParams =
+    filter === "unread" ? { isRead: false } : filter === "all" ? undefined : { types: CATEGORY_TYPES[filter] };
+  const { data, isLoading } = useNotificationsPage(page, PAGE_SIZE, filterParams);
   const markRead = useMarkRead();
   const markAll = useMarkAllRead();
-  const [filter, setFilter] = useState<FilterKey>("all");
 
-  const unreadCount = items.filter((item) => !item.read).length;
+  const items = data?.notifications ?? [];
+  const total = data?.total ?? 0;
+  const totalAll = data?.totalAll ?? 0;
+  const unreadCount = data?.unread ?? 0;
 
-  const filteredItems = useMemo(() => {
-    if (filter === "all") return items;
-    if (filter === "unread") return items.filter((item) => !item.read);
-    return items.filter((item) => categoryOf(item.type) === filter);
-  }, [items, filter]);
+  const handleFilter = (key: FilterKey) => {
+    setFilter(key);
+    setPage(1);
+  };
 
   const filterPills: Array<{ key: FilterKey; label: string; count?: number }> =
     [
-      { key: "all", label: "All", count: items.length },
+      { key: "all", label: "All", count: totalAll },
       { key: "unread", label: "Unread", count: unreadCount },
       { key: "offers", label: "Offers" },
       { key: "payments", label: "Payments" },
@@ -122,7 +128,7 @@ export default function NotificationsPage() {
           return (
             <button
               key={pill.key}
-              onClick={() => setFilter(pill.key)}
+              onClick={() => handleFilter(pill.key)}
               className={`rounded-full border px-4 py-1.5 text-sm font-semibold transition-colors ${
                 isActive
                   ? "border-[#2BB5A0] bg-[#2BB5A0] text-white"
@@ -138,7 +144,7 @@ export default function NotificationsPage() {
 
       {isLoading ? (
         <CardSkeleton count={3} height="h-20" />
-      ) : filteredItems.length === 0 ? (
+      ) : items.length === 0 ? (
         <div className="rounded-xl border border-gray-200 bg-white px-5 py-12 text-center dark:border-gray-800 dark:bg-gray-900">
           <Bell className="mx-auto h-10 w-10 text-gray-300" />
           <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">
@@ -146,8 +152,9 @@ export default function NotificationsPage() {
           </p>
         </div>
       ) : (
+        <>
         <StaggerList className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
-          {filteredItems.map((item, index) => {
+          {items.map((item, index) => {
             const cfg = (item.type && typeConfig[item.type]) || defaultTypeConfig;
             const Icon = cfg.icon;
             const href = notificationHref(item.type, false);
@@ -159,7 +166,7 @@ export default function NotificationsPage() {
                   if (href) router.push(href);
                 }}
                 className={`flex w-full items-start gap-4 px-4 py-4 text-left transition-colors sm:px-5 ${
-                  index !== filteredItems.length - 1
+                  index !== items.length - 1
                     ? "border-b border-gray-100 dark:border-gray-800"
                     : ""
                 } ${!item.read ? "bg-[#F2FBF9] hover:bg-[#EAF8F5] dark:bg-[#149D8E]/10 dark:hover:bg-[#149D8E]/15" : "hover:bg-gray-50 dark:hover:bg-gray-800"} ${
@@ -196,6 +203,8 @@ export default function NotificationsPage() {
             );
           })}
         </StaggerList>
+        <PaginationControls page={page} pageSize={PAGE_SIZE} total={total} onPageChange={setPage} />
+        </>
       )}
     </div>
   );

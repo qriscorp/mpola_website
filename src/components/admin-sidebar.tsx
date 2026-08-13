@@ -73,7 +73,10 @@ export function AdminSidebarContent({
   const { data: user } = useUser();
   const { data: stats } = useAdminStats();
   const pendingOfferTemplates = stats?.platform.pending_offer_templates ?? 0;
-  const unverifiedUsers = stats ? stats.users.total - stats.users.verified : 0;
+  // Genuinely awaiting review (has uploaded at least one KYC document) —
+  // not everyone who simply hasn't been verified yet, most of whom have
+  // never touched the KYC page and have nothing for an admin to review.
+  const unverifiedUsers = stats?.users.awaiting_review ?? 0;
 
   const navLink = (item: NavItem) => {
     const badge =

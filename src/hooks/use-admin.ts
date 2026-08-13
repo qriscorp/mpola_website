@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 
 export function useAdminStats() {
@@ -29,6 +29,7 @@ export function useAdminUsers(
   return useQuery({
     queryKey: ["admin", "users", page, pageSize, filters],
     queryFn: () => api.getAdminUsers(page, pageSize, filters),
+    placeholderData: keepPreviousData,
   });
 }
 
@@ -96,6 +97,7 @@ export function useAdminUserTransactions(username: string, page: number, pageSiz
     queryKey: ["admin", "user-transactions", username, page, pageSize],
     queryFn: () => api.getAdminUserTransactions(username, (page - 1) * pageSize, pageSize),
     enabled: !!username,
+    placeholderData: keepPreviousData,
   });
 }
 
@@ -137,6 +139,7 @@ export function useAdminAuditLogs(
   return useQuery({
     queryKey: ["admin", "audit-logs", page, pageSize, filters],
     queryFn: () => api.getAdminAuditLogs(page, pageSize, filters),
+    placeholderData: keepPreviousData,
   });
 }
 
@@ -148,6 +151,7 @@ export function useAdminLoans(
   return useQuery({
     queryKey: ["admin", "loans", page, pageSize, filters],
     queryFn: () => api.getAdminLoans(page, pageSize, filters),
+    placeholderData: keepPreviousData,
   });
 }
 
@@ -159,6 +163,7 @@ export function useAdminApplications(
   return useQuery({
     queryKey: ["admin", "applications", page, pageSize, filters],
     queryFn: () => api.getAdminApplications(page, pageSize, filters),
+    placeholderData: keepPreviousData,
   });
 }
 
@@ -199,6 +204,7 @@ export function useAdminPayments(page: number = 1, pageSize: number = 20) {
   return useQuery({
     queryKey: ["admin", "payments", page, pageSize],
     queryFn: () => api.getAdminPayments(page, pageSize),
+    placeholderData: keepPreviousData,
   });
 }
 
@@ -206,6 +212,7 @@ export function useAdminRevenue(page: number = 1, pageSize: number = 20, categor
   return useQuery({
     queryKey: ["admin", "revenue", page, pageSize, category],
     queryFn: () => api.getAdminRevenue(page, pageSize, category),
+    placeholderData: keepPreviousData,
   });
 }
 
@@ -264,6 +271,7 @@ export function useOfferTemplatesForReview(status?: string) {
   return useQuery({
     queryKey: ["admin", "offer-templates", status],
     queryFn: () => api.getOfferTemplatesForReview(status),
+    placeholderData: keepPreviousData,
   });
 }
 

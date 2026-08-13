@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import {
   Bell,
   CheckCheck,
@@ -13,13 +13,22 @@ import {
 import {
   useMarkAllRead,
   useMarkRead,
-  useNotifications,
+  useNotificationsPage,
 } from "@/hooks/use-notifications";
 import { FadeSwap } from "@/components/motion/fade-swap";
 import { StaggerList, StaggerItem } from "@/components/motion/stagger";
 import { CardSkeleton } from "@/components/skeletons";
+import { PaginationControls } from "@/components/ui/pagination-controls";
+
+const PAGE_SIZE = 20;
 
 type FilterKey = "all" | "unread" | "applications" | "loans" | "support";
+
+const CATEGORY_TYPES: Record<Exclude<FilterKey, "all" | "unread">, string[]> = {
+  applications: ["new_application"],
+  loans: ["loan_overdue", "loan_defaulted"],
+  support: ["dispute", "dispute_update", "support_ticket"],
+};
 
 const typeConfig: Record<
   string,
@@ -39,13 +48,6 @@ const defaultTypeConfig = {
   iconColor: "text-gray-600 dark:text-gray-400",
 };
 
-function categoryOf(type: string | null): "applications" | "loans" | "support" | "other" {
-  if (type === "new_application") return "applications";
-  if (type === "loan_overdue" || type === "loan_defaulted") return "loans";
-  if (type === "dispute" || type === "dispute_update" || type === "support_ticket") return "support";
-  return "other";
-}
-
 function timeSince(dateStr: string) {
   const diffMs = Date.now() - new Date(dateStr).getTime();
   const mins = Math.floor(diffMs / 60000);
@@ -57,22 +59,27 @@ function timeSince(dateStr: string) {
 }
 
 export default function AdminNotificationsPage() {
-  const { data: items = [], isLoading } = useNotifications();
+  const [filter, setFilter] = useState<FilterKey>("all");
+  const [page, setPage] = useState(1);
+  const filterParams =
+    filter === "unread" ? { isRead: false } : filter === "all" ? undefined : { types: CATEGORY_TYPES[filter] };
+  const { data, isLoading } = useNotificationsPage(page, PAGE_SIZE, filterParams);
   const markRead = useMarkRead();
   const markAll = useMarkAllRead();
-  const [filter, setFilter] = useState<FilterKey>("all");
 
-  const unreadCount = items.filter((item) => !item.read).length;
+  const items = data?.notifications ?? [];
+  const total = data?.total ?? 0;
+  const totalAll = data?.totalAll ?? 0;
+  const unreadCount = data?.unread ?? 0;
 
-  const filteredItems = useMemo(() => {
-    if (filter === "all") return items;
-    if (filter === "unread") return items.filter((item) => !item.read);
-    return items.filter((item) => categoryOf(item.type) === filter);
-  }, [items, filter]);
+  const handleFilter = (key: FilterKey) => {
+    setFilter(key);
+    setPage(1);
+  };
 
   const filterPills: Array<{ key: FilterKey; label: string; count?: number }> =
     [
-      { key: "all", label: "All", count: items.length },
+      { key: "all", label: "All", count: totalAll },
       { key: "unread", label: "Unread", count: unreadCount },
       { key: "applications", label: "Applications" },
       { key: "loans", label: "Loans" },
@@ -118,7 +125,7 @@ export default function AdminNotificationsPage() {
           return (
             <button
               key={pill.key}
-              onClick={() => setFilter(pill.key)}
+              onClick={() => handleFilter(pill.key)}
               className={`rounded-full border px-4 py-1.5 text-sm font-semibold transition-colors ${
                 isActive
                   ? "border-[#2BB5A0] bg-[#2BB5A0] text-white"
@@ -132,7 +139,7 @@ export default function AdminNotificationsPage() {
         })}
       </div>
 
-      {filteredItems.length === 0 ? (
+      {items.length === 0 ? (
         <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-5 py-12 text-center">
           <Bell className="mx-auto h-10 w-10 text-gray-300" />
           <p className="mt-3 text-sm text-gray-500">
@@ -140,8 +147,9 @@ export default function AdminNotificationsPage() {
           </p>
         </div>
       ) : (
+        <>
         <StaggerList className="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
-          {filteredItems.map((item, index) => {
+          {items.map((item, index) => {
             const cfg = (item.type && typeConfig[item.type]) || defaultTypeConfig;
             const Icon = cfg.icon;
             return (
@@ -149,7 +157,7 @@ export default function AdminNotificationsPage() {
               <button
                 onClick={() => !item.read && markRead.mutate(item.id)}
                 className={`flex w-full items-start gap-4 px-4 py-4 text-left transition-colors sm:px-5 ${
-                  index !== filteredItems.length - 1
+                  index !== items.length - 1
                     ? "border-b border-gray-100 dark:border-gray-800"
                     : ""
                 } ${!item.read ? "bg-[#E8F8F5]/50 hover:bg-[#E8F8F5] dark:bg-[#2BB5A0]/5 dark:hover:bg-[#2BB5A0]/10" : "hover:bg-gray-50 dark:hover:bg-gray-800"}`}
@@ -184,6 +192,8 @@ export default function AdminNotificationsPage() {
             );
           })}
         </StaggerList>
+        <PaginationControls page={page} pageSize={PAGE_SIZE} total={total} onPageChange={setPage} />
+        </>
       )}
     </div>
     </FadeSwap>

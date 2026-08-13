@@ -114,13 +114,16 @@ export interface SignupDraftStatusResponse {
  * {loc, msg, type} objects for Pydantic validation (422) errors — coercing
  * that array straight into an Error's message renders as "[object Object]". */
 function extractErrorMessage(err: unknown, status: number): string {
-  const detail = (err as { detail?: unknown; message?: unknown })?.detail
-    ?? (err as { message?: unknown })?.message;
+  const detail =
+    (err as { detail?: unknown; message?: unknown })?.detail ??
+    (err as { message?: unknown })?.message;
   if (typeof detail === "string") return detail;
   if (Array.isArray(detail) && detail.length > 0) {
     const first = detail[0] as { loc?: unknown[]; msg?: string };
     const field = Array.isArray(first?.loc) ? first.loc.at(-1) : undefined;
-    return field ? `${field}: ${first.msg || "Invalid value"}` : first?.msg || "Invalid request";
+    return field
+      ? `${field}: ${first.msg || "Invalid value"}`
+      : first?.msg || "Invalid request";
   }
   return `HTTP ${status}`;
 }
@@ -360,6 +363,41 @@ function mapUserProfile(u: RawUserProfile): User {
     licenceNumber: u.licence_number,
     licenceStatus: u.licence_status,
     licenceValidUntil: u.licence_valid_until,
+  };
+}
+
+interface RawNotificationsPage {
+  total: number;
+  total_all: number;
+  unread: number;
+  notifications: {
+    id: string;
+    title: string;
+    message: string;
+    type: string | null;
+    data: string | null;
+    is_read: boolean;
+    created_at: string;
+  }[];
+}
+
+function mapNotification(n: RawNotificationsPage["notifications"][number]): Notification {
+  let data: Record<string, unknown> | null = null;
+  if (n.data) {
+    try {
+      data = JSON.parse(n.data);
+    } catch {
+      data = null;
+    }
+  }
+  return {
+    id: n.id,
+    title: n.title,
+    message: n.message,
+    type: n.type,
+    data,
+    read: n.is_read,
+    createdAt: n.created_at,
   };
 }
 
@@ -710,7 +748,11 @@ export const api = {
     email: string,
     phoneNumber: string,
     portal?: "borrower" | "lender",
-  ): Promise<{ status: number; message: string; channel: "email" | "phone" }> => {
+  ): Promise<{
+    status: number;
+    message: string;
+    channel: "email" | "phone";
+  }> => {
     return apiPost("/auth/send_password_reset_code", {
       email,
       phone_number: normalizePhone(phoneNumber),
@@ -811,7 +853,10 @@ export const api = {
     return mapUserProfile(u);
   },
   signLenderAgreement: async (): Promise<User> => {
-    const u = await apiAuthPost<RawUserProfile>("/users/me/sign-lender-agreement", {});
+    const u = await apiAuthPost<RawUserProfile>(
+      "/users/me/sign-lender-agreement",
+      {},
+    );
     return mapUserProfile(u);
   },
   getDashboardStats: async (): Promise<DashboardStats> => {
@@ -871,9 +916,12 @@ export const api = {
   },
   downloadRepaymentReceipt: async (repaymentId: string): Promise<void> => {
     const token = getCookie("lf_token");
-    const res = await fetch(`${API_BASE_URL}/loans/repayments/${repaymentId}/receipt`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-    });
+    const res = await fetch(
+      `${API_BASE_URL}/loans/repayments/${repaymentId}/receipt`,
+      {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      },
+    );
     if (!res.ok) {
       throw new Error("Receipt not available");
     }
@@ -889,9 +937,12 @@ export const api = {
   },
   downloadDisbursementReceipt: async (loanId: string): Promise<void> => {
     const token = getCookie("lf_token");
-    const res = await fetch(`${API_BASE_URL}/loans/${loanId}/disbursement-receipt`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-    });
+    const res = await fetch(
+      `${API_BASE_URL}/loans/${loanId}/disbursement-receipt`,
+      {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      },
+    );
     if (!res.ok) {
       throw new Error("Receipt not available");
     }
@@ -929,7 +980,12 @@ export const api = {
   searchGuarantorCandidate: async (
     email: string,
     phoneNumber: string,
-  ): Promise<{ id: string; username: string; full_name: string | null; role: string }> => {
+  ): Promise<{
+    id: string;
+    username: string;
+    full_name: string | null;
+    role: string;
+  }> => {
     const params = new URLSearchParams({ email, phone_number: phoneNumber });
     return apiAuthGet(`/users/search-guarantor-candidate?${params.toString()}`);
   },
@@ -952,15 +1008,24 @@ export const api = {
     guarantorId: string,
     newGuarantorUserId: string,
   ): Promise<{ status: number; message: string }> => {
-    return apiAuthPut(`/guarantors/applications/${applicationId}/${guarantorId}/replace`, {
-      new_guarantor_user_id: newGuarantorUserId,
-    });
+    return apiAuthPut(
+      `/guarantors/applications/${applicationId}/${guarantorId}/replace`,
+      {
+        new_guarantor_user_id: newGuarantorUserId,
+      },
+    );
   },
-  remindGuarantor: async (guarantorId: string): Promise<{ status: number; message: string }> => {
+  remindGuarantor: async (
+    guarantorId: string,
+  ): Promise<{ status: number; message: string }> => {
     return apiAuthPost(`/guarantors/${guarantorId}/remind`, {});
   },
-  getGuarantorRequests: async (status?: string): Promise<{ requests: GuarantorRequest[] }> => {
-    return apiAuthGet(`/guarantors/requests${status ? `?status=${status}` : ""}`);
+  getGuarantorRequests: async (
+    status?: string,
+  ): Promise<{ requests: GuarantorRequest[] }> => {
+    return apiAuthGet(
+      `/guarantors/requests${status ? `?status=${status}` : ""}`,
+    );
   },
 
   // Offers
@@ -969,7 +1034,10 @@ export const api = {
     status: "accepted" | "declined",
     note?: string,
   ): Promise<{ status: number; message: string }> => {
-    return apiAuthPut(`/loans/offers/${offerId}`, { status, note: note || undefined });
+    return apiAuthPut(`/loans/offers/${offerId}`, {
+      status,
+      note: note || undefined,
+    });
   },
   submitCustomDocumentResponse: async (
     applicationId: string,
@@ -1029,7 +1097,9 @@ export const api = {
   getTransactionDetail: async (id: string): Promise<TransactionDetail> => {
     return apiAuthGet(`/wallet/transactions/${id}`);
   },
-  setupWallet: async (pin: string): Promise<{ status: number; message: string }> => {
+  setupWallet: async (
+    pin: string,
+  ): Promise<{ status: number; message: string }> => {
     return apiAuthPost("/wallet/setup", { pin });
   },
 
@@ -1116,35 +1186,51 @@ export const api = {
       max_interest_rate: number | null;
       valid_until: string | null;
     }>,
-  ): Promise<{ status: number; message: string; application: LoanApplication }> => {
+  ): Promise<{
+    status: number;
+    message: string;
+    application: LoanApplication;
+  }> => {
     return apiAuthPut(`/loans/applications/${id}`, data);
   },
-  deleteApplication: async (id: string): Promise<{ status: number; message: string }> => {
+  deleteApplication: async (
+    id: string,
+  ): Promise<{ status: number; message: string }> => {
     return apiAuthDelete(`/loans/applications/${id}`);
   },
   freezeApplication: async (
     id: string,
-  ): Promise<{ status: number; message: string; application: LoanApplication }> => {
+  ): Promise<{
+    status: number;
+    message: string;
+    application: LoanApplication;
+  }> => {
     return apiAuthPost(`/loans/applications/${id}/freeze`, {});
   },
   unfreezeApplication: async (
     id: string,
-  ): Promise<{ status: number; message: string; application: LoanApplication }> => {
+  ): Promise<{
+    status: number;
+    message: string;
+    application: LoanApplication;
+  }> => {
     return apiAuthPost(`/loans/applications/${id}/unfreeze`, {});
   },
   // The apply wizard's resume-where-you-left-off check — an application
   // that exists but hasn't had its guarantors attached yet is by
   // definition an unfinished draft (see GET /loans/applications/draft).
-  getDraftApplication: async (): Promise<
-    LoanApplication | null
-  > => {
-    const res = await apiAuthGet<{ draft: LoanApplication | null }>("/loans/applications/draft");
+  getDraftApplication: async (): Promise<LoanApplication | null> => {
+    const res = await apiAuthGet<{ draft: LoanApplication | null }>(
+      "/loans/applications/draft",
+    );
     return res.draft;
   },
 
   // ─── Account-level KYC documents ───
   getMyKycDocuments: async (): Promise<KYCDocument[]> => {
-    const res = await apiAuthGet<{ documents: KYCDocument[] }>("/users/me/kyc-documents");
+    const res = await apiAuthGet<{ documents: KYCDocument[] }>(
+      "/users/me/kyc-documents",
+    );
     return res.documents;
   },
 
@@ -1162,14 +1248,20 @@ export const api = {
   // business proof, land title, URA TIN) — what a lender's required_documents
   // actually resolves against, besides KYC ───
   getMyBorrowerDocuments: async (): Promise<BorrowerDocument[]> => {
-    const res = await apiAuthGet<{ documents: BorrowerDocument[] }>("/users/me/documents");
+    const res = await apiAuthGet<{ documents: BorrowerDocument[] }>(
+      "/users/me/documents",
+    );
     return res.documents;
   },
 
   uploadBorrowerDocument: async (
     documentType: BorrowerDocumentType,
     file: File,
-  ): Promise<{ status: number; message: string; document: BorrowerDocument }> => {
+  ): Promise<{
+    status: number;
+    message: string;
+    document: BorrowerDocument;
+  }> => {
     const formData = new FormData();
     formData.append("document_type", documentType);
     formData.append("file", file);
@@ -1186,38 +1278,30 @@ export const api = {
 
   // Notifications
   getNotifications: async (): Promise<Notification[]> => {
-    const res = await apiAuthGet<{
-      total: number;
-      unread: number;
-      notifications: {
-        id: string;
-        title: string;
-        message: string;
-        type: string | null;
-        data: string | null;
-        is_read: boolean;
-        created_at: string;
-      }[];
-    }>("/notifications/?limit=50");
-    return res.notifications.map((n) => {
-      let data: Record<string, unknown> | null = null;
-      if (n.data) {
-        try {
-          data = JSON.parse(n.data);
-        } catch {
-          data = null;
-        }
-      }
-      return {
-        id: n.id,
-        title: n.title,
-        message: n.message,
-        type: n.type,
-        data,
-        read: n.is_read,
-        createdAt: n.created_at,
-      };
-    });
+    const res = await apiAuthGet<RawNotificationsPage>("/notifications/?limit=50");
+    return res.notifications.map(mapNotification);
+  },
+
+  // Paginated + filterable — used by the full Notifications pages
+  // (admin/lender/borrower), which can't just fetch a flat capped list once
+  // a real account accumulates hundreds or thousands of notifications.
+  getNotificationsPage: async (
+    page: number = 1,
+    pageSize: number = 20,
+    filters?: { isRead?: boolean; types?: string[] },
+  ): Promise<{ notifications: Notification[]; total: number; totalAll: number; unread: number }> => {
+    const params = new URLSearchParams();
+    params.set("skip", String((page - 1) * pageSize));
+    params.set("limit", String(pageSize));
+    if (filters?.isRead !== undefined) params.set("is_read", String(filters.isRead));
+    if (filters?.types?.length) params.set("types", filters.types.join(","));
+    const res = await apiAuthGet<RawNotificationsPage>(`/notifications/?${params.toString()}`);
+    return {
+      notifications: res.notifications.map(mapNotification),
+      total: res.total,
+      totalAll: res.total_all,
+      unread: res.unread,
+    };
   },
 
   markNotificationRead: async (id: string): Promise<void> => {
@@ -1274,7 +1358,12 @@ export const api = {
     username: string,
     is_admin: boolean,
     is_super_admin: boolean = false,
-  ): Promise<{ success: boolean; role: string; is_admin: boolean; is_super_admin: boolean }> => {
+  ): Promise<{
+    success: boolean;
+    role: string;
+    is_admin: boolean;
+    is_super_admin: boolean;
+  }> => {
     return apiAuthPut(`/admin/users/${username}/admin-access`, {
       is_admin,
       is_super_admin,
@@ -1321,10 +1410,14 @@ export const api = {
   ): Promise<{ success: boolean; status: string }> => {
     return apiAuthPut(`/admin/applications/${id}?action=${action}`, {});
   },
-  freezeAdminApplication: async (id: string): Promise<{ status: number; message: string }> => {
+  freezeAdminApplication: async (
+    id: string,
+  ): Promise<{ status: number; message: string }> => {
     return apiAuthPost(`/admin/applications/${id}/freeze`, {});
   },
-  unfreezeAdminApplication: async (id: string): Promise<{ status: number; message: string }> => {
+  unfreezeAdminApplication: async (
+    id: string,
+  ): Promise<{ status: number; message: string }> => {
     return apiAuthPost(`/admin/applications/${id}/unfreeze`, {});
   },
 
@@ -1360,13 +1453,19 @@ export const api = {
     return apiAuthGet("/admin/settings");
   },
 
-  getAdminReconciliation: async (lookbackDays: number = 7): Promise<AdminReconciliation> => {
+  getAdminReconciliation: async (
+    lookbackDays: number = 7,
+  ): Promise<AdminReconciliation> => {
     return apiAuthGet(`/admin/reconciliation?lookback_days=${lookbackDays}`);
   },
 
   recheckReconciliationTransaction: async (
     transactionId: string,
-  ): Promise<{ our_status: string; gateway_status: string | null; corrected: boolean }> => {
+  ): Promise<{
+    our_status: string;
+    gateway_status: string | null;
+    corrected: boolean;
+  }> => {
     return apiAuthPost(`/admin/reconciliation/recheck/${transactionId}`, {});
   },
 
@@ -1374,14 +1473,24 @@ export const api = {
     username: string,
     amount: number,
     reason: string,
-  ): Promise<{ status: number; message: string; balance_before: number; balance_after: number }> => {
+  ): Promise<{
+    status: number;
+    message: string;
+    balance_before: number;
+    balance_after: number;
+  }> => {
     return apiAuthPost(`/admin/wallets/${username}/adjust`, { amount, reason });
   },
 
   toggleWalletFreeze: async (
     username: string,
     reason?: string,
-  ): Promise<{ success: boolean; username: string; is_frozen: boolean; action: string }> => {
+  ): Promise<{
+    success: boolean;
+    username: string;
+    is_frozen: boolean;
+    action: string;
+  }> => {
     return apiAuthPut(`/admin/wallets/${username}/freeze`, { reason });
   },
 
@@ -1400,15 +1509,24 @@ export const api = {
     username: string,
     skip: number,
     limit: number,
-  ): Promise<{ total: number; transactions: AdminUserTransactionSummary[] }> => {
-    return apiAuthGet(`/admin/users/${username}/transactions?skip=${skip}&limit=${limit}`);
+  ): Promise<{
+    total: number;
+    transactions: AdminUserTransactionSummary[];
+  }> => {
+    return apiAuthGet(
+      `/admin/users/${username}/transactions?skip=${skip}&limit=${limit}`,
+    );
   },
 
   reviewKyc: async (
     username: string,
     status: "verified" | "rejected",
     note?: string,
-  ): Promise<{ success: boolean; kyc_status: string; is_kyc_verified: boolean }> => {
+  ): Promise<{
+    success: boolean;
+    kyc_status: string;
+    is_kyc_verified: boolean;
+  }> => {
     return apiAuthPut(`/admin/users/${username}/kyc`, { status, note });
   },
 
@@ -1423,8 +1541,16 @@ export const api = {
     documentId: string,
     verified: boolean,
     reason?: string,
-  ): Promise<{ success: boolean; document_id: string; verified: boolean; rejection_reason: string | null }> => {
-    return apiAuthPut(`/admin/kyc-documents/${documentId}/verify`, { verified, reason });
+  ): Promise<{
+    success: boolean;
+    document_id: string;
+    verified: boolean;
+    rejection_reason: string | null;
+  }> => {
+    return apiAuthPut(`/admin/kyc-documents/${documentId}/verify`, {
+      verified,
+      reason,
+    });
   },
 
   getAdminAuditLogs: async (
@@ -1449,9 +1575,10 @@ export const api = {
     status?: string,
   ): Promise<AdminOfferTemplate[]> => {
     const qs = status ? `?status=${status}&limit=100` : "?limit=100";
-    const res = await apiAuthGet<{ total: number; templates: AdminOfferTemplate[] }>(
-      `/admin/offer-templates${qs}`,
-    );
+    const res = await apiAuthGet<{
+      total: number;
+      templates: AdminOfferTemplate[];
+    }>(`/admin/offer-templates${qs}`);
     return res.templates;
   },
 
@@ -1461,10 +1588,14 @@ export const api = {
   ): Promise<{ success: boolean; status: string; offers_created: number }> => {
     return apiAuthPut(`/admin/offer-templates/${id}?action=${action}`, {});
   },
-  freezeOfferTemplate: async (id: string): Promise<{ status: number; message: string }> => {
+  freezeOfferTemplate: async (
+    id: string,
+  ): Promise<{ status: number; message: string }> => {
     return apiAuthPost(`/admin/offer-templates/${id}/freeze`, {});
   },
-  unfreezeOfferTemplate: async (id: string): Promise<{ status: number; message: string }> => {
+  unfreezeOfferTemplate: async (
+    id: string,
+  ): Promise<{ status: number; message: string }> => {
     return apiAuthPost(`/admin/offer-templates/${id}/unfreeze`, {});
   },
 
@@ -1492,8 +1623,10 @@ export const api = {
     params.set("skip", String((page - 1) * pageSize));
     params.set("limit", String(pageSize));
     if (filters?.loan_type) params.set("loan_type", filters.loan_type);
-    if (filters?.min_amount) params.set("min_amount", String(filters.min_amount));
-    if (filters?.max_amount) params.set("max_amount", String(filters.max_amount));
+    if (filters?.min_amount)
+      params.set("min_amount", String(filters.min_amount));
+    if (filters?.max_amount)
+      params.set("max_amount", String(filters.max_amount));
     return apiAuthGet(`/loans/marketplace?${params.toString()}`);
   },
   skipApplication: async (
@@ -1558,27 +1691,47 @@ export const api = {
       valid_until: string;
       max_concurrent_loans: number;
     }>,
-  ): Promise<{ status: number; message: string; template: LenderOfferTemplate }> => {
+  ): Promise<{
+    status: number;
+    message: string;
+    template: LenderOfferTemplate;
+  }> => {
     return apiAuthPut(`/loans/offer-templates/${id}`, data);
   },
-  deleteOfferTemplate: async (id: string): Promise<{ status: number; message: string }> => {
+  deleteOfferTemplate: async (
+    id: string,
+  ): Promise<{ status: number; message: string }> => {
     return apiAuthDelete(`/loans/offer-templates/${id}`);
   },
   freezeMyOfferTemplate: async (
     id: string,
-  ): Promise<{ status: number; message: string; template: LenderOfferTemplate }> => {
+  ): Promise<{
+    status: number;
+    message: string;
+    template: LenderOfferTemplate;
+  }> => {
     return apiAuthPost(`/loans/offer-templates/${id}/freeze`, {});
   },
   unfreezeMyOfferTemplate: async (
     id: string,
-  ): Promise<{ status: number; message: string; template: LenderOfferTemplate }> => {
+  ): Promise<{
+    status: number;
+    message: string;
+    template: LenderOfferTemplate;
+  }> => {
     return apiAuthPost(`/loans/offer-templates/${id}/unfreeze`, {});
   },
   extendOfferTemplateExpiry: async (
     id: string,
     validUntil: string | null,
-  ): Promise<{ status: number; message: string; template: LenderOfferTemplate }> => {
-    return apiAuthPut(`/loans/offer-templates/${id}/expiry`, { valid_until: validUntil });
+  ): Promise<{
+    status: number;
+    message: string;
+    template: LenderOfferTemplate;
+  }> => {
+    return apiAuthPut(`/loans/offer-templates/${id}/expiry`, {
+      valid_until: validUntil,
+    });
   },
   getLenderWallet: async (): Promise<Wallet> => {
     return api.getWallet();
@@ -1636,7 +1789,9 @@ export const api = {
 
   // ─── Sessions ───
   getLoginSessions: async (): Promise<LoginSessionInfo[]> => {
-    const res = await apiAuthGet<{ sessions: LoginSessionInfo[] }>("/sessions/");
+    const res = await apiAuthGet<{ sessions: LoginSessionInfo[] }>(
+      "/sessions/",
+    );
     return res.sessions;
   },
   signOutEverywhere: async (): Promise<{ status: number; message: string }> => {
@@ -1654,7 +1809,9 @@ export const api = {
   }): Promise<{ status: number; message: string }> => {
     return apiAuthPost("/webpush/subscribe", data);
   },
-  unsubscribeWebPush: async (endpoint: string): Promise<{ status: number; message: string }> => {
+  unsubscribeWebPush: async (
+    endpoint: string,
+  ): Promise<{ status: number; message: string }> => {
     return apiAuthPost("/webpush/unsubscribe", { endpoint });
   },
 };
