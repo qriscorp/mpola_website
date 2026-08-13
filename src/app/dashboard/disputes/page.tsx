@@ -7,7 +7,7 @@ export default function BorrowerDisputesPage() {
   return (
     <div className="space-y-6">
       <BorrowerPageHeader title="Disputes" />
-      <DisputesPageContent accent="teal" />
+      <DisputesPageContent accent="teal" basePath="/dashboard/disputes" />
     </div>
   );
 }

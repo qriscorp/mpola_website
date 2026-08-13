@@ -322,6 +322,7 @@ export interface AdminStats {
     default_rate: number;
     kyc_completion_rate: number;
     pending_offer_templates: number;
+    open_disputes: number;
   };
   loan_type_mix: { type: string; count: number; percentage: number }[];
   application_status_breakdown: { status: string; count: number }[];
@@ -730,8 +731,31 @@ export interface SupportTicket {
   messages?: SupportMessage[];
 }
 
+export interface DisputeMessage {
+  id: string;
+  sender_id: string | null;
+  sender_name: string | null;
+  is_admin: boolean;
+  message: string;
+  created_at: string;
+}
+
+export interface DisputeProposal {
+  proposed_by_id: string;
+  proposed_by_name: string | null;
+  note: string | null;
+  settlement_amount: number | null;
+  settlement_payer_id: string | null;
+  settlement_payer_name: string | null;
+  status: "pending" | "accepted" | "declined";
+}
+
 export interface Dispute {
   id: string;
+  user_id: string;
+  filer_name: string | null;
+  respondent_id: string | null;
+  respondent_name: string | null;
   category: string;
   description: string;
   status: "open" | "investigating" | "resolved" | "rejected";
@@ -740,6 +764,9 @@ export interface Dispute {
   resolved_by: string | null;
   resolved_at: string | null;
   created_at: string;
+  proposal: DisputeProposal | null;
+  message_count: number;
+  messages?: DisputeMessage[];
 }
 
 export interface LoginSessionInfo {

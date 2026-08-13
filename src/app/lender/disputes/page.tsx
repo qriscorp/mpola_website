@@ -7,7 +7,7 @@ export default function LenderDisputesPage() {
   return (
     <div className="space-y-6">
       <LenderPageHeader title="Disputes" />
-      <DisputesPageContent accent="gold" />
+      <DisputesPageContent accent="gold" basePath="/lender/disputes" />
     </div>
   );
 }

@@ -34,6 +34,7 @@ import type {
   ReferralInfo,
   SupportTicket,
   Dispute,
+  DisputeMessage,
   LoginSessionInfo,
   KYCDocument,
   KYCDocumentType,
@@ -1785,6 +1786,73 @@ export const api = {
   getMyDisputes: async (): Promise<Dispute[]> => {
     const res = await apiAuthGet<{ disputes: Dispute[] }>("/disputes/mine");
     return res.disputes;
+  },
+  getDispute: async (id: string): Promise<Dispute> => {
+    const res = await apiAuthGet<{ dispute: Dispute }>(`/disputes/${id}`);
+    return res.dispute;
+  },
+  postDisputeMessage: async (id: string, message: string): Promise<DisputeMessage> => {
+    const res = await apiAuthPost<{ message_data: DisputeMessage }>(`/disputes/${id}/messages`, { message });
+    return res.message_data;
+  },
+  proposeDisputeResolution: async (
+    id: string,
+    data: { note: string; settlementAmount?: number; payer: "self" | "other" },
+  ): Promise<{ status: number; message: string; dispute: Dispute }> => {
+    return apiAuthPost(`/disputes/${id}/propose`, {
+      note: data.note,
+      settlement_amount: data.settlementAmount,
+      payer: data.payer,
+    });
+  },
+  respondToDisputeProposal: async (
+    id: string,
+    accept: boolean,
+  ): Promise<{ status: number; dispute: Dispute }> => {
+    return apiAuthPost(`/disputes/${id}/respond-proposal`, { accept });
+  },
+  escalateDispute: async (id: string): Promise<{ status: number; message: string; dispute: Dispute }> => {
+    return apiAuthPost(`/disputes/${id}/escalate`, {});
+  },
+  // Reuses /loans/active, which despite the name returns every loan (any
+  // status) the current user is on as either borrower or lender — exactly
+  // what's needed to pick "which loan is this dispute about."
+  getMyLoansForDispute: async (): Promise<ActiveLoan[]> => {
+    const res = await apiAuthGet<{ total: number; loans: ActiveLoan[] }>("/loans/active?limit=100");
+    return res.loans;
+  },
+
+  // ─── Admin: Disputes ───
+  getAdminDisputes: async (
+    page: number = 1,
+    pageSize: number = 20,
+    status?: string,
+  ): Promise<{ disputes: Dispute[]; total: number }> => {
+    const params = new URLSearchParams();
+    params.set("skip", String((page - 1) * pageSize));
+    params.set("limit", String(pageSize));
+    if (status) params.set("status", status);
+    return apiAuthGet(`/admin/disputes?${params.toString()}`);
+  },
+  getAdminDisputeDetail: async (id: string): Promise<Dispute> => {
+    const res = await apiAuthGet<{ dispute: Dispute }>(`/admin/disputes/${id}`);
+    return res.dispute;
+  },
+  resolveDispute: async (
+    id: string,
+    data: {
+      status: "investigating" | "resolved" | "rejected";
+      resolutionNote?: string;
+      settlementAmount?: number;
+      settlementPayer?: "filer" | "respondent";
+    },
+  ): Promise<{ status: number; message: string }> => {
+    return apiAuthPut(`/admin/disputes/${id}`, {
+      status: data.status,
+      resolution_note: data.resolutionNote,
+      settlement_amount: data.settlementAmount,
+      settlement_payer: data.settlementPayer,
+    });
   },
 
   // ─── Sessions ───

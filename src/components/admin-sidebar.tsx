@@ -15,6 +15,7 @@ import {
   ShieldAlert,
   ShieldCheck,
   ShieldQuestion,
+  Scale,
   LogOut,
 } from "lucide-react";
 import { SignOutModal } from "@/components/sign-out-modal";
@@ -44,6 +45,12 @@ const platformNav = [
     badgeKey: "pendingOfferTemplates" as const,
   },
   { href: "/admin/payments", label: "Wallet & Payments", icon: Wallet },
+  {
+    href: "/admin/disputes",
+    label: "Disputes",
+    icon: Scale,
+    badgeKey: "openDisputes" as const,
+  },
 ];
 
 const insightsNav = [
@@ -60,7 +67,7 @@ type NavItem = {
   href: string;
   label: string;
   icon: React.ElementType;
-  badgeKey?: "pendingOfferTemplates" | "unverifiedUsers";
+  badgeKey?: "pendingOfferTemplates" | "unverifiedUsers" | "openDisputes";
 };
 
 export function AdminSidebarContent({
@@ -77,6 +84,7 @@ export function AdminSidebarContent({
   // not everyone who simply hasn't been verified yet, most of whom have
   // never touched the KYC page and have nothing for an admin to review.
   const unverifiedUsers = stats?.users.awaiting_review ?? 0;
+  const openDisputes = stats?.platform.open_disputes ?? 0;
 
   const navLink = (item: NavItem) => {
     const badge =
@@ -84,7 +92,9 @@ export function AdminSidebarContent({
         ? pendingOfferTemplates
         : item.badgeKey === "unverifiedUsers"
           ? unverifiedUsers
-          : undefined;
+          : item.badgeKey === "openDisputes"
+            ? openDisputes
+            : undefined;
     const isActive =
       pathname === item.href ||
       (item.href !== "/admin" && pathname.startsWith(item.href));

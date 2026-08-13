@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { api } from "@/lib/api";
 
 export function useAdminStats() {
@@ -298,5 +299,39 @@ export function useUnfreezeOfferTemplate() {
   return useMutation({
     mutationFn: (id: string) => api.unfreezeOfferTemplate(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "offer-templates"] }),
+  });
+}
+
+export function useAdminDisputes(page: number = 1, pageSize: number = 20, status?: string) {
+  return useQuery({
+    queryKey: ["admin", "disputes", page, pageSize, status],
+    queryFn: () => api.getAdminDisputes(page, pageSize, status),
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function useAdminDisputeDetail(id: string) {
+  return useQuery({
+    queryKey: ["admin", "disputes", "detail", id],
+    queryFn: () => api.getAdminDisputeDetail(id),
+    enabled: !!id,
+  });
+}
+
+export function useResolveDispute(id: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: {
+      status: "investigating" | "resolved" | "rejected";
+      resolutionNote?: string;
+      settlementAmount?: number;
+      settlementPayer?: "filer" | "respondent";
+    }) => api.resolveDispute(id, data),
+    onSuccess: () => {
+      toast.success("Dispute updated.");
+      qc.invalidateQueries({ queryKey: ["admin", "disputes"] });
+      qc.invalidateQueries({ queryKey: ["admin", "stats"] });
+    },
+    onError: (err: Error) => toast.error(err.message || "Failed to update dispute."),
   });
 }
