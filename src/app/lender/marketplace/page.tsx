@@ -130,7 +130,7 @@ export default function MarketplacePage() {
                       : "border border-gray-200 bg-gray-100 text-gray-500"
                   }`}
                 >
-                  {verified ? "Verified KYC" : "KYC Pending"}
+                  {verified ? "Verified" : "Not Verified"}
                 </span>
                 <span className="rounded-full border border-gray-200 bg-gray-50 px-2.5 py-0.5 text-xs font-semibold text-gray-600 capitalize">
                   {a.loan_type}

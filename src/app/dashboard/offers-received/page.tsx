@@ -143,6 +143,20 @@ function OffersReceivedContent() {
                       <p className="font-bold text-[#1B2B3A] dark:text-white">
                         {offer.lender_name ?? "Lender"}
                       </p>
+                      <span
+                        title={
+                          offer.lender_kyc_status === "verified"
+                            ? "This lender has completed identity verification."
+                            : "This lender has not completed identity verification yet."
+                        }
+                        className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                          offer.lender_kyc_status === "verified"
+                            ? "bg-emerald-50 text-emerald-600"
+                            : "bg-gray-100 text-gray-500"
+                        }`}
+                      >
+                        {offer.lender_kyc_status === "verified" ? "Verified" : "Not Verified"}
+                      </span>
                       {offer.template_id && (
                         <span
                           title="This lender's standing offer automatically matched your request — it wasn't manually reviewed."

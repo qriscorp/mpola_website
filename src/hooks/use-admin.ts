@@ -82,6 +82,14 @@ export function useAdminUserDetail(username: string) {
   });
 }
 
+export function useAdminUserTransactions(username: string, page: number, pageSize: number = 20) {
+  return useQuery({
+    queryKey: ["admin", "user-transactions", username, page, pageSize],
+    queryFn: () => api.getAdminUserTransactions(username, (page - 1) * pageSize, pageSize),
+    enabled: !!username,
+  });
+}
+
 export function useReviewKyc(username: string) {
   const qc = useQueryClient();
   return useMutation({

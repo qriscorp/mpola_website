@@ -14,6 +14,7 @@ import {
   Settings,
   ShieldAlert,
   ShieldCheck,
+  ShieldQuestion,
   LogOut,
 } from "lucide-react";
 import { SignOutModal } from "@/components/sign-out-modal";
@@ -28,6 +29,12 @@ const overviewNav = [
 
 const platformNav = [
   { href: "/admin/users", label: "Users", icon: Users },
+  {
+    href: "/admin/verification",
+    label: "Verification",
+    icon: ShieldQuestion,
+    badgeKey: "unverifiedUsers" as const,
+  },
   { href: "/admin/applications", label: "Applications", icon: FileText },
   { href: "/admin/loans", label: "Loans", icon: CreditCard },
   {
@@ -53,7 +60,7 @@ type NavItem = {
   href: string;
   label: string;
   icon: React.ElementType;
-  badgeKey?: "pendingOfferTemplates";
+  badgeKey?: "pendingOfferTemplates" | "unverifiedUsers";
 };
 
 export function AdminSidebarContent({
@@ -66,10 +73,15 @@ export function AdminSidebarContent({
   const { data: user } = useUser();
   const { data: stats } = useAdminStats();
   const pendingOfferTemplates = stats?.platform.pending_offer_templates ?? 0;
+  const unverifiedUsers = stats ? stats.users.total - stats.users.verified : 0;
 
   const navLink = (item: NavItem) => {
     const badge =
-      item.badgeKey === "pendingOfferTemplates" ? pendingOfferTemplates : undefined;
+      item.badgeKey === "pendingOfferTemplates"
+        ? pendingOfferTemplates
+        : item.badgeKey === "unverifiedUsers"
+          ? unverifiedUsers
+          : undefined;
     const isActive =
       pathname === item.href ||
       (item.href !== "/admin" && pathname.startsWith(item.href));

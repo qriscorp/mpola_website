@@ -27,6 +27,7 @@ import type {
   AdminOfferTemplate,
   AdminAuditLog,
   AdminUserDetail,
+  AdminUserTransactionSummary,
   LenderWalletTransaction,
   LenderEarnings,
   LenderOfferTemplate,
@@ -1358,6 +1359,14 @@ export const api = {
 
   getAdminUserDetail: async (username: string): Promise<AdminUserDetail> => {
     return apiAuthGet(`/admin/users/${username}`);
+  },
+
+  getAdminUserTransactions: async (
+    username: string,
+    skip: number,
+    limit: number,
+  ): Promise<{ total: number; transactions: AdminUserTransactionSummary[] }> => {
+    return apiAuthGet(`/admin/users/${username}/transactions?skip=${skip}&limit=${limit}`);
   },
 
   reviewKyc: async (

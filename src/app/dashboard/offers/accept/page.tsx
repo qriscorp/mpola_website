@@ -121,9 +121,25 @@ function AcceptOfferContent() {
                   <h2 className="font-semibold text-[#1B2B3A] dark:text-white">
                     Loan Offer Summary
                   </h2>
-                  <p className="text-sm text-muted-foreground">
-                    {offer.lender_name ?? "Lender"}
-                  </p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm text-muted-foreground">
+                      {offer.lender_name ?? "Lender"}
+                    </p>
+                    <span
+                      title={
+                        offer.lender_kyc_status === "verified"
+                          ? "This lender has completed identity verification."
+                          : "This lender has not completed identity verification yet."
+                      }
+                      className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                        offer.lender_kyc_status === "verified"
+                          ? "bg-emerald-50 text-emerald-600"
+                          : "bg-gray-100 text-gray-500"
+                      }`}
+                    >
+                      {offer.lender_kyc_status === "verified" ? "Verified" : "Not Verified"}
+                    </span>
+                  </div>
                 </div>
                 <Badge className="ml-auto bg-[#E8F8F5] text-[#2BB5A0] dark:bg-[#2BB5A0]/10">
                   {offer.status}

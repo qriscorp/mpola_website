@@ -76,7 +76,7 @@ export default function AdminUserDetailPage({
     );
   }
 
-  const { profile, loans_as_borrower, loans_as_lender, applications, kyc_documents, wallet, transactions } = data;
+  const { profile, loans_as_borrower, loans_as_lender, applications, documents, kyc_documents, wallet, transactions } = data;
 
   const handleApproveKyc = () => {
     if (!confirm(`Approve KYC for ${profile.username}?`)) return;
@@ -333,6 +333,59 @@ export default function AdminUserDetailPage({
         </CardContent>
       </Card>
 
+      {/* Loan documents — per-application uploads (bank statements, business
+          proof, etc.), separate from account-level KYC identity docs above. */}
+      {documents.length > 0 && (
+        <Card className="bg-white dark:bg-gray-900">
+          <CardHeader>
+            <h2 className="font-semibold text-[#1B2B3A] dark:text-white">
+              Loan Documents
+            </h2>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {documents.map((d) => (
+                <div
+                  key={d.id}
+                  className="flex flex-col sm:flex-row sm:items-center gap-3 p-3 rounded-lg border border-gray-100 dark:border-gray-800"
+                >
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className="h-9 w-9 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center shrink-0">
+                      <FileText className="h-4 w-4 text-gray-500" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-[#1B2B3A] dark:text-white capitalize">
+                        {d.document_type.replace(/_/g, " ")}
+                      </p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {d.file_name ?? "—"}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Badge
+                      variant="outline"
+                      className={`text-xs ${d.verified ? "bg-emerald-50 text-emerald-600" : "bg-amber-50 text-amber-600"}`}
+                    >
+                      {d.verified ? "Verified" : "Not Verified"}
+                    </Badge>
+                    <a
+                      href={d.file_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 text-xs font-medium text-gray-600 dark:text-gray-300 hover:border-[#2BB5A0] hover:text-[#2BB5A0] transition-colors"
+                    >
+                      <ExternalLink className="h-3.5 w-3.5" />
+                      View
+                    </a>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Applications */}
       {applications.length > 0 && (
         <Card className="bg-white dark:bg-gray-900">
@@ -443,9 +496,19 @@ export default function AdminUserDetailPage({
       {/* Transactions */}
       <Card className="bg-white dark:bg-gray-900">
         <CardHeader>
-          <h2 className="font-semibold text-[#1B2B3A] dark:text-white">
-            Recent Wallet Transactions
-          </h2>
+          <div className="flex items-center justify-between">
+            <h2 className="font-semibold text-[#1B2B3A] dark:text-white">
+              Recent Wallet Transactions
+            </h2>
+            {transactions.length > 0 && (
+              <Link
+                href={`/admin/users/${profile.username}/transactions`}
+                className="text-sm font-medium text-[#2BB5A0] hover:underline"
+              >
+                See All
+              </Link>
+            )}
+          </div>
         </CardHeader>
         <CardContent className="overflow-x-auto">
           {transactions.length === 0 ? (

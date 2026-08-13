@@ -130,7 +130,7 @@ function ApplicantContent() {
               { label: "PURPOSE", value: application.purpose ?? "—", big: false },
               {
                 label: "KYC STATUS",
-                value: borrower?.kyc_status ?? "—",
+                value: borrower?.kyc_status === "verified" ? "Verified" : "Not Verified",
                 big: false,
               },
             ].map(({ label, value, big }) => (

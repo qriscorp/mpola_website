@@ -67,6 +67,7 @@ export interface LoanOffer {
   application_status: string | null;
   lender_id: string;
   lender_name: string | null;
+  lender_kyc_status: "pending" | "verified" | "rejected" | null;
   amount: number;
   interest_rate: number;
   duration: number | null;

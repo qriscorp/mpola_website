@@ -151,11 +151,15 @@ export default function ApplicationDetailPage({
                 <p className="text-sm text-muted-foreground">
                   Credit score: {application.borrower?.credit_score ?? "—"}
                 </p>
-                {verified && (
-                  <Badge className="bg-[#F5F0E0] text-[#C4A55A] dark:bg-[#C4A55A]/10 dark:text-[#C4A55A] mt-1 text-xs gap-1">
-                    KYC Verified
-                  </Badge>
-                )}
+                <Badge
+                  className={`mt-1 text-xs gap-1 ${
+                    verified
+                      ? "bg-[#F5F0E0] text-[#C4A55A] dark:bg-[#C4A55A]/10 dark:text-[#C4A55A]"
+                      : "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400"
+                  }`}
+                >
+                  {verified ? "Verified" : "Not Verified"}
+                </Badge>
               </div>
             </div>
 
