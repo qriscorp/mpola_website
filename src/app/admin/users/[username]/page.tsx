@@ -280,6 +280,39 @@ export default function AdminUserDetailPage({
           </div>
         </CardHeader>
         <CardContent>
+          {/* Terms/agreement + licence — the thing this review is actually
+              gating for a lender (see repository/user_repo.py's
+              _lender_licence_info). */}
+          <div className="mb-4 flex flex-wrap items-center gap-3 rounded-lg border border-gray-100 dark:border-gray-800 p-3 text-xs">
+            <span className="text-muted-foreground">
+              Terms &amp; Agreement:{" "}
+              <span className={`font-semibold ${profile.terms_accepted_at ? "text-emerald-600" : "text-amber-600"}`}>
+                {profile.terms_accepted_at
+                  ? `Accepted ${new Date(profile.terms_accepted_at).toLocaleDateString()}`
+                  : "Not yet accepted"}
+              </span>
+            </span>
+            {profile.role === "lender" && (
+              <span className="text-muted-foreground border-l border-gray-200 dark:border-gray-800 pl-3">
+                Licence {profile.licence_number ?? "—"}:{" "}
+                <span
+                  className={`font-semibold ${
+                    profile.licence_status === "active"
+                      ? "text-emerald-600"
+                      : profile.licence_status === "expired"
+                        ? "text-red-600"
+                        : "text-amber-600"
+                  }`}
+                >
+                  {profile.licence_status === "active"
+                    ? `Active until ${new Date(profile.licence_valid_until!).toLocaleDateString()}`
+                    : profile.licence_status === "expired"
+                      ? `Expired ${new Date(profile.licence_valid_until!).toLocaleDateString()}`
+                      : "Not yet issued"}
+                </span>
+              </span>
+            )}
+          </div>
           {kyc_documents.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-6">
               No documents uploaded yet.

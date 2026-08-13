@@ -302,6 +302,12 @@ function mapAuthUser(data: AuthResponse): User {
     accountType: "individual",
     kycStatus: (user.kyc_status as User["kycStatus"]) || "pending",
     creditScore: user.credit_score ?? 0,
+    // Not part of the lean auth-response payload — the full profile
+    // (with real licence/terms state) loads right after via useUser().
+    termsAcceptedAt: null,
+    licenceNumber: null,
+    licenceStatus: null,
+    licenceValidUntil: null,
     createdAt: new Date().toISOString(),
   };
 }
@@ -323,6 +329,10 @@ interface RawUserProfile {
   notif_login_alerts?: boolean;
   credit_score?: number | null;
   created_at: string;
+  terms_accepted_at: string | null;
+  licence_number: string | null;
+  licence_status: "not_issued" | "active" | "expired" | null;
+  licence_valid_until: string | null;
 }
 
 function mapUserProfile(u: RawUserProfile): User {
@@ -343,6 +353,10 @@ function mapUserProfile(u: RawUserProfile): User {
     kycStatus: u.kyc_status as User["kycStatus"],
     creditScore: u.credit_score ?? 0,
     createdAt: u.created_at,
+    termsAcceptedAt: u.terms_accepted_at,
+    licenceNumber: u.licence_number,
+    licenceStatus: u.licence_status,
+    licenceValidUntil: u.licence_valid_until,
   };
 }
 
@@ -483,6 +497,7 @@ export const api = {
       nin: data.nin,
       account_type: data.accountType || "individual",
       role: data.role || "borrower",
+      agree_to_terms: !!data.agreeToTerms,
     });
     storeSignupDraft(res, data);
     if (res.draft) {
@@ -790,6 +805,10 @@ export const api = {
       notif_portfolio_digest: data.notifPortfolioDigest,
       notif_login_alerts: data.notifLoginAlerts,
     });
+    return mapUserProfile(u);
+  },
+  signLenderAgreement: async (): Promise<User> => {
+    const u = await apiAuthPost<RawUserProfile>("/users/me/sign-lender-agreement", {});
     return mapUserProfile(u);
   },
   getDashboardStats: async (): Promise<DashboardStats> => {

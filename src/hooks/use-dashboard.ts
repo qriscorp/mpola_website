@@ -24,6 +24,18 @@ export function useUpdateProfile() {
   });
 }
 
+export function useSignLenderAgreement() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: api.signLenderAgreement,
+    onSuccess: () => {
+      toast.success("Agreement signed — your licence is up to date.");
+      qc.invalidateQueries({ queryKey: ["user"] });
+    },
+    onError: (err: Error) => toast.error(err.message || "Failed to sign agreement"),
+  });
+}
+
 export function useMyKycDocuments() {
   return useQuery({
     queryKey: ["kyc-documents"],

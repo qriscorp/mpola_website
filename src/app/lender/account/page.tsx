@@ -6,21 +6,22 @@ import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { LenderPageHeader } from "@/components/lender-top-nav";
 import { CardSkeleton } from "@/components/skeletons";
-import { useUser, useUpdateProfile } from "@/hooks/use-dashboard";
+import Link from "next/link";
+import { useUser, useUpdateProfile, useSignLenderAgreement } from "@/hooks/use-dashboard";
 import { getInitials } from "@/lib/format";
 import { KYCUploadSection } from "@/components/kyc-upload-section";
 
-const statusBadge: Record<string, { label: string; className: string }> = {
-  verified: {
+const licenceStatusBadge: Record<string, { label: string; className: string }> = {
+  active: {
     label: "Active",
     className: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30",
   },
-  pending: {
-    label: "Pending Review",
+  not_issued: {
+    label: "Not Yet Issued",
     className: "bg-amber-500/20 text-amber-300 border-amber-500/30",
   },
-  rejected: {
-    label: "Rejected",
+  expired: {
+    label: "Expired",
     className: "bg-red-500/20 text-red-300 border-red-500/30",
   },
 };
@@ -28,8 +29,10 @@ const statusBadge: Record<string, { label: string; className: string }> = {
 export default function LenderAccountPage() {
   const { data: user, isLoading, error } = useUser();
   const { mutate: updateProfile, isPending } = useUpdateProfile();
+  const signAgreement = useSignLenderAgreement();
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({ fullName: "", phone: "", nin: "" });
+  const [agreeChecked, setAgreeChecked] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -57,10 +60,17 @@ export default function LenderAccountPage() {
     );
   }
 
-  const badge = statusBadge[user.kycStatus] ?? statusBadge.pending;
+  const licenceStatus = user.licenceStatus ?? "not_issued";
+  const badge = licenceStatusBadge[licenceStatus] ?? licenceStatusBadge.not_issued;
+  const canSign = user.kycStatus === "verified";
 
   function handleSave() {
     updateProfile(form, { onSuccess: () => setEditing(false) });
+  }
+
+  function handleSignAgreement() {
+    if (!agreeChecked) return;
+    signAgreement.mutate(undefined, { onSuccess: () => setAgreeChecked(false) });
   }
 
   return (
@@ -160,7 +170,13 @@ export default function LenderAccountPage() {
                 Mpola Lender Licence
               </h2>
               <p className="text-sm text-white/50 mt-0.5">
-                Pending Mpola&apos;s licensing framework
+                {licenceStatus === "active"
+                  ? "Issued under Mpola's licensing framework"
+                  : licenceStatus === "expired"
+                    ? "Expired — sign the agreement again to renew"
+                    : canSign
+                      ? "Sign the agreement below to issue your licence"
+                      : "Issued once your KYC is verified"}
               </p>
             </div>
           </div>
@@ -170,7 +186,7 @@ export default function LenderAccountPage() {
                 Licence No.
               </p>
               <p className="font-bold text-white mt-0.5">
-                LND-{user.id.slice(0, 8).toUpperCase()}
+                {user.licenceNumber ?? "—"}
               </p>
             </div>
             <div>
@@ -178,7 +194,9 @@ export default function LenderAccountPage() {
                 Valid Until
               </p>
               <p className="font-bold text-[#C4A55A] mt-0.5">
-                Not yet issued
+                {user.licenceValidUntil
+                  ? new Date(user.licenceValidUntil).toLocaleDateString()
+                  : "Not yet issued"}
               </p>
             </div>
             <div>
@@ -200,6 +218,48 @@ export default function LenderAccountPage() {
               </div>
             </div>
           </div>
+
+          {/* Sign / renew — only relevant once KYC is verified; the licence
+              itself is gated on that (see repository/user_repo.py) so
+              there's nothing to sign before then. */}
+          {canSign && (licenceStatus === "not_issued" || licenceStatus === "expired") && (
+            <div className="rounded-lg border border-white/10 bg-white/5 p-4 space-y-3">
+              <label className="flex items-start gap-2.5 text-xs text-white/70 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={agreeChecked}
+                  onChange={(e) => setAgreeChecked(e.target.checked)}
+                  className="mt-0.5 shrink-0"
+                />
+                <span>
+                  I agree to the{" "}
+                  <Link href="/platform-terms" target="_blank" className="text-[#C4A55A] underline">
+                    Terms of Service
+                  </Link>
+                  ,{" "}
+                  <Link href="/privacy-policy" target="_blank" className="text-[#C4A55A] underline">
+                    Privacy Policy
+                  </Link>
+                  , and{" "}
+                  <Link href="/lender-code-of-conduct" target="_blank" className="text-[#C4A55A] underline">
+                    Lender Code of Conduct
+                  </Link>
+                  .
+                </span>
+              </label>
+              <button
+                onClick={handleSignAgreement}
+                disabled={!agreeChecked || signAgreement.isPending}
+                className="w-full py-2 rounded-lg bg-[#C4A55A] text-[#1B2B3A] text-sm font-semibold hover:bg-[#d9bb6f] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                {signAgreement.isPending
+                  ? "Signing…"
+                  : licenceStatus === "expired"
+                    ? "Sign & Renew Licence"
+                    : "Sign Agreement"}
+              </button>
+            </div>
+          )}
         </div>
       </div>
 

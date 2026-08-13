@@ -20,6 +20,13 @@ export interface User {
   notifLoginAlerts?: boolean;
   creditScore: number;
   createdAt: string;
+  termsAcceptedAt: string | null;
+  // Lender-only — null/"—" for borrowers. "not_issued" until KYC is
+  // verified AND the agreement has been accepted; "active" while within
+  // LENDER_LICENCE_VALIDITY_DAYS of termsAcceptedAt; "expired" after.
+  licenceNumber: string | null;
+  licenceStatus: "not_issued" | "active" | "expired" | null;
+  licenceValidUntil: string | null;
 }
 
 export interface ApplicationBorrower {
@@ -531,6 +538,10 @@ export interface AdminUserDetail {
     bio: string | null;
     nin: string | null;
     created_at: string;
+    terms_accepted_at: string | null;
+    licence_number: string | null;
+    licence_status: "not_issued" | "active" | "expired" | null;
+    licence_valid_until: string | null;
   };
   loans_as_borrower: AdminUserLoanSummary[];
   loans_as_lender: AdminUserLoanSummary[];
