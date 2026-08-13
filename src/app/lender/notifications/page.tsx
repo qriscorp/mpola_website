@@ -110,7 +110,7 @@ export default function LenderNotificationsPage() {
 
       <WebPushPrompt />
 
-      <div className="rounded-xl border border-[#E8D9B0] bg-[#F5F0E0] px-4 py-3 sm:px-5 dark:bg-[#C4A55A]/15">
+      <div className="rounded-xl border border-[#E8D9B0] bg-[#F5F0E0] px-4 py-3 sm:px-5 dark:border-[#C4A55A]/40 dark:bg-[#C4A55A]/15">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm font-medium text-[#1B2B3A] dark:text-white">
             {unreadCount > 0
@@ -121,7 +121,7 @@ export default function LenderNotificationsPage() {
             <button
               onClick={() => markAll.mutate()}
               disabled={markAll.isPending}
-              className="inline-flex items-center justify-center gap-2 rounded-lg border border-[#C4A55A] bg-white px-3 py-2 text-sm font-semibold text-[#9F7F34] transition-colors hover:bg-[#FBF7EC] dark:hover:bg-[#C4A55A]/10 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-gray-900"
+              className="inline-flex items-center justify-center gap-2 rounded-lg border border-[#C4A55A] bg-white px-3 py-2 text-sm font-semibold text-[#9F7F34] transition-colors hover:bg-[#FBF7EC] dark:text-[#C4A55A] dark:hover:bg-[#C4A55A]/10 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-gray-900"
             >
               <CheckCheck className="h-4 w-4" />
               Mark all read
@@ -175,7 +175,7 @@ export default function LenderNotificationsPage() {
                 }}
                 className={`flex w-full items-start gap-4 px-4 py-4 text-left transition-colors sm:px-5 ${
                   index !== items.length - 1 ? "border-b border-gray-100 dark:border-gray-800" : ""
-                } ${!item.read ? "bg-[#F5F0E0]/35 hover:bg-[#F5F0E0]/50" : "hover:bg-gray-50 dark:hover:bg-gray-800"} ${
+                } ${!item.read ? "bg-[#F5F0E0]/35 hover:bg-[#F5F0E0]/50 dark:bg-[#C4A55A]/10 dark:hover:bg-[#C4A55A]/15" : "hover:bg-gray-50 dark:hover:bg-gray-800"} ${
                   href ? "cursor-pointer" : ""
                 }`}
               >
