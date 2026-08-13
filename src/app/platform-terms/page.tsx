@@ -39,7 +39,7 @@ const sections = [
 
 export default function PlatformTermsPage() {
   return (
-    <div className="min-h-screen bg-[linear-gradient(180deg,#F4F8F7_0%,#FFFFFF_28%)]">
+    <div className="min-h-screen bg-[linear-gradient(180deg,#F4F8F7_0%,#FFFFFF_28%)] dark:bg-none dark:bg-gray-950">
       <header className="border-b border-gray-200 bg-white/90 backdrop-blur dark:border-gray-800">
         <div className="mx-auto flex h-16 w-full max-w-5xl items-center justify-between px-4 sm:px-6">
           <Logo asLink={false} />

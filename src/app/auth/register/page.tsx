@@ -149,9 +149,12 @@ export default function RegisterPage() {
     : "border-[#D5ECE8] dark:border-[#2BB5A0]/30";
   const accentPrefixBgClass = isLender ? "bg-[#FFF8EC] dark:bg-[#C4A55A]/10" : "bg-[#E8F8F5] dark:bg-[#2BB5A0]/10";
   const accentPrefixTextClass = isLender ? "text-[#C4A55A]" : "text-[#149D8E] dark:text-[#5EEAD4]";
+  // Solid dark-gray to match the form card's own dark treatment exactly
+  // (not just a translucent brand tint) — keeps both halves of the split
+  // layout reading as the same "depth" once the page itself goes dark.
   const accentAsideClass = isLender
-    ? "border-[#E8D5A3] bg-[#FFF8EC] dark:border-[#C4A55A]/30 dark:bg-[#C4A55A]/10"
-    : "border-[#CBEAE4] bg-[#E8F8F5] dark:border-[#2BB5A0]/30 dark:bg-[#2BB5A0]/10";
+    ? "border-[#E8D5A3] bg-[#FFF8EC] dark:border-[#C4A55A]/40 dark:bg-gray-900"
+    : "border-[#CBEAE4] bg-[#E8F8F5] dark:border-[#2BB5A0]/40 dark:bg-gray-900";
   const accentCheckboxClass = isLender
     ? "data-[state=checked]:border-[#C4A55A] data-[state=checked]:bg-[#C4A55A]"
     : "data-[state=checked]:border-[#2BB5A0] data-[state=checked]:bg-[#2BB5A0]";
@@ -415,7 +418,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[linear-gradient(180deg,#EEF8F6_0%,#F8FBFB_38%,#FFFFFF_100%)] dark:bg-gray-950">
+    <div className="min-h-screen bg-[linear-gradient(180deg,#EEF8F6_0%,#F8FBFB_38%,#FFFFFF_100%)] dark:bg-none dark:bg-gray-950">
       <div className={`h-1 ${accentBgClass}`} />
 
       <div className="mx-auto w-full max-w-5xl px-4 py-5 sm:px-6">

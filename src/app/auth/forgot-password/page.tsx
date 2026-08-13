@@ -152,7 +152,7 @@ function ForgotPasswordContent() {
 
   return (
     <div
-      className={`min-h-screen dark:bg-gray-950 ${
+      className={`min-h-screen dark:bg-none dark:bg-gray-950 ${
         isLender
           ? "bg-[linear-gradient(180deg,#F9F6EE_0%,#F8FAFB_46%,#FFFFFF_100%)]"
           : "bg-[linear-gradient(180deg,#EEF8F6_0%,#F8FBFB_46%,#FFFFFF_100%)]"
