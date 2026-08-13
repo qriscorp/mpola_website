@@ -148,8 +148,8 @@ export function useRegister() {
   return useMutation({
     mutationFn: (
       data:
-        | (RegisterIndividualFormData & { role?: "borrower" | "lender" })
-        | (RegisterBusinessFormData & { role?: "borrower" | "lender" }),
+        | (RegisterIndividualFormData & { role?: "borrower" | "lender"; referredByCode?: string })
+        | (RegisterBusinessFormData & { role?: "borrower" | "lender"; referredByCode?: string }),
     ) => api.register(data as unknown as Record<string, unknown>),
     onSuccess: (data) => {
       const role = data.draft?.role || getCookie("lf_signup_role") || "borrower";

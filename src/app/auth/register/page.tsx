@@ -131,10 +131,15 @@ function hasMeaningfulLocalDraft(
 export default function RegisterPage() {
   const router = useRouter();
   const [portal, setPortal] = useState<"borrower" | "lender">("borrower");
+  const [referralCode, setReferralCode] = useState("");
   useEffect(() => {
-    const fromQuery = new URLSearchParams(window.location.search).get("portal");
-    if (fromQuery === "lender") {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("portal") === "lender") {
       setPortal("lender");
+    }
+    const ref = params.get("ref");
+    if (ref) {
+      setReferralCode(ref.trim());
     }
   }, []);
   const isLender = portal === "lender";
@@ -384,7 +389,7 @@ export default function RegisterPage() {
   const onSubmit = (
     data: RegisterIndividualFormData | RegisterBusinessFormData,
   ) => {
-    registerUser({ ...data, role: portal });
+    registerUser({ ...data, role: portal, referredByCode: referralCode.trim() || undefined });
   };
 
   const handleResumeDraft = async () => {
@@ -667,6 +672,21 @@ export default function RegisterPage() {
                   </p>
                 )}
               </div>
+            </div>
+
+            <div>
+              <Label>Referral Code (optional)</Label>
+              <Input
+                className="mt-1.5"
+                placeholder="e.g. AB12CD3"
+                value={referralCode}
+                onChange={(e) => setReferralCode(e.target.value)}
+              />
+              {referralCode && (
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  Whoever invited you gets a UGX 20 bonus once you finish signing up.
+                </p>
+              )}
             </div>
 
             <div

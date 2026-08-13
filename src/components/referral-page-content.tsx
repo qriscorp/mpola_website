@@ -37,11 +37,12 @@ export function ReferralPageContent({ accent }: { accent: "teal" | "gold" }) {
             <Gift className={`h-7 w-7 ${colors.text}`} />
           </div>
           <h2 className="text-xl font-bold text-[#1B2B3A] dark:text-white">
-            Invite friends to Mpola
+            Invite friends, earn UGX {(data?.bonus_per_referral ?? 20).toLocaleString()}
           </h2>
           <p className="mt-1 text-sm text-muted-foreground max-w-md mx-auto">
-            Share your referral link — anyone who signs up with it is linked to
-            your account.
+            Share your referral link — the moment someone signs up with it,
+            UGX {(data?.bonus_per_referral ?? 20).toLocaleString()} lands straight in your wallet. No limit
+            on how many friends you invite.
           </p>
 
           <div className="mt-6 flex flex-col sm:flex-row items-center gap-2 max-w-lg mx-auto">
@@ -60,6 +61,21 @@ export function ReferralPageContent({ accent }: { accent: "teal" | "gold" }) {
               {data?.referral_code}
             </span>
           </p>
+
+          <div className="mt-6 grid grid-cols-2 gap-3 max-w-sm mx-auto">
+            <div className={`rounded-lg p-3.5 ${colors.bg}`}>
+              <p className="text-2xl font-black text-[#1B2B3A] dark:text-white">
+                {data?.total_referred ?? 0}
+              </p>
+              <p className="text-xs text-muted-foreground">Friends joined</p>
+            </div>
+            <div className={`rounded-lg p-3.5 ${colors.bg}`}>
+              <p className="text-2xl font-black text-[#1B2B3A] dark:text-white">
+                UGX {(data?.total_earned ?? 0).toLocaleString()}
+              </p>
+              <p className="text-xs text-muted-foreground">Total earned</p>
+            </div>
+          </div>
         </CardContent>
       </Card>
 

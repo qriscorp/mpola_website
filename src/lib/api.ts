@@ -540,6 +540,7 @@ export const api = {
       account_type: data.accountType || "individual",
       role: data.role || "borrower",
       agree_to_terms: !!data.agreeToTerms,
+      referred_by_code: (data.referredByCode as string) || undefined,
     });
     storeSignupDraft(res, data);
     if (res.draft) {
