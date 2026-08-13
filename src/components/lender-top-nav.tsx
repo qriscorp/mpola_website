@@ -78,7 +78,7 @@ export function LenderPageHeader({ title }: { title: string }) {
         <ThemeToggle />
         <Link
           href="/lender/notifications"
-          className="relative p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          className="relative p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
           aria-label="Notifications"
         >
           <Bell className="h-5 w-5" />

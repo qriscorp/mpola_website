@@ -98,7 +98,7 @@ export default function AdminVerificationPage() {
           className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors ${
             role === "borrower"
               ? "bg-[#2BB5A0] border-[#2BB5A0] text-white"
-              : "bg-white border-gray-300 text-gray-600 hover:border-[#2BB5A0]"
+              : "bg-white border-gray-300 text-gray-600 hover:border-[#2BB5A0] dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
           }`}
         >
           Borrowers
@@ -108,7 +108,7 @@ export default function AdminVerificationPage() {
           className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors ${
             role === "lender"
               ? "bg-[#2BB5A0] border-[#2BB5A0] text-white"
-              : "bg-white border-gray-300 text-gray-600 hover:border-[#2BB5A0]"
+              : "bg-white border-gray-300 text-gray-600 hover:border-[#2BB5A0] dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
           }`}
         >
           Lenders

@@ -140,7 +140,7 @@ export default function ApplicationsPage() {
         <span className="font-bold text-[#1B2B3A] dark:text-white">
           {applications.length} open request{applications.length === 1 ? "" : "s"} on the marketplace
         </span>
-        <span className="text-sm text-gray-500 ml-auto hidden sm:inline">
+        <span className="text-sm text-gray-500 ml-auto hidden sm:inline dark:text-gray-400">
           {pendingOffersCount} of your offers awaiting a response
         </span>
       </div>
@@ -154,7 +154,7 @@ export default function ApplicationsPage() {
             className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors ${
               tab === t
                 ? "bg-[#C4A55A] border-[#C4A55A] text-white"
-                : "bg-white border-gray-300 text-gray-600 hover:border-[#C4A55A]"
+                : "bg-white border-gray-300 text-gray-600 hover:border-[#C4A55A] dark:border-gray-700 dark:text-gray-300 dark:bg-gray-900"
             }`}
           >
             {t}{" "}
@@ -169,7 +169,7 @@ export default function ApplicationsPage() {
 
       {/* Application rows */}
       {filtered.length === 0 ? (
-        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-10 text-center text-sm text-gray-400">
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-10 text-center text-sm text-gray-400 dark:text-gray-500">
           No applications in this category.
         </div>
       ) : (
@@ -192,12 +192,12 @@ export default function ApplicationsPage() {
                   <p className="font-semibold text-[#1B2B3A] dark:text-white text-sm">
                     {app.borrower?.full_name ?? "Unknown"}
                   </p>
-                  <p className="text-xs text-gray-400 capitalize">
+                  <p className="text-xs text-gray-400 capitalize dark:text-gray-500">
                     {app.loan_type} · {timeSince(app.created_at)} · Score{" "}
                     {app.borrower?.credit_score ?? "—"}/100
                   </p>
                   {/* Score bar */}
-                  <div className="mt-1 h-1 w-24 rounded-full bg-gray-200 overflow-hidden">
+                  <div className="mt-1 h-1 w-24 rounded-full bg-gray-200 overflow-hidden dark:bg-gray-700">
                     <div
                       className="h-full rounded-full bg-[#C4A55A]"
                       style={{ width: `${app.borrower?.credit_score ?? 0}%` }}
@@ -211,7 +211,7 @@ export default function ApplicationsPage() {
                 <p className="font-bold text-[#1B2B3A] dark:text-white">
                   {formatCurrency(app.amount)}
                 </p>
-                <p className="text-xs text-gray-400">{formatDuration(app.duration, app.duration_days)}</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500">{formatDuration(app.duration, app.duration_days)}</p>
               </div>
 
               {/* Actions */}
@@ -222,7 +222,7 @@ export default function ApplicationsPage() {
                     return (
                       <span
                         title={`Your standing offer already matched this request — you can make a manual offer in ${cooldown.hoursLeft}h if the borrower hasn't responded.`}
-                        className="px-3 py-1.5 rounded-lg bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 text-amber-700 text-xs font-medium cursor-help"
+                        className="px-3 py-1.5 rounded-lg bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 text-amber-700 text-xs font-medium cursor-help dark:text-amber-400"
                       >
                         Awaiting borrower ({cooldown.hoursLeft}h)
                       </span>
@@ -250,7 +250,7 @@ export default function ApplicationsPage() {
                     })
                   }
                   disabled={skipApplication.isPending}
-                  className="px-3 py-1.5 rounded-lg border border-gray-300 text-xs font-medium text-gray-600 hover:border-red-300 hover:text-red-600 transition-colors disabled:opacity-50"
+                  className="px-3 py-1.5 rounded-lg border border-gray-300 text-xs font-medium text-gray-600 hover:border-red-300 hover:text-red-600 transition-colors disabled:opacity-50 dark:border-gray-700 dark:text-gray-300"
                 >
                   Decline
                 </button>
@@ -273,25 +273,25 @@ export default function ApplicationsPage() {
             <h2 className="text-xl font-bold text-[#1B2B3A] dark:text-white">
               Make an Offer
             </h2>
-            <p className="text-sm text-gray-500 mt-1">
+            <p className="text-sm text-gray-500 mt-1 dark:text-gray-400">
               For {offerModal.borrower?.full_name ?? "this borrower"}
             </p>
 
-            <div className="mt-5 rounded-xl bg-amber-50 dark:bg-amber-900/10 border border-amber-200 p-4 space-y-3 text-sm">
+            <div className="mt-5 rounded-xl bg-amber-50 dark:bg-amber-900/10 border border-amber-200 p-4 space-y-3 text-sm dark:border-amber-800">
               <div className="flex justify-between">
-                <span className="text-gray-500">Amount</span>
+                <span className="text-gray-500 dark:text-gray-400">Amount</span>
                 <span className="font-medium text-[#1B2B3A] dark:text-white">
                   {formatCurrency(offerModal.amount)}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">Duration</span>
+                <span className="text-gray-500 dark:text-gray-400">Duration</span>
                 <span className="font-medium text-[#1B2B3A] dark:text-white">
                   {formatDuration(offerModal.duration, offerModal.duration_days)}
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-gray-500">Your Rate (%/month)</span>
+                <span className="text-gray-500 dark:text-gray-400">Your Rate (%/month)</span>
                 <input
                   type="number"
                   min={0.1}
@@ -299,7 +299,7 @@ export default function ApplicationsPage() {
                   step={0.1}
                   value={rate}
                   onChange={(e) => setRate(e.target.value)}
-                  className="w-24 text-right border border-gray-300 rounded-lg px-2 py-1 text-sm bg-white text-[#1B2B3A] outline-none focus:ring-2 focus:ring-[#C4A55A]"
+                  className="w-24 text-right border border-gray-300 rounded-lg px-2 py-1 text-sm bg-white text-[#1B2B3A] outline-none focus:ring-2 focus:ring-[#C4A55A] dark:border-gray-700 dark:text-white dark:bg-gray-900"
                 />
               </div>
               {rateInvalid && (
@@ -308,14 +308,14 @@ export default function ApplicationsPage() {
             </div>
 
             {rate !== "" && !rateInvalid && (
-              <div className="mt-3 rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 p-3 space-y-1 text-xs">
-                <div className="flex justify-between text-gray-600 dark:text-gray-400">
+              <div className="mt-3 rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 p-3 space-y-1 text-xs dark:border-gray-800">
+                <div className="flex justify-between text-gray-600 dark:text-gray-400 dark:text-gray-300">
                   <span>{isEmergency ? "Repayment due" : "Monthly payment"}</span>
                   <span className="font-medium text-[#1B2B3A] dark:text-white">
                     {formatCurrency(Math.round(offerMonthlyPayment))}
                   </span>
                 </div>
-                <div className="flex justify-between font-semibold text-[#1B2B3A] dark:text-white pt-1 border-t border-gray-200 dark:border-gray-700">
+                <div className="flex justify-between font-semibold text-[#1B2B3A] dark:text-white pt-1 border-t border-gray-200 dark:border-gray-700 dark:border-gray-800">
                   <span>Total repayable</span>
                   <span>{formatCurrency(Math.round(offerTotalRepayable))}</span>
                 </div>
@@ -335,7 +335,7 @@ export default function ApplicationsPage() {
                     className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
                       requiredDocs.includes(label)
                         ? "bg-[#C4A55A] border-[#C4A55A] text-white"
-                        : "bg-white border-gray-300 text-gray-600 hover:border-[#C4A55A]"
+                        : "bg-white border-gray-300 text-gray-600 hover:border-[#C4A55A] dark:border-gray-700 dark:text-gray-300 dark:bg-gray-900"
                     }`}
                   >
                     {label}
@@ -365,20 +365,20 @@ export default function ApplicationsPage() {
                       addCustomDoc();
                     }
                   }}
-                  className="flex-1 rounded-lg border border-gray-300 px-2.5 py-1 text-xs text-[#1B2B3A] outline-none focus:ring-2 focus:ring-[#C4A55A]"
+                  className="flex-1 rounded-lg border border-gray-300 px-2.5 py-1 text-xs text-[#1B2B3A] outline-none focus:ring-2 focus:ring-[#C4A55A] dark:border-gray-700 dark:text-white"
                 />
                 <button
                   type="button"
                   onClick={addCustomDoc}
                   disabled={!customDocInput.trim()}
-                  className="shrink-0 px-3 py-1 rounded-lg border border-gray-300 text-xs font-semibold text-gray-700 hover:border-gray-400 disabled:opacity-50"
+                  className="shrink-0 px-3 py-1 rounded-lg border border-gray-300 text-xs font-semibold text-gray-700 hover:border-gray-400 disabled:opacity-50 dark:hover:border-gray-600 dark:border-gray-700 dark:text-gray-300"
                 >
                   + Add
                 </button>
               </div>
             </div>
 
-            <p className="text-xs text-gray-400 mt-3">
+            <p className="text-xs text-gray-400 mt-3 dark:text-gray-500">
               If the borrower accepts, you&apos;ll need to approve
               disbursement from your Portfolio to release the funds.
             </p>
@@ -386,7 +386,7 @@ export default function ApplicationsPage() {
             <div className="flex gap-3 mt-6 justify-end">
               <button
                 onClick={() => { setOfferModal(null); setRequiredDocs([]); }}
-                className="px-5 py-2 rounded-lg border border-gray-300 text-sm font-medium text-gray-600 hover:border-gray-400"
+                className="px-5 py-2 rounded-lg border border-gray-300 text-sm font-medium text-gray-600 hover:border-gray-400 dark:hover:border-gray-600 dark:border-gray-700 dark:text-gray-300"
               >
                 Cancel
               </button>

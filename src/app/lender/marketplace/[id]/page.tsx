@@ -180,7 +180,7 @@ export default function ApplicationDetailPage({
               {application.status === "pending" && cooldownHoursLeft != null ? (
                 <div
                   title={`Your standing offer already matched this request — you can make a manual offer in ${cooldownHoursLeft}h if the borrower hasn't responded.`}
-                  className="max-w-[220px] rounded-lg bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 px-3 py-2 text-xs text-amber-700 text-right"
+                  className="max-w-[220px] rounded-lg bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 px-3 py-2 text-xs text-amber-700 dark:text-amber-400 text-right"
                 >
                   Awaiting borrower response — auto-matched, manual offer available in {cooldownHoursLeft}h
                 </div>
@@ -266,7 +266,7 @@ export default function ApplicationDetailPage({
                     className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
                       requiredDocs.includes(label)
                         ? "bg-[#C4A55A] border-[#C4A55A] text-white"
-                        : "bg-white border-gray-300 text-gray-600 hover:border-[#C4A55A]"
+                        : "bg-white border-gray-300 text-gray-600 hover:border-[#C4A55A] dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
                     }`}
                   >
                     {label}

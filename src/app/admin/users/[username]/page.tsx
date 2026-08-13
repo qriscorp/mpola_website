@@ -469,7 +469,7 @@ export default function AdminUserDetailPage({
               className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
                 tab === "borrower"
                   ? "bg-[#2BB5A0] border-[#2BB5A0] text-white"
-                  : "bg-white border-gray-300 text-gray-600"
+                  : "bg-white border-gray-300 text-gray-600 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
               }`}
             >
               As Borrower ({loans_as_borrower.length})
@@ -479,7 +479,7 @@ export default function AdminUserDetailPage({
               className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
                 tab === "lender"
                   ? "bg-[#2BB5A0] border-[#2BB5A0] text-white"
-                  : "bg-white border-gray-300 text-gray-600"
+                  : "bg-white border-gray-300 text-gray-600 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
               }`}
             >
               As Lender ({loans_as_lender.length})

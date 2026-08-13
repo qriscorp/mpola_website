@@ -135,7 +135,7 @@ function PostOfferContent() {
         className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors ${
           active
             ? "bg-[#C4A55A] border-[#C4A55A] text-white"
-            : "bg-white border-gray-300 text-gray-600 hover:border-[#C4A55A]"
+            : "bg-white border-gray-300 text-gray-600 hover:border-[#C4A55A] dark:border-gray-700 dark:text-gray-300 dark:bg-gray-900"
         }`}
       >
         {label}
@@ -214,7 +214,7 @@ function PostOfferContent() {
             <h2 className="text-xl font-bold text-[#1B2B3A] dark:text-white">
               {isEditing ? "Edit Your Standing Offer" : "Post a New Lending Offer"}
             </h2>
-            <p className="text-sm text-gray-500 mt-1">
+            <p className="text-sm text-gray-500 mt-1 dark:text-gray-400">
               {isEditing
                 ? "Update your terms — changes apply once you save."
                 : "Set your terms once. Borrowers apply to you — you review and approve who gets funded."}
@@ -224,11 +224,11 @@ function PostOfferContent() {
           {/* Amount row */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider dark:text-gray-400">
                 Max Loan Amount
               </Label>
               <div className="flex">
-                <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-input bg-gray-50 text-sm text-gray-500 font-medium">
+                <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-input bg-gray-50 text-sm text-gray-500 font-medium dark:text-gray-400 dark:bg-gray-800/60">
                   UGX
                 </span>
                 <Input
@@ -240,11 +240,11 @@ function PostOfferContent() {
               </div>
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider dark:text-gray-400">
                 Min Loan Amount
               </Label>
               <div className="flex">
-                <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-input bg-gray-50 text-sm text-gray-500 font-medium">
+                <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-input bg-gray-50 text-sm text-gray-500 font-medium dark:text-gray-400 dark:bg-gray-800/60">
                   UGX
                 </span>
                 <Input
@@ -264,7 +264,7 @@ function PostOfferContent() {
 
           {/* Rate */}
           <div className="space-y-1.5">
-            <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+            <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider dark:text-gray-400">
               Interest Rate (%/month)
             </Label>
             <Input
@@ -285,7 +285,7 @@ function PostOfferContent() {
           {/* Duration */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider dark:text-gray-400">
                 Maximum Duration
               </Label>
               <div className="flex gap-2">
@@ -337,7 +337,7 @@ function PostOfferContent() {
                 {customDays !== "" && durationDays == null && (
                   <p className="text-xs text-red-500">Enter a whole number between 1 and 29</p>
                 )}
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-gray-400 dark:text-gray-500">
                   Matches short-term "emergency" requests (1-29 days, single repayment). These
                   never match a month-based offer, and vice versa.
                 </p>
@@ -347,7 +347,7 @@ function PostOfferContent() {
 
           {/* Accepted loan types */}
           <div className="space-y-3">
-            <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block">
+            <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block dark:text-gray-400">
               Accepted Loan Types
             </Label>
             <div className="flex flex-wrap gap-2">
@@ -361,7 +361,7 @@ function PostOfferContent() {
 
           {/* Required documents */}
           <div className="space-y-3">
-            <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block">
+            <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block dark:text-gray-400">
               Required Documents
             </Label>
             <div className="flex flex-wrap gap-2">
@@ -399,12 +399,12 @@ function PostOfferContent() {
                 type="button"
                 onClick={addCustomDoc}
                 disabled={!customDocInput.trim()}
-                className="shrink-0 px-4 py-2 rounded-lg border border-gray-300 text-sm font-semibold text-gray-700 hover:border-gray-400 disabled:opacity-50"
+                className="shrink-0 px-4 py-2 rounded-lg border border-gray-300 text-sm font-semibold text-gray-700 hover:border-gray-400 disabled:opacity-50 dark:hover:border-gray-600 dark:border-gray-700 dark:text-gray-300"
               >
                 + Add
               </button>
             </div>
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-gray-400 dark:text-gray-500">
               A custom requirement won&apos;t match a fixed upload slot — the borrower will be able
               to satisfy it with either a file or a written explanation.
             </p>
@@ -412,7 +412,7 @@ function PostOfferContent() {
 
           {/* Description */}
           <div className="space-y-1.5">
-            <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+            <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider dark:text-gray-400">
               Offer Description (Optional)
             </Label>
             <textarea
@@ -427,7 +427,7 @@ function PostOfferContent() {
           {/* Valid Until + Max Concurrent */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider dark:text-gray-400">
                 Valid Until
               </Label>
               <Input
@@ -437,7 +437,7 @@ function PostOfferContent() {
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider dark:text-gray-400">
                 Max Concurrent Loans
               </Label>
               <Input
@@ -449,14 +449,14 @@ function PostOfferContent() {
           </div>
 
           {!isEditing && (
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-gray-400 dark:text-gray-500">
               Submitted offers are reviewed before going live on the
               marketplace.
             </p>
           )}
 
           {/* Actions */}
-          <div className="flex justify-end gap-3 pt-2 border-t border-gray-100">
+          <div className="flex justify-end gap-3 pt-2 border-t border-gray-100 dark:border-gray-800">
             {isEditing ? (
               <button
                 onClick={() => handlePost(false)}
@@ -474,7 +474,7 @@ function PostOfferContent() {
                 <button
                   onClick={() => handlePost(true)}
                   disabled={createTemplate.isPending || amountRangeInvalid || rateInvalid || durationInvalid}
-                  className="px-5 py-2 rounded-lg border border-gray-300 text-sm font-semibold text-gray-700 hover:border-gray-400 transition-colors disabled:opacity-50"
+                  className="px-5 py-2 rounded-lg border border-gray-300 text-sm font-semibold text-gray-700 hover:border-gray-400 transition-colors disabled:opacity-50 dark:hover:border-gray-600 dark:border-gray-700 dark:text-gray-300"
                 >
                   {createTemplate.isPending ? "Saving…" : "Save Draft"}
                 </button>

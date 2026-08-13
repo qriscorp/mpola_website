@@ -233,7 +233,7 @@ export default function MyOffersPage() {
             className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors ${
               origin === "all"
                 ? "bg-[#1B2B3A] border-[#1B2B3A] text-white"
-                : "bg-white border-gray-300 text-gray-600 hover:border-[#1B2B3A]"
+                : "bg-white border-gray-300 text-gray-600 hover:border-[#1B2B3A] dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:border-white"
             }`}
           >
             All Offers ({allOffers.length})
@@ -243,7 +243,7 @@ export default function MyOffersPage() {
             className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors ${
               origin === "auto"
                 ? "bg-[#1B2B3A] border-[#1B2B3A] text-white"
-                : "bg-white border-gray-300 text-gray-600 hover:border-[#1B2B3A]"
+                : "bg-white border-gray-300 text-gray-600 hover:border-[#1B2B3A] dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:border-white"
             }`}
           >
             Auto-Matched Only ({autoMatchedCount})
@@ -260,7 +260,7 @@ export default function MyOffersPage() {
             className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors ${
               tab === t
                 ? "bg-[#C4A55A] border-[#C4A55A] text-white"
-                : "bg-white border-gray-300 text-gray-600 hover:border-[#C4A55A]"
+                : "bg-white border-gray-300 text-gray-600 hover:border-[#C4A55A] dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
             }`}
           >
             {tabLabel[t]}

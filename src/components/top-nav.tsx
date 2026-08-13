@@ -58,7 +58,7 @@ export function BorrowerPageHeader({ title }: { title: string }) {
         <ThemeToggle />
         <Link
           href="/dashboard/notifications"
-          className="relative p-2 rounded-lg text-gray-500 hover:text-[#2BB5A0] hover:bg-teal-50 transition-colors"
+          className="relative p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:text-[#2BB5A0] hover:bg-teal-50 dark:hover:bg-[#2BB5A0]/10 transition-colors"
           aria-label="Notifications"
         >
           <Bell className="w-5 h-5" />
@@ -74,7 +74,7 @@ export function BorrowerPageHeader({ title }: { title: string }) {
         </Link>
         <Link
           href="/dashboard/apply"
-          className="px-4 py-2 rounded-lg border border-gray-300 text-sm font-semibold text-gray-700 hover:border-[#2BB5A0] hover:text-[#2BB5A0] transition-colors"
+          className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:border-[#2BB5A0] hover:text-[#2BB5A0] transition-colors"
         >
           + Apply for a Loan
         </Link>
