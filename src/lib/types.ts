@@ -241,6 +241,8 @@ export interface Wallet {
   balance: number;
   currency: string;
   is_wallet_setup: boolean;
+  is_frozen: boolean;
+  frozen_reason: string | null;
   created_at?: string;
 }
 
@@ -556,7 +558,14 @@ export interface AdminUserDetail {
   applications: AdminUserApplicationSummary[];
   documents: AdminUserDocument[];
   kyc_documents: KYCDocument[];
-  wallet: { balance: number; is_wallet_setup: boolean };
+  wallet: {
+    balance: number;
+    is_wallet_setup: boolean;
+    is_frozen: boolean;
+    frozen_reason: string | null;
+    frozen_at: string | null;
+    frozen_by: string | null;
+  };
   transactions: AdminUserTransactionSummary[];
 }
 

@@ -13,6 +13,11 @@ interface WalletBalanceCardProps {
   onWithdraw?: () => void;
   onSetup?: () => void;
   extraActions?: React.ReactNode;
+  /** Admin-frozen wallet — deposit/withdraw/pay actions are hidden and the
+   * backend rejects them regardless, so this is purely so the UI doesn't
+   * offer a button that would only fail. */
+  isFrozen?: boolean;
+  frozenReason?: string | null;
 }
 
 const ACCENT_BUTTON_CLASSES: Record<"teal" | "gold", string> = {
@@ -30,6 +35,8 @@ export function WalletBalanceCard({
   onWithdraw,
   onSetup,
   extraActions,
+  isFrozen,
+  frozenReason,
 }: WalletBalanceCardProps) {
   const accentClasses = ACCENT_BUTTON_CLASSES[accent];
 
@@ -55,8 +62,18 @@ export function WalletBalanceCard({
         <p className="text-sm text-white/50 mt-1">{subtitle}</p>
       )}
 
+      {isFrozen && !isLoading && (
+        <div className="mt-4 rounded-xl bg-red-500/15 border border-red-400/30 px-4 py-3">
+          <p className="text-sm font-semibold text-red-100">Wallet frozen</p>
+          <p className="text-sm text-red-100/80 mt-0.5">
+            {frozenReason || "Contact support for details."} You can't deposit, withdraw, or
+            make transactions until it's unfrozen.
+          </p>
+        </div>
+      )}
+
       <div className="flex gap-3 mt-6 flex-wrap">
-        {isLoading ? null : !isWalletSetup ? (
+        {isLoading || isFrozen ? null : !isWalletSetup ? (
           <button
             onClick={onSetup}
             className={`px-5 py-2 rounded-xl text-white text-sm font-semibold transition-colors ${accentClasses}`}

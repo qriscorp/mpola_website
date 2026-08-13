@@ -1364,12 +1364,25 @@ export const api = {
     return apiAuthGet(`/admin/reconciliation?lookback_days=${lookbackDays}`);
   },
 
+  recheckReconciliationTransaction: async (
+    transactionId: string,
+  ): Promise<{ our_status: string; gateway_status: string | null; corrected: boolean }> => {
+    return apiAuthPost(`/admin/reconciliation/recheck/${transactionId}`, {});
+  },
+
   adjustWalletBalance: async (
     username: string,
     amount: number,
     reason: string,
   ): Promise<{ status: number; message: string; balance_before: number; balance_after: number }> => {
     return apiAuthPost(`/admin/wallets/${username}/adjust`, { amount, reason });
+  },
+
+  toggleWalletFreeze: async (
+    username: string,
+    reason?: string,
+  ): Promise<{ success: boolean; username: string; is_frozen: boolean; action: string }> => {
+    return apiAuthPut(`/admin/wallets/${username}/freeze`, { reason });
   },
 
   updateAdminSetting: async (

@@ -35,6 +35,8 @@ export default function WalletPage() {
         isWalletSetup={isWalletSetup}
         isLoading={walletLoading}
         accent="teal"
+        isFrozen={wallet?.is_frozen}
+        frozenReason={wallet?.frozen_reason}
         onDeposit={() => setDepositOpen(true)}
         onWithdraw={() => setWithdrawOpen(true)}
         onSetup={() => setSetupOpen(true)}

@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState } from "react";
+import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -13,18 +13,19 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ArrowLeft, UserX, UserCheck, Trash2, ShieldCheck, ShieldX, FileText, ExternalLink, Wallet as WalletIcon } from "lucide-react";
+import { ArrowLeft, UserX, UserCheck, Trash2, ShieldCheck, ShieldX, FileText, ExternalLink, Wallet as WalletIcon, Lock, Unlock } from "lucide-react";
 import {
   useAdminUserDetail,
   useSuspendUser,
   useDeactivateUser,
   useReviewKyc,
   useVerifyKycDocument,
+  useToggleWalletFreeze,
 } from "@/hooks/use-admin";
 import { formatCurrency, formatRate, getInitials } from "@/lib/format";
 import { CardSkeleton } from "@/components/skeletons";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { AdminWalletAdjustModal } from "@/components/admin-wallet-adjust-modal";
 
 const statusColor = (s: string) => {
@@ -49,12 +50,35 @@ export default function AdminUserDetailPage({
 }) {
   const { username } = use(params);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { data, isLoading, error } = useAdminUserDetail(username);
   const suspend = useSuspendUser();
   const deactivate = useDeactivateUser();
   const reviewKyc = useReviewKyc(username);
   const verifyKycDocument = useVerifyKycDocument(username);
+  const toggleFreeze = useToggleWalletFreeze(username);
   const [adjustModalOpen, setAdjustModalOpen] = useState(false);
+  const [adjustPrefill, setAdjustPrefill] = useState<{ amount: number; direction: "credit" | "debit"; reason?: string } | null>(null);
+
+  // Arrived via the Reconciliation page's "Adjust" link on a drifted wallet
+  // — open the modal pre-filled with the exact correction, then strip the
+  // param so it doesn't linger in the URL or re-trigger on refresh.
+  useEffect(() => {
+    const adjustParam = searchParams.get("adjust");
+    if (!adjustParam) return;
+    const delta = Number(adjustParam);
+    if (!Number.isNaN(delta) && delta !== 0) {
+      setAdjustPrefill({
+        amount: Math.abs(delta),
+        direction: delta > 0 ? "debit" : "credit",
+        reason: "Correcting wallet ledger drift flagged by Reconciliation",
+      });
+      setAdjustModalOpen(true);
+    }
+    router.replace(`/admin/users/${username}`);
+    // Only ever run for the query param this page was first loaded with.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleBack = () => {
     if (typeof window !== "undefined" && window.history.length > 1) {
@@ -106,6 +130,17 @@ export default function AdminUserDetailPage({
     suspend.mutate(profile.username, {
       onSuccess: (res) => toast.success(`User ${res.action}`),
     });
+  };
+
+  const handleToggleFreeze = () => {
+    if (wallet.is_frozen) {
+      if (!confirm(`Unfreeze ${profile.username}'s wallet? They'll be able to transact again immediately.`)) return;
+      toggleFreeze.mutate(undefined, { onSuccess: () => toast.success("Wallet unfrozen") });
+    } else {
+      const reason = window.prompt(`Reason for freezing ${profile.username}'s wallet (shown to them)?`);
+      if (reason === null) return;
+      toggleFreeze.mutate(reason || undefined, { onSuccess: () => toast.success("Wallet frozen") });
+    }
   };
 
   const handleDelete = () => {
@@ -210,15 +245,34 @@ export default function AdminUserDetailPage({
                 <p className="text-lg font-bold text-[#2BB5A0]">
                   {wallet.is_wallet_setup ? formatCurrency(wallet.balance) : "Not set up"}
                 </p>
+                {wallet.is_frozen && (
+                  <p className="text-xs text-red-600 dark:text-red-400 mt-0.5">
+                    Frozen{wallet.frozen_reason ? `: ${wallet.frozen_reason}` : ""}
+                  </p>
+                )}
               </div>
               {wallet.is_wallet_setup && (
-                <button
-                  onClick={() => setAdjustModalOpen(true)}
-                  title="Adjust balance"
-                  className="shrink-0 h-7 w-7 rounded-lg border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-500 hover:border-[#2BB5A0] hover:text-[#2BB5A0] transition-colors"
-                >
-                  <WalletIcon className="h-3.5 w-3.5" />
-                </button>
+                <div className="flex gap-1 shrink-0">
+                  <button
+                    onClick={() => setAdjustModalOpen(true)}
+                    title="Adjust balance"
+                    className="h-7 w-7 rounded-lg border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-500 hover:border-[#2BB5A0] hover:text-[#2BB5A0] transition-colors"
+                  >
+                    <WalletIcon className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    onClick={handleToggleFreeze}
+                    disabled={toggleFreeze.isPending}
+                    title={wallet.is_frozen ? "Unfreeze wallet" : "Freeze wallet"}
+                    className={`h-7 w-7 rounded-lg border flex items-center justify-center transition-colors disabled:opacity-50 ${
+                      wallet.is_frozen
+                        ? "border-red-200 dark:border-red-900 text-red-600 hover:border-red-400"
+                        : "border-gray-200 dark:border-gray-700 text-gray-500 hover:border-red-400 hover:text-red-600"
+                    }`}
+                  >
+                    {wallet.is_frozen ? <Unlock className="h-3.5 w-3.5" /> : <Lock className="h-3.5 w-3.5" />}
+                  </button>
+                </div>
               )}
             </div>
           </CardContent>
@@ -587,9 +641,13 @@ export default function AdminUserDetailPage({
 
       <AdminWalletAdjustModal
         open={adjustModalOpen}
-        onClose={() => setAdjustModalOpen(false)}
+        onClose={() => {
+          setAdjustModalOpen(false);
+          setAdjustPrefill(null);
+        }}
         username={profile.username}
         currentBalance={wallet.balance}
+        prefill={adjustPrefill}
       />
     </div>
   );

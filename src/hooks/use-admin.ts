@@ -216,6 +216,22 @@ export function useAdminReconciliation(lookbackDays: number = 7) {
   });
 }
 
+export function useRecheckReconciliationTransaction() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (transactionId: string) => api.recheckReconciliationTransaction(transactionId),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "reconciliation"] }),
+  });
+}
+
+export function useToggleWalletFreeze(username: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (reason?: string) => api.toggleWalletFreeze(username, reason),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "user-detail", username] }),
+  });
+}
+
 export function useAdjustWalletBalance(username: string) {
   const qc = useQueryClient();
   return useMutation({

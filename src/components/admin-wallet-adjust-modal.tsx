@@ -12,6 +12,12 @@ interface AdminWalletAdjustModalProps {
   onClose: () => void;
   username: string;
   currentBalance: number;
+  // Set when opened from the Reconciliation page's "Adjust" link on a
+  // drifted wallet — pre-fills the amount/direction that would bring the
+  // stored balance in line with the transaction ledger, saving a re-type.
+  // Still just a starting point: the admin must review and confirm, same
+  // as any other adjustment.
+  prefill?: { amount: number; direction: "credit" | "debit"; reason?: string } | null;
 }
 
 export function AdminWalletAdjustModal({
@@ -19,17 +25,27 @@ export function AdminWalletAdjustModal({
   onClose,
   username,
   currentBalance,
+  prefill,
 }: AdminWalletAdjustModalProps) {
   const [direction, setDirection] = useState<"credit" | "debit">("credit");
   const [amount, setAmount] = useState("");
   const [reason, setReason] = useState("");
   const adjust = useAdjustWalletBalance(username);
 
-  // Prefill with the current balance every time the modal opens, so the
-  // admin sees where they're starting from instead of a blank field.
+  // Prefill every time the modal opens — either from Reconciliation (exact
+  // amount/direction to close a known drift) or, absent that, the current
+  // balance so the admin sees where they're starting from instead of a
+  // blank field.
   useEffect(() => {
-    if (open) setAmount(currentBalance > 0 ? String(currentBalance) : "");
-  }, [open, currentBalance]);
+    if (!open) return;
+    if (prefill) {
+      setAmount(String(prefill.amount));
+      setDirection(prefill.direction);
+      if (prefill.reason) setReason(prefill.reason);
+    } else {
+      setAmount(currentBalance > 0 ? String(currentBalance) : "");
+    }
+  }, [open, currentBalance, prefill]);
 
   if (!open) return null;
 

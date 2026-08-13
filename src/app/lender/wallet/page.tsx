@@ -35,6 +35,8 @@ export default function LenderWalletPage() {
         isWalletSetup={isWalletSetup}
         isLoading={walletLoading}
         accent="gold"
+        isFrozen={wallet?.is_frozen}
+        frozenReason={wallet?.frozen_reason}
         onDeposit={() => setShowDeposit(true)}
         onWithdraw={() => setShowWithdraw(true)}
         onSetup={() => setShowSetup(true)}
