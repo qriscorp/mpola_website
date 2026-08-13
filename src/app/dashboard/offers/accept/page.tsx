@@ -133,8 +133,8 @@ function AcceptOfferContent() {
                       }
                       className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
                         offer.lender_kyc_status === "verified"
-                          ? "bg-emerald-50 text-emerald-600"
-                          : "bg-gray-100 text-gray-500"
+                          ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400"
+                          : "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400"
                       }`}
                     >
                       {offer.lender_kyc_status === "verified" ? "Verified" : "Not Verified"}
@@ -325,7 +325,7 @@ function AcceptOfferContent() {
               )}
 
               {!isSuccess && !guarantorsReady && (
-                <p className="text-xs text-amber-600 bg-amber-50 rounded-lg px-3 py-2">
+                <p className="text-xs text-amber-600 bg-amber-50 rounded-lg px-3 py-2 dark:text-amber-400 dark:bg-amber-900/20">
                   Needs {REQUIRED_ACCEPTED_GUARANTORS} confirmed guarantors
                   before this can be signed — {acceptedGuarantors} of{" "}
                   {application?.guarantors?.length ?? 0} confirmed so far.
@@ -333,14 +333,14 @@ function AcceptOfferContent() {
               )}
 
               {!isSuccess && !walletReady && (
-                <p className="text-xs text-amber-600 bg-amber-50 rounded-lg px-3 py-2">
+                <p className="text-xs text-amber-600 bg-amber-50 rounded-lg px-3 py-2 dark:text-amber-400 dark:bg-amber-900/20">
                   Set up your Mpola wallet before signing — that&apos;s where
                   the disbursed funds will land.
                 </p>
               )}
 
               {!isSuccess && !documentsReady && (
-                <p className="text-xs text-amber-600 bg-amber-50 rounded-lg px-3 py-2">
+                <p className="text-xs text-amber-600 bg-amber-50 rounded-lg px-3 py-2 dark:text-amber-400 dark:bg-amber-900/20">
                   Provide the documents this lender requires (above) before signing.
                 </p>
               )}

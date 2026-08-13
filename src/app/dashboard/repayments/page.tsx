@@ -141,11 +141,11 @@ export default function RepaymentsPage() {
                   </td>
                   <td className="px-4 py-4">
                     {inst.status === "paid" ? (
-                      <span className="px-2 py-1 rounded-full bg-teal-50 text-[#2BB5A0] text-xs font-semibold">
+                      <span className="px-2 py-1 rounded-full bg-teal-50 text-[#2BB5A0] text-xs font-semibold dark:bg-[#2BB5A0]/10">
                         Paid
                       </span>
                     ) : (
-                      <span className="px-2 py-1 rounded-full bg-amber-50 text-amber-600 text-xs font-semibold">
+                      <span className="px-2 py-1 rounded-full bg-amber-50 text-amber-600 text-xs font-semibold dark:bg-amber-900/20 dark:text-amber-400">
                         Due
                       </span>
                     )}

@@ -10,9 +10,9 @@ import { formatCurrency, formatRate, formatDuration } from "@/lib/format";
 import { RequiredDocumentsChecklist } from "@/components/required-documents-checklist";
 
 const guarantorStatusClass: Record<string, string> = {
-  accepted: "bg-emerald-50 text-emerald-600 border-emerald-200",
-  pending: "bg-amber-50 text-amber-600 border-amber-200",
-  declined: "bg-red-50 text-red-600 border-red-200",
+  accepted: "bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-900",
+  pending: "bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-900",
+  declined: "bg-red-50 text-red-600 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-900",
 };
 
 const statusLabel: Record<string, string> = {
@@ -30,9 +30,9 @@ const statusClass: Record<string, string> = {
 };
 
 const repaymentStatusClass: Record<string, string> = {
-  completed: "bg-emerald-50 text-emerald-600 border-emerald-200",
-  pending: "bg-amber-50 text-amber-600 border-amber-200",
-  failed: "bg-red-50 text-red-600 border-red-200",
+  completed: "bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-900",
+  pending: "bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-900",
+  failed: "bg-red-50 text-red-600 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-900",
 };
 
 function LoanDetailContent() {

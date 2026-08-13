@@ -35,8 +35,8 @@ function TransactionTypeBadge({
       variant="outline"
       className={
         isCredit
-          ? "bg-emerald-50 text-emerald-600 border-emerald-200"
-          : "bg-amber-50 text-amber-600 border-amber-200"
+          ? "bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-900"
+          : "bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-900"
       }
     >
       {TYPE_LABEL[type]}
@@ -49,7 +49,7 @@ function StatusBadge({ status }: { status: WalletTransaction["status"] }) {
     return (
       <Badge
         variant="outline"
-        className="bg-gray-100 text-gray-500 border-gray-200"
+        className="bg-gray-100 text-gray-500 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700"
       >
         Pending
       </Badge>
@@ -59,7 +59,7 @@ function StatusBadge({ status }: { status: WalletTransaction["status"] }) {
     return (
       <Badge
         variant="outline"
-        className="bg-red-50 text-red-500 border-red-200"
+        className="bg-red-50 text-red-500 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-900"
       >
         Failed
       </Badge>
@@ -68,7 +68,7 @@ function StatusBadge({ status }: { status: WalletTransaction["status"] }) {
   return (
     <Badge
       variant="outline"
-      className="bg-emerald-50 text-emerald-600 border-emerald-200"
+      className="bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-900"
     >
       Completed
     </Badge>
@@ -128,7 +128,7 @@ export function WalletTransactionList({
                 onClick={() => setSelectedId(tx.id)}
                 className="cursor-pointer"
               >
-                <TableCell className="text-gray-500 text-xs whitespace-nowrap">
+                <TableCell className="text-gray-500 dark:text-gray-400 text-xs whitespace-nowrap">
                   {formatDate(tx.created_at)}
                 </TableCell>
                 <TableCell>
@@ -136,7 +136,7 @@ export function WalletTransactionList({
                     {tx.description || TYPE_LABEL[tx.type]}
                   </div>
                   {tx.counterparty && (
-                    <div className="text-xs text-gray-500">
+                    <div className="text-xs text-gray-500 dark:text-gray-400">
                       {tx.counterparty}
                     </div>
                   )}

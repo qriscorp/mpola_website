@@ -422,6 +422,7 @@ export interface AdminPaymentTx {
   username: string | null;
   amount: number;
   type: string;
+  direction: "credit" | "debit";
   status: "pending" | "completed" | "failed";
   description: string | null;
   reference: string | null;

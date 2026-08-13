@@ -124,11 +124,11 @@ export function AllOffersList() {
                     {offer.lender_name ?? "Lender"}
                   </span>
                   {offer.id === bestOfferId && (
-                    <span className="px-2 py-0.5 rounded-full bg-teal-50 text-[#2BB5A0] text-[10px] font-bold border border-[#2BB5A0]/30">
+                    <span className="px-2 py-0.5 rounded-full bg-teal-50 text-[#2BB5A0] text-[10px] font-bold border border-[#2BB5A0]/30 dark:bg-[#2BB5A0]/10">
                       Best Rate
                     </span>
                   )}
-                  <span className="px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 text-[10px] font-bold capitalize">
+                  <span className="px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 text-[10px] font-bold capitalize dark:bg-gray-800 dark:text-gray-400">
                     {offer.status}
                   </span>
                 </div>

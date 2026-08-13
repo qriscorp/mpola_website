@@ -25,18 +25,18 @@ const typeConfig: Record<
   string,
   { icon: typeof Bell; iconBg: string; iconColor: string }
 > = {
-  new_application: { icon: FileText, iconBg: "bg-[#E8F8F5]", iconColor: "text-[#2BB5A0]" },
-  loan_overdue: { icon: AlertCircle, iconBg: "bg-amber-50", iconColor: "text-amber-600" },
-  loan_defaulted: { icon: AlertCircle, iconBg: "bg-red-50", iconColor: "text-red-600" },
-  dispute: { icon: AlertTriangle, iconBg: "bg-red-50", iconColor: "text-red-600" },
-  dispute_update: { icon: AlertTriangle, iconBg: "bg-amber-50", iconColor: "text-amber-600" },
-  support_ticket: { icon: MessageSquare, iconBg: "bg-blue-50", iconColor: "text-blue-600" },
+  new_application: { icon: FileText, iconBg: "bg-[#E8F8F5] dark:bg-[#2BB5A0]/10", iconColor: "text-[#2BB5A0]" },
+  loan_overdue: { icon: AlertCircle, iconBg: "bg-amber-50 dark:bg-amber-900/20", iconColor: "text-amber-600 dark:text-amber-400" },
+  loan_defaulted: { icon: AlertCircle, iconBg: "bg-red-50 dark:bg-red-900/20", iconColor: "text-red-600 dark:text-red-400" },
+  dispute: { icon: AlertTriangle, iconBg: "bg-red-50 dark:bg-red-900/20", iconColor: "text-red-600 dark:text-red-400" },
+  dispute_update: { icon: AlertTriangle, iconBg: "bg-amber-50 dark:bg-amber-900/20", iconColor: "text-amber-600 dark:text-amber-400" },
+  support_ticket: { icon: MessageSquare, iconBg: "bg-blue-50 dark:bg-blue-900/20", iconColor: "text-blue-600 dark:text-blue-400" },
 };
 
 const defaultTypeConfig = {
   icon: Settings,
-  iconBg: "bg-gray-100",
-  iconColor: "text-gray-600",
+  iconBg: "bg-gray-100 dark:bg-gray-800",
+  iconColor: "text-gray-600 dark:text-gray-400",
 };
 
 function categoryOf(type: string | null): "applications" | "loans" | "support" | "other" {

@@ -28,10 +28,10 @@ const templateStatusLabel: Record<string, string> = {
 };
 
 const templateStatusClass: Record<string, string> = {
-  pending_review: "bg-amber-50 text-amber-600 border-amber-200",
-  draft: "bg-gray-100 text-gray-500 border-gray-200",
-  approved: "bg-emerald-50 text-emerald-600 border-emerald-200",
-  rejected: "bg-red-50 text-red-600 border-red-200",
+  pending_review: "bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-900",
+  draft: "bg-gray-100 text-gray-500 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700",
+  approved: "bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-900",
+  rejected: "bg-red-50 text-red-600 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-900",
 };
 
 type OfferStatus = LoanOffer["status"];
@@ -55,18 +55,18 @@ const tabLabel: Record<"All" | OfferStatus, string> = {
 function statusBadge(s: OfferStatus) {
   if (s === "accepted")
     return (
-      <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-200">
+      <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-900">
         Accepted
       </span>
     );
   if (s === "declined" || s === "expired")
     return (
-      <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-500 border border-gray-200">
+      <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-500 border border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700">
         {s === "declined" ? "Declined" : "Expired"}
       </span>
     );
   return (
-    <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-600 border border-amber-200">
+    <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-600 border border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-900">
       Pending
     </span>
   );
@@ -286,7 +286,7 @@ export default function MyOffersPage() {
                         {formatCurrency(offer.amount)}
                       </h3>
                       {offer.template_id && (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-900">
                           Auto-matched
                         </span>
                       )}
@@ -374,7 +374,7 @@ export default function MyOffersPage() {
                       {templateStatusLabel[t.status] ?? t.status}
                     </span>
                     {t.is_frozen && (
-                      <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold border bg-blue-50 text-blue-600 border-blue-200">
+                      <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold border bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-900">
                         Frozen ({t.frozen_by === "admin" ? "by admin" : "by you"})
                       </span>
                     )}

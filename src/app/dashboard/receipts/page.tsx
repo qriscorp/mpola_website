@@ -17,9 +17,9 @@ const METHOD_LABEL: Record<string, string> = {
 };
 
 const STATUS_CLASS: Record<string, string> = {
-  completed: "bg-emerald-50 text-emerald-600 border-emerald-200",
-  pending: "bg-amber-50 text-amber-600 border-amber-200",
-  late: "bg-red-50 text-red-600 border-red-200",
+  completed: "bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-900",
+  pending: "bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-900",
+  late: "bg-red-50 text-red-600 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-900",
 };
 
 function formatDateTime(iso: string): string {
@@ -72,7 +72,7 @@ export default function ReceiptsPage() {
                   </p>
                   <span
                     className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium capitalize ${
-                      STATUS_CLASS[r.status] ?? "bg-gray-100 text-gray-600 border-gray-200"
+                      STATUS_CLASS[r.status] ?? "bg-gray-100 text-gray-600 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700"
                     }`}
                   >
                     {r.status}

@@ -23,8 +23,6 @@ import { StaggerList, StaggerItem } from "@/components/motion/stagger";
 
 const PAGE_SIZE = 20;
 
-const inflowTypes = new Set(["deposit", "repayment", "top_up"]);
-
 const typeLabel: Record<string, string> = {
   deposit: "Deposit",
   repayment: "Repayment",
@@ -188,7 +186,7 @@ export default function AdminPaymentsPage() {
                 </TableRow>
               ) : (
                 transactions.map((txn) => {
-                  const isInflow = inflowTypes.has(txn.type);
+                  const isInflow = txn.direction === "credit";
                   return (
                     <TableRow key={txn.id}>
                       <TableCell className="text-sm text-muted-foreground">

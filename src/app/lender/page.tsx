@@ -113,8 +113,8 @@ export default function LenderDashboardPage() {
                   <Badge
                     className={
                       loan.status === "overdue"
-                        ? "self-center bg-red-50 text-red-600 border border-red-200 font-semibold text-xs"
-                        : "self-center bg-emerald-50 text-emerald-600 border border-emerald-200 font-semibold text-xs"
+                        ? "self-center bg-red-50 text-red-600 border border-red-200 font-semibold text-xs dark:bg-red-900/20 dark:text-red-400 dark:border-red-900"
+                        : "self-center bg-emerald-50 text-emerald-600 border border-emerald-200 font-semibold text-xs dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-900"
                     }
                   >
                     {loan.status === "overdue" ? "Overdue" : "On Track"}

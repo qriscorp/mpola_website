@@ -150,17 +150,17 @@ export default function SettingsPage() {
 
       {/* Danger Zone */}
       <div className="bg-white dark:bg-gray-900 rounded-2xl border-2 border-red-200 dark:border-red-900 p-6">
-        <h2 className="text-lg font-bold text-red-500 mb-4">Danger Zone</h2>
+        <h2 className="text-lg font-bold text-red-500 dark:text-red-400 mb-4">Danger Zone</h2>
         <div className="flex flex-wrap gap-3">
           <button
             onClick={() => toast.info("Account deactivation isn't available yet — contact support.")}
-            className="px-5 py-2.5 rounded-xl border border-red-300 text-red-500 text-sm font-semibold hover:bg-red-50 transition-colors"
+            className="px-5 py-2.5 rounded-xl border border-red-300 text-red-500 text-sm font-semibold hover:bg-red-50 transition-colors dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/20"
           >
             Deactivate Account
           </button>
           <button
             onClick={() => toast.info("Data export isn't available yet — contact support.")}
-            className="px-5 py-2.5 rounded-xl border border-gray-300 text-gray-600 text-sm font-semibold hover:border-gray-400 transition-colors"
+            className="px-5 py-2.5 rounded-xl border border-gray-300 text-gray-600 text-sm font-semibold hover:border-gray-400 transition-colors dark:border-gray-700 dark:text-gray-300 dark:hover:border-gray-600"
           >
             Export My Data
           </button>

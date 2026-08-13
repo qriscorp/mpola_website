@@ -155,17 +155,17 @@ export default function LenderSettingsPage() {
 
       {/* Danger zone */}
       <div className="bg-white dark:bg-gray-900 rounded-xl border border-red-200 dark:border-red-900 p-5 sm:p-6">
-        <h3 className="font-semibold text-red-600 mb-4">Danger Zone</h3>
+        <h3 className="font-semibold text-red-600 dark:text-red-400 mb-4">Danger Zone</h3>
         <div className="flex flex-col sm:flex-row gap-3">
           <button
             onClick={() => toast.info("Account deactivation isn't available yet — contact support.")}
-            className="px-4 py-2 rounded-lg border border-red-300 text-red-600 text-sm font-semibold hover:bg-red-50 transition-colors"
+            className="px-4 py-2 rounded-lg border border-red-300 text-red-600 text-sm font-semibold hover:bg-red-50 transition-colors dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/20"
           >
             Deactivate Account
           </button>
           <button
             onClick={() => toast.info("Data export isn't available yet — contact support.")}
-            className="px-4 py-2 rounded-lg border border-gray-300 text-gray-600 text-sm font-medium hover:border-gray-400 transition-colors"
+            className="px-4 py-2 rounded-lg border border-gray-300 text-gray-600 text-sm font-medium hover:border-gray-400 transition-colors dark:border-gray-700 dark:text-gray-300 dark:hover:border-gray-600"
           >
             Export My Data
           </button>

@@ -213,7 +213,7 @@ export function TransactionDetailModal({
                 {tx.direction === "credit" ? "+" : "-"}
                 {formatCurrency(tx.amount)}
               </p>
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                 {tx.description || TYPE_LABEL[tx.type]}
               </p>
               <div className="flex items-center justify-center gap-2 mt-2">
@@ -222,10 +222,10 @@ export function TransactionDetailModal({
                   variant="outline"
                   className={
                     tx.status === "completed"
-                      ? "bg-emerald-50 text-emerald-600 border-emerald-200"
+                      ? "bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-900"
                       : tx.status === "pending"
-                        ? "bg-gray-100 text-gray-500 border-gray-200"
-                        : "bg-red-50 text-red-500 border-red-200"
+                        ? "bg-gray-100 text-gray-500 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700"
+                        : "bg-red-50 text-red-500 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-900"
                   }
                 >
                   {tx.status.charAt(0).toUpperCase() + tx.status.slice(1)}

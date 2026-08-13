@@ -99,7 +99,7 @@ function OffersReceivedContent() {
       </p>
 
       {acceptedGuarantors < REQUIRED_ACCEPTED_GUARANTORS && (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-400">
           You need {REQUIRED_ACCEPTED_GUARANTORS} guarantors to confirm before
           you can accept an offer — {acceptedGuarantors} of{" "}
           {application.guarantors?.length ?? 0} have confirmed so far.
@@ -151,8 +151,8 @@ function OffersReceivedContent() {
                         }
                         className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
                           offer.lender_kyc_status === "verified"
-                            ? "bg-emerald-50 text-emerald-600"
-                            : "bg-gray-100 text-gray-500"
+                            ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400"
+                            : "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400"
                         }`}
                       >
                         {offer.lender_kyc_status === "verified" ? "Verified" : "Not Verified"}
