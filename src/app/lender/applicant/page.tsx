@@ -10,6 +10,7 @@ import {
   useSkipApplication,
 } from "@/hooks/use-lender";
 import { formatCurrency, formatDuration, getInitials, getApplicationStatusLabel, getApplicationStatusColor } from "@/lib/format";
+import { InfoTip } from "@/components/info-tip";
 
 const guarantorColors = ["bg-emerald-600", "bg-amber-700", "bg-blue-700"];
 
@@ -116,8 +117,12 @@ function ApplicantContent() {
                     ? "Pending Review"
                     : getApplicationStatusLabel(application.status, application.loan_status)}
                 </span>
-                <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-[#1B2B3A] text-[#C4A55A]">
+                <span className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-[#1B2B3A] text-[#C4A55A]">
                   Score {borrower?.credit_score ?? "—"}/100
+                  <InfoTip
+                    className="text-[#C4A55A]/80 hover:text-white"
+                    text="A new borrower starts at a neutral 50 — no resolved loan history yet, not a red flag by itself. It only moves once a loan is fully resolved: rising toward 100 for full, on-time repayment, dropping toward 0 for a default or overdue history. With few resolved loans the swings are sharp, so weigh it alongside KYC status and guarantors, especially for a borrower with only one or two loans behind them."
+                  />
                 </span>
               </div>
             </div>

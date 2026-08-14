@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { LenderPageHeader } from "@/components/lender-top-nav";
 import { CardSkeleton } from "@/components/skeletons";
+import { InfoTip } from "@/components/info-tip";
 import {
   useMarketplace,
   useMyOffers,
@@ -198,9 +199,10 @@ export default function ApplicationsPage() {
                   <p className="font-semibold text-[#1B2B3A] dark:text-white text-sm">
                     {app.borrower?.full_name ?? "Unknown"}
                   </p>
-                  <p className="text-xs text-gray-400 capitalize dark:text-gray-500">
+                  <p className="flex items-center gap-1 text-xs text-gray-400 capitalize dark:text-gray-500">
                     {app.loan_type} · {timeSince(app.created_at)} · Score{" "}
                     {app.borrower?.credit_score ?? "—"}/100
+                    <InfoTip text="A new borrower starts at a neutral 50 — no resolved loan history yet, not a red flag by itself. It only moves once a loan is fully resolved: rising toward 100 for full, on-time repayment, dropping toward 0 for a default or overdue history. With few resolved loans the swings are sharp, so weigh it alongside KYC status and guarantors, especially for a borrower with only one or two loans behind them." />
                   </p>
                   {/* Score bar */}
                   <div className="mt-1 h-1 w-24 rounded-full bg-gray-200 overflow-hidden dark:bg-gray-700">

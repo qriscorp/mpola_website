@@ -147,8 +147,9 @@ export default function MarketplacePage() {
                   <p className="truncate text-base font-bold text-[#1B2B3A] dark:text-white">
                     {a.borrower?.full_name ?? "Borrower"}
                   </p>
-                  <p className="text-xs text-gray-400 dark:text-gray-500">
+                  <p className="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500">
                     Credit score: {a.borrower?.credit_score ?? "—"}
+                    <InfoTip text="A new borrower starts at a neutral 50 — no resolved loan history yet, not a red flag by itself. It only moves once a loan is fully resolved: rising toward 100 for full, on-time repayment, dropping toward 0 for a default or overdue history. With few resolved loans the swings are sharp, so weigh it alongside KYC status and guarantors, especially for a borrower with only one or two loans behind them." />
                   </p>
                 </div>
               </div>

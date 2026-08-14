@@ -15,6 +15,7 @@ import { useUser } from "@/hooks/use-dashboard";
 import { formatCurrency, formatDuration, getApplicationStatusLabel } from "@/lib/format";
 import { DOCUMENT_LABEL_OPTIONS } from "@/lib/document-labels";
 import { CardSkeleton } from "@/components/skeletons";
+import { InfoTip } from "@/components/info-tip";
 
 // A lender's own standing offer may have already auto-matched this
 // application — while it's still pending and inside the 2-day cooldown
@@ -156,8 +157,9 @@ export default function ApplicationDetailPage({
                 <h1 className="text-2xl font-bold text-[#1B2B3A] dark:text-white">
                   {application.borrower?.full_name ?? "Borrower"}
                 </h1>
-                <p className="text-sm text-muted-foreground">
+                <p className="flex items-center gap-1 text-sm text-muted-foreground">
                   Credit score: {application.borrower?.credit_score ?? "—"}
+                  <InfoTip text="A new borrower starts at a neutral 50 — no resolved loan history yet, not a red flag by itself. It only moves once a loan is fully resolved: rising toward 100 for full, on-time repayment, dropping toward 0 for a default or overdue history. With few resolved loans the swings are sharp, so weigh it alongside KYC status and guarantors, especially for a borrower with only one or two loans behind them." />
                 </p>
                 <Badge
                   className={`mt-1 text-xs gap-1 ${

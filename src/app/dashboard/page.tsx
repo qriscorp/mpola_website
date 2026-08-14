@@ -108,13 +108,13 @@ export default function DashboardPage() {
             <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
               Credit Score
             </p>
-            <InfoTip text="Starts at a neutral 50 and only moves once one of your loans is fully resolved — repaying it in full raises your score, defaulting or going overdue lowers it. Recalculated once a day, so it won't move while a loan is still active." />
+            <InfoTip text="Lenders see this score when deciding whether to offer you a loan at all, and some won't lend below a certain score — so it's not just informational, it can be the difference between getting an offer or not. It starts at a neutral 50 (no track record yet) and only moves once a loan is fully resolved: repaying in full and on time raises it, defaulting or going overdue lowers it sharply since it's based on so few resolved loans. Recalculated once a day, so it won't move while a loan is still active." />
           </div>
           <p className="text-3xl font-bold text-[#1B2B3A] dark:text-white mt-1">
             {user?.creditScore || "—"}
           </p>
           <p className="text-xs text-gray-400 mt-1">
-            Higher scores unlock better rates
+            Repaying loans in full and on time builds it
           </p>
         </StaggerItem>
       </StaggerList>
