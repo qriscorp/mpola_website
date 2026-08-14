@@ -11,6 +11,13 @@ export function useDraftApplication() {
   });
 }
 
+export function useApplicationEligibility() {
+  return useQuery({
+    queryKey: ["applications", "eligibility"],
+    queryFn: api.getApplicationEligibility,
+  });
+}
+
 export function useSubmitApplication() {
   return useMutation({
     mutationFn: (data: {

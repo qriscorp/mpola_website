@@ -90,6 +90,10 @@ function MakePaymentContent() {
   const walletBalance = wallet?.balance ?? 0;
   const shortfall = walletTotalDebit - walletBalance;
   const insufficientBalance = shortfall > 0;
+  // Paying more than what's actually owed sends real money the loan has no
+  // way to credit back — the quick-select buttons never produce this, but a
+  // hand-typed custom amount can. The backend enforces the same cap.
+  const exceedsBalance = effectiveAmount > remainingBalance + 1;
   const progressPct = loan.total_repayable
     ? Math.min(100, Math.round((loan.total_paid / loan.total_repayable) * 100))
     : 0;
@@ -326,15 +330,50 @@ function MakePaymentContent() {
                 className="w-full px-4 py-3 text-base text-[#1B2B3A] outline-none dark:text-white"
               />
             </div>
+            <div className="mt-2 flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => setAmount(String(dueAmount))}
+                className="rounded-full border border-gray-300 px-3 py-1 text-xs font-medium text-gray-600 hover:border-[#2BB5A0] hover:text-[#2BB5A0] transition-colors dark:border-gray-700 dark:text-gray-300"
+              >
+                Full amount due
+              </button>
+              <button
+                type="button"
+                onClick={() => setAmount(String(Math.round(dueAmount / 2)))}
+                className="rounded-full border border-gray-300 px-3 py-1 text-xs font-medium text-gray-600 hover:border-[#2BB5A0] hover:text-[#2BB5A0] transition-colors dark:border-gray-700 dark:text-gray-300"
+              >
+                Pay half now
+              </button>
+              {showPayoffOption && (
+                <button
+                  type="button"
+                  onClick={() => setAmount(String(remainingBalance))}
+                  className="rounded-full border border-gray-300 px-3 py-1 text-xs font-medium text-gray-600 hover:border-[#2BB5A0] hover:text-[#2BB5A0] transition-colors dark:border-gray-700 dark:text-gray-300"
+                >
+                  Pay off loan in full
+                </button>
+              )}
+            </div>
             <p className="mt-2 text-xs text-gray-400 dark:text-gray-500">
-              Defaults to the amount due. You can pay more to get ahead on
-              your loan.
+              You can pay this instalment in full, pay part of it now and cover the rest before
+              the due date, or pay off your whole remaining balance in one go — whichever suits
+              you. Whatever&apos;s left after your payment stays as your next payment amount; if
+              it&apos;s still unpaid after the due date, a late fee applies to just that remaining
+              balance, not the full instalment. You can&apos;t pay more than what you actually owe
+              on this loan.
             </p>
+            {exceedsBalance && (
+              <p className="mt-2 text-xs font-semibold text-red-600 dark:text-red-400">
+                That&apos;s more than your remaining balance of {formatCurrency(remainingBalance)}.
+                Lower the amount or use &quot;Pay off loan in full&quot; above.
+              </p>
+            )}
           </div>
 
           <button
             onClick={handleSubmit}
-            disabled={isPending || insufficientBalance}
+            disabled={isPending || insufficientBalance || exceedsBalance}
             className="mt-7 inline-flex w-full items-center justify-center rounded-xl bg-[#149D8E] px-5 py-3 text-base font-semibold text-white transition-colors hover:bg-[#108a7d] disabled:opacity-50"
           >
             {isPending ? "Processing…" : `Pay ${formatCurrency(walletTotalDebit)}`}

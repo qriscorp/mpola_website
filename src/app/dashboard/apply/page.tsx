@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, Loader2 } from "lucide-react";
+import { Check, Loader2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { BorrowerPageHeader } from "@/components/top-nav";
 import { Button } from "@/components/ui/button";
@@ -11,10 +11,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { InfoTip } from "@/components/info-tip";
 import {
   useDraftApplication,
+  useApplicationEligibility,
   useSubmitApplication,
   useUpdateApplication,
   useDeleteApplication,
 } from "@/hooks/use-application";
+import Link from "next/link";
 import { useSearchGuarantorCandidate, useAttachGuarantors } from "@/hooks/use-guarantors";
 import { useConfirm } from "@/hooks/use-confirm";
 import { formatCurrency, formatDuration } from "@/lib/format";
@@ -734,6 +736,7 @@ export default function ApplyPage() {
   const [maxInterestRateError, setMaxInterestRateError] = useState<string | null>(null);
 
   const { data: draft, isLoading: draftLoading } = useDraftApplication();
+  const { data: eligibility, isLoading: eligibilityLoading } = useApplicationEligibility();
   const submitApplication = useSubmitApplication();
   const updateApplication = useUpdateApplication();
   const deleteApplication = useDeleteApplication();
@@ -919,13 +922,52 @@ export default function ApplyPage() {
     !maxInterestRate.trim() || (Number(maxInterestRate) >= 0.1 && Number(maxInterestRate) <= 25);
   const step1DurationValid = loanType !== "emergency" || durationDays != null;
 
-  if (resuming) {
+  if (resuming || eligibilityLoading) {
     return (
       <div className="space-y-6">
         <BorrowerPageHeader title="Apply - Loan Details" />
         <div className="flex items-center justify-center py-24">
           <Loader2 className="h-6 w-6 animate-spin text-[#2BB5A0]" />
         </div>
+      </div>
+    );
+  }
+
+  // No unfinished draft to resume, and an existing loan still has a
+  // balance — block starting a new request instead of letting them fill
+  // out the whole wizard just to get rejected at the end (backend enforces
+  // this too, at POST /loans/applications — this is purely upfront UX).
+  if (!resumedFromDraft && eligibility && !eligibility.can_apply && eligibility.blocking_loan) {
+    const loan = eligibility.blocking_loan;
+    return (
+      <div className="space-y-6">
+        <BorrowerPageHeader title="Apply" />
+        <Card>
+          <CardContent className="py-12 flex flex-col items-center text-center gap-4">
+            <div className="h-12 w-12 rounded-full bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center">
+              <AlertTriangle className="h-6 w-6 text-amber-500" />
+            </div>
+            <div>
+              <h2 className="font-bold text-[#1B2B3A] dark:text-white text-lg">
+                You have an outstanding loan
+              </h2>
+              <p className="mt-2 text-sm text-muted-foreground max-w-sm">
+                Settle your current loan before applying for a new one — you still owe{" "}
+                <span className="font-semibold text-[#1B2B3A] dark:text-white">
+                  {formatCurrency(loan.remaining_balance)}
+                </span>{" "}
+                of {formatCurrency(loan.total_repayable)}
+                {loan.status === "overdue" && " (overdue)"}
+                {loan.status === "defaulted" && " (defaulted)"}.
+              </p>
+            </div>
+            <Link href="/dashboard/repayments">
+              <Button className="bg-[#2BB5A0] hover:bg-[#239E8C] text-white">
+                Go to Repayments
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
       </div>
     );
   }

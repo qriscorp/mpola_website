@@ -1178,6 +1178,26 @@ export const api = {
     return apiAuthGet(`/wallet/withdraw/bank/status/${reference}`);
   },
 
+  // Checked before letting a borrower start the Apply wizard — one
+  // outstanding loan at a time (see OUTSTANDING_LOAN_STATUSES in
+  // routers/loans.py, the authoritative gate that also blocks the actual
+  // POST /loans/applications call).
+  getApplicationEligibility: async (): Promise<{
+    can_apply: boolean;
+    blocking_loan: {
+      id: string;
+      amount: number;
+      status: string;
+      total_repayable: number;
+      total_paid: number;
+      remaining_balance: number;
+      next_payment_date: string | null;
+      next_payment_amount: number | null;
+    } | null;
+  }> => {
+    return apiAuthGet("/loans/applications/eligibility");
+  },
+
   // Application submission
   submitApplication: async (data: {
     amount: number;
