@@ -51,8 +51,14 @@ export default function RepaymentsPage() {
       : 0;
   const remaining = loan.total_instalments - loan.paid_instalments;
 
+  // instalment_number isn't a unique row key on its own — a partial payment
+  // that doesn't clear an instalment leaves the next top-up toward that same
+  // instalment with the same number, so two real Repayment rows can share
+  // it. Key off each repayment's own id instead; the single synthetic "due"
+  // row below can't collide with any real repayment id.
   const rows = [
     ...(loan.repayments ?? []).map((r) => ({
+      key: r.id,
       num: r.instalment_number,
       date: formatDate(r.created_at),
       amount: r.amount,
@@ -61,6 +67,7 @@ export default function RepaymentsPage() {
     ...(loan.status === "active" && loan.next_payment_amount
       ? [
           {
+            key: "due",
             num: loan.paid_instalments + 1,
             date: formatDate(loan.next_payment_date),
             amount: loan.next_payment_amount,
@@ -123,7 +130,7 @@ export default function RepaymentsPage() {
             <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
               {rows.map((inst) => (
                 <tr
-                  key={inst.num}
+                  key={inst.key}
                   className={
                     inst.status === "due"
                       ? "bg-amber-50/50 dark:bg-amber-900/10"
