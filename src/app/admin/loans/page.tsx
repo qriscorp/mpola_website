@@ -214,8 +214,14 @@ export default function AdminLoansPage() {
                 </TableRow>
               ) : (
                 loans.map((loan) => {
-                  const progress = loan.total_instalments
-                    ? Math.round((loan.paid_instalments / loan.total_instalments) * 100)
+                  // Amount-based, not instalment-count-based —
+                  // paid_instalments only advances once a full instalment
+                  // clears (see make_repayment in routers/loans.py), so a
+                  // partial payment the borrower already made would
+                  // otherwise show as 0% here even though total_paid
+                  // reflects it.
+                  const progress = loan.total_repayable
+                    ? Math.round((loan.total_paid / loan.total_repayable) * 100)
                     : 0;
                   return (
                     <TableRow key={loan.id}>
@@ -241,7 +247,7 @@ export default function AdminLoansPage() {
                             className="w-20 h-2 [&>div]:bg-[#2BB5A0]"
                           />
                           <span className="text-xs text-muted-foreground">
-                            {loan.paid_instalments}/{loan.total_instalments}
+                            {progress}%
                           </span>
                         </div>
                       </TableCell>

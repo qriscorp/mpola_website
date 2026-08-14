@@ -53,6 +53,17 @@ function LoanDetailContent() {
   }
 
   const totalInterest = loan.total_repayable - loan.amount;
+  // paid_instalments only advances once a full instalment clears (see
+  // make_repayment in routers/loans.py) — a partial payment that hasn't
+  // cleared one yet leaves it at 0, which reads as "nothing received" if
+  // that's the only progress signal shown. total_paid is the real,
+  // cumulative amount-based truth, so it drives the bar below regardless
+  // of whether an instalment has technically completed yet.
+  const totalPaid = loan.total_paid ?? 0;
+  const remainingBalance = Math.max(0, loan.total_repayable - totalPaid);
+  const progressPct = loan.total_repayable
+    ? Math.min(100, Math.round((totalPaid / loan.total_repayable) * 100))
+    : 0;
 
   return (
     <div className="space-y-6">
@@ -110,12 +121,35 @@ function LoanDetailContent() {
           </div>
           <div>
             <p className="text-xs font-semibold text-white/50 uppercase tracking-wider">
-              Progress
+              Instalments
             </p>
             <p className="text-3xl font-extrabold mt-1">
               {loan.paid_instalments}/{loan.total_instalments}
             </p>
           </div>
+        </div>
+
+        {/* Amount-based progress — instalments only tick up once a full
+            instalment clears, so this is what actually shows a partial
+            payment the borrower has already made. */}
+        <div className="mt-6 pt-6 border-t border-white/10">
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-white/50">
+              {formatCurrency(totalPaid)} of {formatCurrency(loan.total_repayable)} repaid
+            </span>
+            <span className="font-semibold">{progressPct}%</span>
+          </div>
+          <div className="mt-2 h-2 rounded-full bg-white/10 overflow-hidden">
+            <div
+              className="h-full rounded-full bg-[#2BB5A0]"
+              style={{ width: `${progressPct}%` }}
+            />
+          </div>
+          {totalPaid > 0 && loan.status !== "completed" && (
+            <p className="mt-2 text-xs text-white/50">
+              UGX {remainingBalance.toLocaleString()} still outstanding
+            </p>
+          )}
         </div>
       </div>
 

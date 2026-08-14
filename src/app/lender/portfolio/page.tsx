@@ -207,14 +207,20 @@ export default function LenderPortfolioPage() {
                         </p>
                       ) : (
                         <>
+                          {/* Amount-based, not instalment-count-based —
+                              paid_instalments only advances once a full
+                              instalment clears (see make_repayment in
+                              routers/loans.py), so a partial payment the
+                              borrower already made would otherwise show as
+                              0% here even though total_paid reflects it. */}
                           <p className="text-xs text-gray-400 mb-1 dark:text-gray-500">
-                            {loan.paid_instalments}/{loan.total_instalments} paid
+                            {formatCurrency(loan.total_paid)} / {formatCurrency(loan.total_repayable)}
                           </p>
                           <div className="h-1.5 w-24 rounded-full bg-gray-200 overflow-hidden dark:bg-gray-700">
                             <div
                               className="h-full rounded-full bg-[#C4A55A]"
                               style={{
-                                width: `${loan.total_instalments ? (loan.paid_instalments / loan.total_instalments) * 100 : 0}%`,
+                                width: `${loan.total_repayable ? Math.min(100, (loan.total_paid / loan.total_repayable) * 100) : 0}%`,
                               }}
                             />
                           </div>
