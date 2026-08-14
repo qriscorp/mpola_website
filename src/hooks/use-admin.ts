@@ -302,6 +302,47 @@ export function useUnfreezeOfferTemplate() {
   });
 }
 
+export function useAdminSupportTickets(page: number = 1, pageSize: number = 20, status?: string) {
+  return useQuery({
+    queryKey: ["admin", "support-tickets", page, pageSize, status],
+    queryFn: () => api.getAdminSupportTickets(page, pageSize, status),
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function useAdminSupportTicketDetail(id: string) {
+  return useQuery({
+    queryKey: ["admin", "support-tickets", "detail", id],
+    queryFn: () => api.getAdminSupportTicketDetail(id),
+    enabled: !!id,
+  });
+}
+
+export function useReplyAdminSupportTicket(id: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (message: string) => api.replyAdminSupportTicket(id, message),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin", "support-tickets"] });
+    },
+    onError: (err: Error) => toast.error(err.message || "Failed to send reply."),
+  });
+}
+
+export function useUpdateSupportTicketStatus(id: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (status: "open" | "in_progress" | "resolved" | "closed") =>
+      api.updateSupportTicketStatus(id, status),
+    onSuccess: () => {
+      toast.success("Ticket status updated.");
+      qc.invalidateQueries({ queryKey: ["admin", "support-tickets"] });
+      qc.invalidateQueries({ queryKey: ["admin", "stats"] });
+    },
+    onError: (err: Error) => toast.error(err.message || "Failed to update ticket."),
+  });
+}
+
 export function useAdminDisputes(page: number = 1, pageSize: number = 20, status?: string) {
   return useQuery({
     queryKey: ["admin", "disputes", page, pageSize, status],

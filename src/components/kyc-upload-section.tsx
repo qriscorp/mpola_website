@@ -2,14 +2,9 @@
 
 import { useRef } from "react";
 import { CheckCircle2, Clock, Upload, Loader2, XCircle, Lock } from "lucide-react";
-import { useMyKycDocuments, useUploadKycDocument, useUser } from "@/hooks/use-dashboard";
+import { useMyKycDocuments, useUploadKycDocument } from "@/hooks/use-dashboard";
 import type { KYCDocumentType } from "@/lib/types";
 import { toast } from "sonner";
-
-// Mirrors KYC_REVERIFICATION_LOCK_DAYS in mpola_api/routers/users.py — the
-// backend is the source of truth and will reject the upload regardless;
-// this is just so the button reads "locked" instead of failing silently.
-const KYC_REVERIFICATION_LOCK_DAYS = 730;
 
 const ACCENT = {
   teal: { text: "text-[#2BB5A0]", bg: "bg-[#E8F8F5] dark:bg-[#2BB5A0]/10", ring: "focus:ring-[#2BB5A0]" },
@@ -28,15 +23,11 @@ function DocumentSlot({
   label,
   hint,
   accent,
-  locked,
-  lockedUntil,
 }: {
   type: KYCDocumentType;
   label: string;
   hint: string;
   accent: "teal" | "gold";
-  locked: boolean;
-  lockedUntil: string | null;
 }) {
   const { data: documents } = useMyKycDocuments();
   const upload = useUploadKycDocument();
@@ -45,6 +36,11 @@ function DocumentSlot({
 
   const existing = documents?.find((d) => d.document_type === type);
   const rejected = !!existing && !existing.verified && !!existing.rejection_reason;
+  // Locked per-document — from the moment THIS document is individually
+  // verified, independent of the other slots or the account's overall
+  // kyc_status (see locked_until in mpola_api's _kyc_doc_response).
+  const locked = !!existing?.locked_until;
+  const lockedUntil = existing?.locked_until ?? null;
 
   return (
     <div className="flex items-center justify-between gap-4 py-3 border-b border-gray-100 dark:border-gray-800 last:border-0">
@@ -101,8 +97,8 @@ function DocumentSlot({
             if (locked) {
               toast.error(
                 lockedUntil
-                  ? `Your KYC is verified — documents are locked until ${new Date(lockedUntil).toLocaleDateString()}. Contact support if you need to update one sooner.`
-                  : "Your KYC is verified and documents are locked. Contact support if you need to update one.",
+                  ? `This document is verified — locked until ${new Date(lockedUntil).toLocaleDateString()}. Contact support if you need to update it sooner.`
+                  : "This document is verified and locked. Contact support if you need to update it.",
               );
               return;
             }
@@ -131,35 +127,16 @@ function DocumentSlot({
 
 /** Account-level KYC document upload — shared by the borrower and lender
  * profile pages. Uploading doesn't change kyc_status by itself; an admin
- * still has to review and approve/reject it. Once verified, uploads are
- * locked for KYC_REVERIFICATION_LOCK_DAYS so a confirmed identity can't be
- * quietly swapped out — the backend enforces this regardless of what the
- * button shows here. */
+ * still has to review and approve/reject it. Each document is locked
+ * against re-upload individually, from the moment THAT document is
+ * verified, for KYC_REVERIFICATION_LOCK_DAYS — independent of the other
+ * slots or whether the account's overall kyc_status has reached "verified"
+ * yet. The backend enforces this regardless of what the button shows here. */
 export function KYCUploadSection({ accent }: { accent: "teal" | "gold" }) {
-  const { data: user } = useUser();
-
-  let locked = false;
-  let lockedUntil: string | null = null;
-  if (user?.kycStatus === "verified" && user.kycVerifiedAt) {
-    const until = new Date(user.kycVerifiedAt);
-    until.setDate(until.getDate() + KYC_REVERIFICATION_LOCK_DAYS);
-    if (until.getTime() > Date.now()) {
-      locked = true;
-      lockedUntil = until.toISOString();
-    }
-  }
-
   return (
     <div>
-      {locked && (
-        <div className="mb-3 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-900 px-3 py-2 text-xs text-emerald-700 dark:text-emerald-400">
-          Your identity is verified. Documents are locked until{" "}
-          {lockedUntil && new Date(lockedUntil).toLocaleDateString()} — contact support for
-          urgent corrections.
-        </div>
-      )}
       {SLOTS.map((slot) => (
-        <DocumentSlot key={slot.type} {...slot} accent={accent} locked={locked} lockedUntil={lockedUntil} />
+        <DocumentSlot key={slot.type} {...slot} accent={accent} />
       ))}
     </div>
   );

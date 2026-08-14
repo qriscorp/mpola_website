@@ -17,11 +17,11 @@ export default function ProfilePage() {
   const { data: user, isLoading, error } = useUser();
   const { mutate: updateProfile, isPending } = useUpdateProfile();
   const [editing, setEditing] = useState(false);
-  const [form, setForm] = useState({ fullName: "", phone: "", nin: "" });
+  const [form, setForm] = useState({ fullName: "", nin: "" });
 
   useEffect(() => {
     if (user) {
-      setForm({ fullName: user.fullName, phone: user.phone, nin: user.nin });
+      setForm({ fullName: user.fullName, nin: user.nin });
     }
   }, [user]);
 
@@ -98,10 +98,10 @@ export default function ProfilePage() {
                 Phone
               </label>
               <input
-                value={form.phone}
-                onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                readOnly={!editing}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white text-[#1B2B3A] outline-none dark:border-gray-700 dark:text-white dark:bg-gray-900"
+                value={user.phone}
+                readOnly
+                title="Phone number can't be changed — it's used for verification"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-gray-50 text-[#1B2B3A] outline-none dark:border-gray-700 dark:text-white dark:bg-gray-800/60"
               />
             </div>
             <div>

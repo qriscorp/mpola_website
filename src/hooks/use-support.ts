@@ -11,6 +11,13 @@ export function useReferralInfo() {
   });
 }
 
+export function useFaqs(q?: string) {
+  return useQuery({
+    queryKey: ["faqs", q ?? ""],
+    queryFn: () => api.getFaqs(q ? { q } : undefined),
+  });
+}
+
 export function useMySupportTickets() {
   return useQuery({
     queryKey: ["support", "mine"],

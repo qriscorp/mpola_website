@@ -91,6 +91,9 @@ export function useRealtimeNotifications() {
           queryClient.invalidateQueries({ queryKey: ["borrower", "offers-received"] });
           queryClient.invalidateQueries({ queryKey: ["application"] });
           queryClient.invalidateQueries({ queryKey: ["guarantor-requests"] });
+          queryClient.invalidateQueries({ queryKey: ["support"] });
+          queryClient.invalidateQueries({ queryKey: ["admin", "support-tickets"] });
+          queryClient.invalidateQueries({ queryKey: ["admin", "stats"] });
 
           if (URGENT_NOTIFICATION_TYPES.has(msg.type)) {
             playAttentionChime();
@@ -196,6 +199,31 @@ export function useRealtimeNotifications() {
             });
           } else if (msg.type === "guarantor_request_expired") {
             toast.info(msg.title, { description: msg.message });
+          } else if (msg.type === "support_ticket" || msg.type === "support_ticket_update") {
+            const ticketId = msg.data?.ticket_id;
+            toast.info(msg.title, {
+              description: msg.message,
+              duration: 15000,
+              action: ticketId
+                ? {
+                    label: "View",
+                    onClick: () => router.push(`/admin/support/${ticketId}`),
+                  }
+                : undefined,
+            });
+          } else if (msg.type === "support_reply") {
+            const ticketId = msg.data?.ticket_id;
+            const isLenderPath = pathnameRef.current?.startsWith("/lender");
+            toast.info(msg.title, {
+              description: msg.message,
+              duration: 15000,
+              action: ticketId
+                ? {
+                    label: "View",
+                    onClick: () => router.push(isLenderPath ? "/lender/help" : "/dashboard/help"),
+                  }
+                : undefined,
+            });
           } else if (msg.title) {
             toast.info(msg.title, { description: msg.message });
           }

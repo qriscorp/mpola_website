@@ -31,12 +31,12 @@ export default function LenderAccountPage() {
   const { mutate: updateProfile, isPending } = useUpdateProfile();
   const signAgreement = useSignLenderAgreement();
   const [editing, setEditing] = useState(false);
-  const [form, setForm] = useState({ fullName: "", phone: "", nin: "" });
+  const [form, setForm] = useState({ fullName: "", nin: "" });
   const [agreeChecked, setAgreeChecked] = useState(false);
 
   useEffect(() => {
     if (user) {
-      setForm({ fullName: user.fullName, phone: user.phone, nin: user.nin });
+      setForm({ fullName: user.fullName, nin: user.nin });
     }
   }, [user]);
 
@@ -114,11 +114,7 @@ export default function LenderAccountPage() {
               <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
                 Phone
               </Label>
-              <Input
-                value={form.phone}
-                onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                disabled={!editing}
-              />
+              <Input value={user.phone} disabled title="Phone number can't be changed — it's used for verification" />
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">

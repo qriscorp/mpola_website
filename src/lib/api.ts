@@ -33,6 +33,8 @@ import type {
   LenderOfferTemplate,
   ReferralInfo,
   SupportTicket,
+  AdminSupportTicket,
+  Faq,
   Dispute,
   DisputeMessage,
   LoginSessionInfo,
@@ -332,6 +334,9 @@ interface RawUserProfile {
   notif_repayment_received?: boolean;
   notif_loan_overdue?: boolean;
   notif_portfolio_digest?: boolean;
+  notif_offer_received?: boolean;
+  notif_payment_reminder?: boolean;
+  notif_application_status?: boolean;
   notif_login_alerts?: boolean;
   credit_score?: number | null;
   created_at: string;
@@ -354,6 +359,9 @@ function mapUserProfile(u: RawUserProfile): User {
     notifRepaymentReceived: u.notif_repayment_received ?? true,
     notifLoanOverdue: u.notif_loan_overdue ?? true,
     notifPortfolioDigest: u.notif_portfolio_digest ?? false,
+    notifOfferReceived: u.notif_offer_received ?? true,
+    notifPaymentReminder: u.notif_payment_reminder ?? true,
+    notifApplicationStatus: u.notif_application_status ?? true,
     notifLoginAlerts: u.notif_login_alerts ?? true,
     profilePic: u.profile_pic ?? undefined,
     kycStatus: u.kyc_status as User["kycStatus"],
@@ -830,26 +838,33 @@ export const api = {
     const u = await apiAuthGet<RawUserProfile>("/users/me");
     return mapUserProfile(u);
   },
+  // phone_number and email are deliberately not accepted here — both are
+  // the channels OTP verification relies on, so neither is user-editable
+  // after signup (backend's UserUpdate model doesn't accept them either).
   updateProfile: async (data: {
     fullName?: string;
-    phone?: string;
     nin?: string;
     twoFactorEnabled?: boolean;
     notifNewApplication?: boolean;
     notifRepaymentReceived?: boolean;
     notifLoanOverdue?: boolean;
     notifPortfolioDigest?: boolean;
+    notifOfferReceived?: boolean;
+    notifPaymentReminder?: boolean;
+    notifApplicationStatus?: boolean;
     notifLoginAlerts?: boolean;
   }): Promise<User> => {
     const u = await apiAuthPut<RawUserProfile>("/users/me", {
       full_name: data.fullName,
-      phone_number: data.phone,
       nin: data.nin,
       two_factor_enabled: data.twoFactorEnabled,
       notif_new_application: data.notifNewApplication,
       notif_repayment_received: data.notifRepaymentReceived,
       notif_loan_overdue: data.notifLoanOverdue,
       notif_portfolio_digest: data.notifPortfolioDigest,
+      notif_offer_received: data.notifOfferReceived,
+      notif_payment_reminder: data.notifPaymentReminder,
+      notif_application_status: data.notifApplicationStatus,
       notif_login_alerts: data.notifLoginAlerts,
     });
     return mapUserProfile(u);
@@ -1611,6 +1626,17 @@ export const api = {
     });
   },
 
+  // ─── Self-service account management ───
+  exportMyData: async (): Promise<Record<string, unknown>> => {
+    return apiAuthGet("/users/me/export");
+  },
+  deactivateMyAccount: async (
+    password: string,
+    reason?: string,
+  ): Promise<{ status: number; message: string }> => {
+    return apiAuthPost("/users/me/deactivate", { password, reason });
+  },
+
   // ─── Lender Portal APIs ───
   getMarketplace: async (
     page: number = 1,
@@ -1776,6 +1802,16 @@ export const api = {
     return apiAuthPost(`/support/${id}/messages`, { message });
   },
 
+  // ─── FAQ ───
+  getFaqs: async (params?: { q?: string; category?: string }): Promise<Faq[]> => {
+    const qs = new URLSearchParams();
+    if (params?.q) qs.set("q", params.q);
+    if (params?.category) qs.set("category", params.category);
+    const suffix = qs.toString() ? `?${qs.toString()}` : "";
+    const res = await apiAuthGet<{ faqs: Faq[] }>(`/faqs${suffix}`);
+    return res.faqs;
+  },
+
   // ─── Disputes ───
   fileDispute: async (data: {
     category: string;
@@ -1854,6 +1890,35 @@ export const api = {
       settlement_amount: data.settlementAmount,
       settlement_payer: data.settlementPayer,
     });
+  },
+
+  // ─── Admin: Support Tickets ───
+  getAdminSupportTickets: async (
+    page: number = 1,
+    pageSize: number = 20,
+    status?: string,
+  ): Promise<{ tickets: AdminSupportTicket[]; total: number }> => {
+    const params = new URLSearchParams();
+    params.set("skip", String((page - 1) * pageSize));
+    params.set("limit", String(pageSize));
+    if (status) params.set("status", status);
+    return apiAuthGet(`/admin/support-tickets?${params.toString()}`);
+  },
+  getAdminSupportTicketDetail: async (id: string): Promise<AdminSupportTicket> => {
+    const res = await apiAuthGet<{ ticket: AdminSupportTicket }>(`/admin/support-tickets/${id}`);
+    return res.ticket;
+  },
+  replyAdminSupportTicket: async (
+    id: string,
+    message: string,
+  ): Promise<{ status: number; message: string }> => {
+    return apiAuthPost(`/admin/support-tickets/${id}/reply`, { message });
+  },
+  updateSupportTicketStatus: async (
+    id: string,
+    status: "open" | "in_progress" | "resolved" | "closed",
+  ): Promise<{ status: number; message: string }> => {
+    return apiAuthPut(`/admin/support-tickets/${id}/status`, { status });
   },
 
   // ─── Sessions ───

@@ -21,6 +21,9 @@ export interface User {
   notifRepaymentReceived?: boolean;
   notifLoanOverdue?: boolean;
   notifPortfolioDigest?: boolean;
+  notifOfferReceived?: boolean;
+  notifPaymentReminder?: boolean;
+  notifApplicationStatus?: boolean;
   notifLoginAlerts?: boolean;
   creditScore: number;
   createdAt: string;
@@ -323,6 +326,7 @@ export interface AdminStats {
     kyc_completion_rate: number;
     pending_offer_templates: number;
     open_disputes: number;
+    open_support_tickets: number;
   };
   loan_type_mix: { type: string; count: number; percentage: number }[];
   application_status_breakdown: { status: string; count: number }[];
@@ -590,6 +594,7 @@ export interface KYCDocument {
   file_name: string | null;
   verified: boolean;
   rejection_reason: string | null;
+  locked_until: string | null;
 }
 
 // Account-wide, reusable supporting documents (bank statement, payslip/
@@ -731,6 +736,20 @@ export interface SupportTicket {
   created_at: string;
   message_count: number;
   messages?: SupportMessage[];
+}
+
+export interface AdminSupportTicket extends SupportTicket {
+  username: string | null;
+}
+
+export interface Faq {
+  id: string;
+  category: string;
+  role: string;
+  question: string;
+  answer: string;
+  sort_order: number;
+  is_active: boolean;
 }
 
 export interface DisputeMessage {
