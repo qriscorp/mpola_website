@@ -3,9 +3,11 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { BorrowerPageHeader } from "@/components/top-nav";
-import { useUser, useUpdateProfile } from "@/hooks/use-dashboard";
+import { useUser, useUpdateProfile, useChangePassword, useExportMyData } from "@/hooks/use-dashboard";
 import { CardSkeleton } from "@/components/skeletons";
 import { SessionsSection } from "@/components/sessions-section";
+import { DeactivateAccountDialog } from "@/components/deactivate-account-dialog";
+import { downloadJsonFile } from "@/lib/format";
 
 function Toggle({ on, onChange }: { on: boolean; onChange: () => void }) {
   return (
@@ -22,42 +24,37 @@ function Toggle({ on, onChange }: { on: boolean; onChange: () => void }) {
   );
 }
 
-const notificationItems = [
-  {
-    id: "new_offer",
-    label: "New Lender Offer",
-    desc: "When a lender responds to your request",
-    defaultOn: true,
-  },
-  {
-    id: "payment_reminder",
-    label: "Payment Reminders",
-    desc: "3 days before each instalment",
-    defaultOn: true,
-  },
-  {
-    id: "app_status",
-    label: "Application Status",
-    desc: "When lender approves or declines",
-    defaultOn: true,
-  },
-  { id: "marketing", label: "Marketing Emails", desc: "", defaultOn: false },
-];
-
 export default function SettingsPage() {
   const { data: user, isLoading, error } = useUser();
   const { mutate: updateProfile } = useUpdateProfile();
+  const changePassword = useChangePassword();
+  const exportData = useExportMyData();
 
-  const [toggles, setToggles] = useState<Record<string, boolean>>(() => {
-    const init: Record<string, boolean> = { login_notif: true };
-    notificationItems.forEach((i) => {
-      init[i.id] = i.defaultOn;
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [showDeactivate, setShowDeactivate] = useState(false);
+
+  function handleChangePassword() {
+    if (newPassword.length < 8) {
+      toast.error("New password must be at least 8 characters");
+      return;
+    }
+    changePassword.mutate(
+      { oldPassword, newPassword },
+      {
+        onSuccess: () => {
+          setOldPassword("");
+          setNewPassword("");
+        },
+      },
+    );
+  }
+
+  function handleExport() {
+    exportData.mutate(undefined, {
+      onSuccess: (data) => downloadJsonFile(data, `mpola-my-data-${new Date().toISOString().slice(0, 10)}.json`),
     });
-    return init;
-  });
-
-  const toggle = (id: string) =>
-    setToggles((prev) => ({ ...prev, [id]: !prev[id] }));
+  }
 
   if (error) {
     return (
@@ -89,25 +86,45 @@ export default function SettingsPage() {
           Notifications
         </h2>
         <p className="text-xs text-gray-400 mb-5">
-          Saved to this device only for now.
+          Choose which alerts you want to receive.
         </p>
         <div className="space-y-5 divide-y divide-gray-100 dark:divide-gray-800">
-          {notificationItems.map((item) => (
-            <div
-              key={item.id}
-              className="flex items-center justify-between pt-5 first:pt-0"
-            >
-              <div>
-                <p className="text-sm font-semibold text-[#1B2B3A] dark:text-white">
-                  {item.label}
-                </p>
-                {item.desc && (
-                  <p className="text-xs text-gray-400">{item.desc}</p>
-                )}
-              </div>
-              <Toggle on={toggles[item.id]} onChange={() => toggle(item.id)} />
+          <div className="flex items-center justify-between pt-0">
+            <div>
+              <p className="text-sm font-semibold text-[#1B2B3A] dark:text-white">
+                New Lender Offer
+              </p>
+              <p className="text-xs text-gray-400">When a lender responds to your request</p>
             </div>
-          ))}
+            <Toggle
+              on={user.notifOfferReceived ?? true}
+              onChange={() => updateProfile({ notifOfferReceived: !user.notifOfferReceived })}
+            />
+          </div>
+          <div className="flex items-center justify-between pt-5">
+            <div>
+              <p className="text-sm font-semibold text-[#1B2B3A] dark:text-white">
+                Payment Reminders
+              </p>
+              <p className="text-xs text-gray-400">A few days before each instalment</p>
+            </div>
+            <Toggle
+              on={user.notifPaymentReminder ?? true}
+              onChange={() => updateProfile({ notifPaymentReminder: !user.notifPaymentReminder })}
+            />
+          </div>
+          <div className="flex items-center justify-between pt-5">
+            <div>
+              <p className="text-sm font-semibold text-[#1B2B3A] dark:text-white">
+                Application Status
+              </p>
+              <p className="text-xs text-gray-400">When your loan request expires or changes status</p>
+            </div>
+            <Toggle
+              on={user.notifApplicationStatus ?? true}
+              onChange={() => updateProfile({ notifApplicationStatus: !user.notifApplicationStatus })}
+            />
+          </div>
         </div>
       </div>
 
@@ -139,9 +156,37 @@ export default function SettingsPage() {
               <p className="text-xs text-gray-400">Alert on new device login</p>
             </div>
             <Toggle
-              on={toggles.login_notif}
-              onChange={() => toggle("login_notif")}
+              on={user.notifLoginAlerts ?? true}
+              onChange={() => updateProfile({ notifLoginAlerts: !user.notifLoginAlerts })}
             />
+          </div>
+          <div className="pt-5">
+            <p className="text-sm font-semibold text-[#1B2B3A] dark:text-white mb-3">
+              Change Password
+            </p>
+            <div className="grid gap-3 sm:grid-cols-2 mb-3">
+              <input
+                type="password"
+                placeholder="Current password"
+                value={oldPassword}
+                onChange={(e) => setOldPassword(e.target.value)}
+                className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent px-3 py-2 text-sm text-[#1B2B3A] dark:text-white"
+              />
+              <input
+                type="password"
+                placeholder="New password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent px-3 py-2 text-sm text-[#1B2B3A] dark:text-white"
+              />
+            </div>
+            <button
+              onClick={handleChangePassword}
+              disabled={changePassword.isPending || !oldPassword || !newPassword}
+              className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 text-sm font-semibold text-[#1B2B3A] dark:text-white hover:border-[#2BB5A0] transition-colors disabled:opacity-50"
+            >
+              {changePassword.isPending ? "Changing…" : "Change Password"}
+            </button>
           </div>
         </div>
       </div>
@@ -153,19 +198,22 @@ export default function SettingsPage() {
         <h2 className="text-lg font-bold text-red-500 dark:text-red-400 mb-4">Danger Zone</h2>
         <div className="flex flex-wrap gap-3">
           <button
-            onClick={() => toast.info("Account deactivation isn't available yet — contact support.")}
+            onClick={() => setShowDeactivate(true)}
             className="px-5 py-2.5 rounded-xl border border-red-300 text-red-500 text-sm font-semibold hover:bg-red-50 transition-colors dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/20"
           >
             Deactivate Account
           </button>
           <button
-            onClick={() => toast.info("Data export isn't available yet — contact support.")}
-            className="px-5 py-2.5 rounded-xl border border-gray-300 text-gray-600 text-sm font-semibold hover:border-gray-400 transition-colors dark:border-gray-700 dark:text-gray-300 dark:hover:border-gray-600"
+            onClick={handleExport}
+            disabled={exportData.isPending}
+            className="px-5 py-2.5 rounded-xl border border-gray-300 text-gray-600 text-sm font-semibold hover:border-gray-400 transition-colors dark:border-gray-700 dark:text-gray-300 dark:hover:border-gray-600 disabled:opacity-50"
           >
-            Export My Data
+            {exportData.isPending ? "Preparing…" : "Export My Data"}
           </button>
         </div>
       </div>
+
+      <DeactivateAccountDialog open={showDeactivate} onOpenChange={setShowDeactivate} />
     </div>
   );
 }

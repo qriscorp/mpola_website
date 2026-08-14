@@ -4,8 +4,10 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { LenderPageHeader } from "@/components/lender-top-nav";
 import { CardSkeleton } from "@/components/skeletons";
-import { useUser, useUpdateProfile } from "@/hooks/use-dashboard";
+import { useUser, useUpdateProfile, useChangePassword, useExportMyData } from "@/hooks/use-dashboard";
 import { SessionsSection } from "@/components/sessions-section";
+import { DeactivateAccountDialog } from "@/components/deactivate-account-dialog";
+import { downloadJsonFile } from "@/lib/format";
 
 function Toggle({
   label,
@@ -54,6 +56,34 @@ function Toggle({
 export default function LenderSettingsPage() {
   const { data: user, isLoading, error } = useUser();
   const { mutate: updateProfile } = useUpdateProfile();
+  const changePassword = useChangePassword();
+  const exportData = useExportMyData();
+
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [showDeactivate, setShowDeactivate] = useState(false);
+
+  function handleChangePassword() {
+    if (newPassword.length < 8) {
+      toast.error("New password must be at least 8 characters");
+      return;
+    }
+    changePassword.mutate(
+      { oldPassword, newPassword },
+      {
+        onSuccess: () => {
+          setOldPassword("");
+          setNewPassword("");
+        },
+      },
+    );
+  }
+
+  function handleExport() {
+    exportData.mutate(undefined, {
+      onSuccess: (data) => downloadJsonFile(data, `mpola-my-data-${new Date().toISOString().slice(0, 10)}.json`),
+    });
+  }
 
   if (error) {
     return (
@@ -115,7 +145,7 @@ export default function LenderSettingsPage() {
         />
         <Toggle
           label="Weekly Portfolio Digest"
-          description="Summary email every Monday"
+          description="In-app summary of repayments, new loans, and your active book"
           on={user.notifPortfolioDigest ?? false}
           onToggle={() =>
             updateProfile({
@@ -149,6 +179,34 @@ export default function LenderSettingsPage() {
             updateProfile({ notifLoginAlerts: !user.notifLoginAlerts })
           }
         />
+        <div className="pt-3">
+          <p className="text-sm font-medium text-[#1B2B3A] dark:text-white mb-3">
+            Change Password
+          </p>
+          <div className="grid gap-3 sm:grid-cols-2 mb-3">
+            <input
+              type="password"
+              placeholder="Current password"
+              value={oldPassword}
+              onChange={(e) => setOldPassword(e.target.value)}
+              className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent px-3 py-2 text-sm text-[#1B2B3A] dark:text-white"
+            />
+            <input
+              type="password"
+              placeholder="New password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent px-3 py-2 text-sm text-[#1B2B3A] dark:text-white"
+            />
+          </div>
+          <button
+            onClick={handleChangePassword}
+            disabled={changePassword.isPending || !oldPassword || !newPassword}
+            className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 text-sm font-semibold text-[#1B2B3A] dark:text-white hover:border-[#C4A55A] transition-colors disabled:opacity-50"
+          >
+            {changePassword.isPending ? "Changing…" : "Change Password"}
+          </button>
+        </div>
       </div>
 
       <SessionsSection />
@@ -158,19 +216,22 @@ export default function LenderSettingsPage() {
         <h3 className="font-semibold text-red-600 dark:text-red-400 mb-4">Danger Zone</h3>
         <div className="flex flex-col sm:flex-row gap-3">
           <button
-            onClick={() => toast.info("Account deactivation isn't available yet — contact support.")}
+            onClick={() => setShowDeactivate(true)}
             className="px-4 py-2 rounded-lg border border-red-300 text-red-600 text-sm font-semibold hover:bg-red-50 transition-colors dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/20"
           >
             Deactivate Account
           </button>
           <button
-            onClick={() => toast.info("Data export isn't available yet — contact support.")}
-            className="px-4 py-2 rounded-lg border border-gray-300 text-gray-600 text-sm font-medium hover:border-gray-400 transition-colors dark:border-gray-700 dark:text-gray-300 dark:hover:border-gray-600"
+            onClick={handleExport}
+            disabled={exportData.isPending}
+            className="px-4 py-2 rounded-lg border border-gray-300 text-gray-600 text-sm font-medium hover:border-gray-400 transition-colors dark:border-gray-700 dark:text-gray-300 dark:hover:border-gray-600 disabled:opacity-50"
           >
-            Export My Data
+            {exportData.isPending ? "Preparing…" : "Export My Data"}
           </button>
         </div>
       </div>
+
+      <DeactivateAccountDialog open={showDeactivate} onOpenChange={setShowDeactivate} />
     </div>
   );
 }

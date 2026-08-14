@@ -24,6 +24,30 @@ export function useUpdateProfile() {
   });
 }
 
+export function useChangePassword() {
+  return useMutation({
+    mutationFn: ({ oldPassword, newPassword }: { oldPassword: string; newPassword: string }) =>
+      api.changePassword(oldPassword, newPassword),
+    onSuccess: () => toast.success("Password changed. Please sign in again next time."),
+    onError: (err: Error) => toast.error(err.message || "Failed to change password"),
+  });
+}
+
+export function useExportMyData() {
+  return useMutation({
+    mutationFn: api.exportMyData,
+    onError: (err: Error) => toast.error(err.message || "Failed to export data"),
+  });
+}
+
+export function useDeactivateAccount() {
+  return useMutation({
+    mutationFn: ({ password, reason }: { password: string; reason?: string }) =>
+      api.deactivateMyAccount(password, reason),
+    onError: (err: Error) => toast.error(err.message || "Failed to deactivate account"),
+  });
+}
+
 export function useSignLenderAgreement() {
   const qc = useQueryClient();
   return useMutation({
