@@ -14,10 +14,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Search, Download } from "lucide-react";
+import { Search } from "lucide-react";
 import { useAdminLoans, useAdminStats } from "@/hooks/use-admin";
 import { formatCurrency, formatRate } from "@/lib/format";
-import { downloadCsv } from "@/lib/csv";
+import { ExportMenu } from "@/components/export-menu";
 import { CardSkeleton, TableSkeleton } from "@/components/skeletons";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
@@ -64,22 +64,17 @@ export default function AdminLoansPage() {
     }
   };
 
-  const handleExport = () => {
-    downloadCsv(
-      "mpola-loans.csv",
-      loans.map((l) => ({
-        reference: l.reference,
-        borrower: l.borrower_name ?? "",
-        lender: l.lender_name ?? "",
-        amount: l.amount,
-        interest_rate: l.interest_rate,
-        total_paid: l.total_paid,
-        total_repayable: l.total_repayable,
-        status: l.status,
-        disbursed_at: l.disbursed_at ?? "",
-      })),
-    );
-  };
+  const exportRows = loans.map((l) => ({
+    reference: l.reference,
+    borrower: l.borrower_name ?? "",
+    lender: l.lender_name ?? "",
+    amount: l.amount,
+    interest_rate: l.interest_rate,
+    total_paid: l.total_paid,
+    total_repayable: l.total_repayable,
+    status: l.status,
+    disbursed_at: l.disbursed_at ?? "",
+  }));
 
   return (
     <FadeSwap
@@ -102,14 +97,7 @@ export default function AdminLoansPage() {
             Monitor all active and past loans
           </p>
         </div>
-        <Button
-          variant="outline"
-          className="gap-2 w-full sm:w-auto"
-          onClick={handleExport}
-        >
-          <Download className="h-4 w-4" />
-          Export
-        </Button>
+        <ExportMenu filename="mpola-loans" title="Loans" rows={exportRows} />
       </div>
 
       {/* Summary */}

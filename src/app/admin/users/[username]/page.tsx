@@ -27,6 +27,8 @@ import { CardSkeleton } from "@/components/skeletons";
 import { toast } from "sonner";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AdminWalletAdjustModal } from "@/components/admin-wallet-adjust-modal";
+import { useConfirm } from "@/hooks/use-confirm";
+import { usePrompt } from "@/hooks/use-prompt";
 
 const statusColor = (s: string) => {
   switch (s) {
@@ -59,6 +61,8 @@ export default function AdminUserDetailPage({
   const toggleFreeze = useToggleWalletFreeze(username);
   const [adjustModalOpen, setAdjustModalOpen] = useState(false);
   const [adjustPrefill, setAdjustPrefill] = useState<{ amount: number; direction: "credit" | "debit"; reason?: string } | null>(null);
+  const { confirm, ConfirmDialog } = useConfirm();
+  const { prompt, PromptDialog } = usePrompt();
 
   // Arrived via the Reconciliation page's "Adjust" link on a drifted wallet
   // — open the modal pre-filled with the exact correction, then strip the
@@ -110,18 +114,28 @@ export default function AdminUserDetailPage({
   const { profile, loans_as_borrower, loans_as_lender, applications, documents, kyc_documents, wallet, transactions } = data;
   const userLoans = profile.role === "lender" ? loans_as_lender : loans_as_borrower;
 
-  const handleApproveKyc = () => {
-    if (!confirm(`Approve KYC for ${profile.username}?`)) return;
+  const handleApproveKyc = async () => {
+    const ok = await confirm({
+      title: `Approve KYC for ${profile.username}?`,
+      description: "They'll be marked as KYC-verified immediately.",
+      confirmLabel: "Approve KYC",
+    });
+    if (!ok) return;
     reviewKyc.mutate(
       { status: "verified" },
       { onSuccess: () => toast.success("KYC approved") },
     );
   };
 
-  const handleRejectKyc = () => {
-    const note = window.prompt("Reason for rejection (shown to the user, optional):") ?? undefined;
+  const handleRejectKyc = async () => {
+    const note = await prompt({
+      title: "Reject KYC",
+      description: `Reason for rejection (shown to ${profile.username}, optional)`,
+      placeholder: "e.g. Document photo is blurry",
+    });
+    if (note === null) return;
     reviewKyc.mutate(
-      { status: "rejected", note },
+      { status: "rejected", note: note || undefined },
       { onSuccess: () => toast.success("KYC rejected") },
     );
   };
@@ -132,25 +146,34 @@ export default function AdminUserDetailPage({
     });
   };
 
-  const handleToggleFreeze = () => {
+  const handleToggleFreeze = async () => {
     if (wallet.is_frozen) {
-      if (!confirm(`Unfreeze ${profile.username}'s wallet? They'll be able to transact again immediately.`)) return;
+      const ok = await confirm({
+        title: `Unfreeze ${profile.username}'s wallet?`,
+        description: "They'll be able to transact again immediately.",
+        confirmLabel: "Unfreeze Wallet",
+      });
+      if (!ok) return;
       toggleFreeze.mutate(undefined, { onSuccess: () => toast.success("Wallet unfrozen") });
     } else {
-      const reason = window.prompt(`Reason for freezing ${profile.username}'s wallet (shown to them)?`);
+      const reason = await prompt({
+        title: "Freeze Wallet",
+        description: `Reason for freezing ${profile.username}'s wallet (shown to them)`,
+        placeholder: "e.g. Suspicious transaction pattern under review",
+      });
       if (reason === null) return;
       toggleFreeze.mutate(reason || undefined, { onSuccess: () => toast.success("Wallet frozen") });
     }
   };
 
-  const handleDelete = () => {
-    if (
-      !confirm(
-        `Permanently delete ${profile.username}? This removes their account, loans, and applications right away — it cannot be undone (audit record kept for 30 days).`,
-      )
-    ) {
-      return;
-    }
+  const handleDelete = async () => {
+    const ok = await confirm({
+      title: `Permanently delete ${profile.username}?`,
+      description: "This removes their account, loans, and applications right away — it cannot be undone (audit record kept for 30 days).",
+      confirmLabel: "Delete Permanently",
+      destructive: true,
+    });
+    if (!ok) return;
     deactivate.mutate(
       { username: profile.username },
       {
@@ -427,10 +450,13 @@ export default function AdminUserDetailPage({
                           variant="outline"
                           className="text-red-600 hover:text-red-700 border-red-200 hover:border-red-300"
                           disabled={verifyKycDocument.isPending}
-                          onClick={() => {
-                            const reason = window.prompt(
-                              `Reason for rejecting this ${d.document_type.replace(/_/g, " ")} (shown to the user)?`,
-                            );
+                          onClick={async () => {
+                            const reason = await prompt({
+                              title: "Reject Document",
+                              description: `Reason for rejecting this ${d.document_type.replace(/_/g, " ")} (shown to the user)`,
+                              placeholder: "e.g. Photo is blurry / doesn't match name on file",
+                              required: true,
+                            });
                             if (!reason || !reason.trim()) return;
                             verifyKycDocument.mutate({ documentId: d.id, verified: false, reason: reason.trim() });
                           }}
@@ -649,6 +675,8 @@ export default function AdminUserDetailPage({
         currentBalance={wallet.balance}
         prefill={adjustPrefill}
       />
+      {ConfirmDialog}
+      {PromptDialog}
     </div>
   );
 }

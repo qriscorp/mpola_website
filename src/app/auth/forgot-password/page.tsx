@@ -8,6 +8,7 @@ import { Logo } from "@/components/logo";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
+import { passwordRequirementErrors, PASSWORD_REQUIREMENTS_HINT } from "@/lib/password";
 import { toast } from "sonner";
 import {
   useSendPasswordResetCode,
@@ -132,8 +133,9 @@ function ForgotPasswordContent() {
       toast.error("Passwords do not match.");
       return;
     }
-    if (newPassword.length < 8) {
-      toast.error("Password must be at least 8 characters.");
+    const pwErrors = passwordRequirementErrors(newPassword);
+    if (pwErrors.length) {
+      toast.error(`Password needs: ${pwErrors.join(", ").toLowerCase()}`);
       return;
     }
 
@@ -345,7 +347,7 @@ function ForgotPasswordContent() {
           {step === "reset" && (
             <>
               <p className="mb-5 text-sm text-gray-500 dark:text-gray-400">
-                Set a new password with at least 8 characters.
+                {PASSWORD_REQUIREMENTS_HINT}
               </p>
 
               <form onSubmit={handleReset} className="space-y-4">

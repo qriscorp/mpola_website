@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { CardSkeleton } from "@/components/skeletons";
 import { useAdminDisputeDetail, useResolveDispute } from "@/hooks/use-admin";
 import { usePostDisputeMessage } from "@/hooks/use-support";
+import { useConfirm } from "@/hooks/use-confirm";
 import { formatCurrency } from "@/lib/format";
 import { toast } from "sonner";
 
@@ -43,6 +44,7 @@ export default function AdminDisputeDetailPage({
   const [resolutionNote, setResolutionNote] = useState("");
   const [settleAmount, setSettleAmount] = useState("");
   const [settlePayer, setSettlePayer] = useState<"filer" | "respondent">("filer");
+  const { confirm, ConfirmDialog } = useConfirm();
 
   if (isLoading || !dispute) {
     return (
@@ -62,14 +64,19 @@ export default function AdminDisputeDetailPage({
     postMessage.mutate(messageText.trim(), { onSuccess: () => setMessageText("") });
   };
 
-  const doResolve = (status: "investigating" | "resolved" | "rejected", withSettlement: boolean) => {
+  const doResolve = async (status: "investigating" | "resolved" | "rejected", withSettlement: boolean) => {
     if (status === "resolved" && !resolutionNote.trim()) {
       toast.error("Add a resolution note first.");
       return;
     }
     const amount = withSettlement && settleAmount ? Number(settleAmount) : undefined;
     if (withSettlement && amount) {
-      if (!confirm(`Move ${formatCurrency(amount)} from the ${settlePayer} to the other party as part of resolving this?`)) return;
+      const ok = await confirm({
+        title: "Move funds as part of resolving this?",
+        description: `${formatCurrency(amount)} moves from the ${settlePayer} to the other party.`,
+        confirmLabel: "Move Funds & Resolve",
+      });
+      if (!ok) return;
     }
     resolve.mutate({
       status,
@@ -261,6 +268,7 @@ export default function AdminDisputeDetailPage({
           </CardContent>
         </Card>
       )}
+      {ConfirmDialog}
     </div>
   );
 }

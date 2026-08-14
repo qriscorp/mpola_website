@@ -10,12 +10,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Wallet, ArrowUpRight, ArrowDownRight, Download } from "lucide-react";
+import { Wallet, ArrowUpRight, ArrowDownRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/format";
 import { useState } from "react";
 import { useAdminPayments, useAdminStats } from "@/hooks/use-admin";
-import { downloadCsv } from "@/lib/csv";
+import { ExportMenu } from "@/components/export-menu";
 import { CardSkeleton, TableSkeleton } from "@/components/skeletons";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { FadeSwap } from "@/components/motion/fade-swap";
@@ -46,18 +46,13 @@ export default function AdminPaymentsPage() {
   const transactions = data?.transactions ?? [];
   const total = data?.total ?? 0;
 
-  const handleExport = () => {
-    downloadCsv(
-      "mpola-payments.csv",
-      transactions.map((t) => ({
-        date: t.created_at,
-        user: t.username ?? "",
-        type: t.type,
-        status: t.status,
-        amount: t.amount,
-      })),
-    );
-  };
+  const exportRows = transactions.map((t) => ({
+    date: t.created_at,
+    user: t.username ?? "",
+    type: t.type,
+    status: t.status,
+    amount: t.amount,
+  }));
 
   return (
     <FadeSwap
@@ -80,14 +75,7 @@ export default function AdminPaymentsPage() {
             Platform-wide payment and wallet activity
           </p>
         </div>
-        <Button
-          variant="outline"
-          className="gap-2 w-full sm:w-auto"
-          onClick={handleExport}
-        >
-          <Download className="h-4 w-4" />
-          Export
-        </Button>
+        <ExportMenu filename="mpola-payments" title="Wallet & Payments" rows={exportRows} />
       </div>
 
       {/* Summary */}

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Logo } from "@/components/logo";
+import { ComplianceBadge } from "@/components/compliance-badge";
 import {
   ArrowLeft,
   ArrowRight,
@@ -248,7 +249,7 @@ export default function HowItWorksPage() {
               {
                 icon: ShieldCheck,
                 title: "Regulated & Safe",
-                desc: "Mpola is licensed by the Bank of Uganda. Your data is encrypted, your funds are protected.",
+                desc: "Mpola operates in compliance with Ugandan lending regulations. Your data is encrypted, your funds are protected.",
               },
               {
                 icon: Wallet,
@@ -329,7 +330,7 @@ export default function HowItWorksPage() {
               },
               {
                 q: "Is my data safe?",
-                a: "Absolutely. Mpola uses bank-grade encryption, is licensed by the Bank of Uganda, and never shares your data without consent.",
+                a: "Absolutely. Mpola uses bank-grade encryption, operates in compliance with Ugandan financial regulations, and never shares your data without consent.",
               },
             ].map((faq) => (
               <div
@@ -374,11 +375,7 @@ export default function HowItWorksPage() {
       {/* Footer */}
       <footer className="bg-[#111E29] text-gray-400 py-10">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2 text-xs">
-            <ShieldCheck className="h-4 w-4 text-[#2BB5A0]" />
-            Licensed by Bank of Uganda · Tier IV Credit Institution Licence
-            #TCI-2024-0418
-          </div>
+          <ComplianceBadge className="text-[#2BB5A0]" />
           <div className="flex items-center gap-4 text-xs">
             <Link
               href="/privacy-policy"

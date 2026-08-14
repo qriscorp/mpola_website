@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Logo } from "@/components/logo";
+import { ComplianceBadge } from "@/components/compliance-badge";
 import {
   ArrowLeft,
   ArrowRight,
@@ -247,15 +248,14 @@ export default function LearnMorePage() {
                 Regulated lending, reduced risk
               </h2>
               <p className="mt-4 text-gray-500 leading-relaxed dark:text-gray-400">
-                Mpola operates under a Bank of Uganda Tier IV Credit
-                Institution licence. All lending activities comply with Ugandan
-                financial regulation and consumer protection law.
+                All lending activities on Mpola comply with Ugandan financial
+                regulation and consumer protection law.
               </p>
             </div>
 
             <div className="space-y-4">
               {[
-                "BoU Tier IV Licensed platform",
+                "Compliant with Ugandan lending regulations",
                 "All borrowers KYC-verified with National ID",
                 "2+ confirmed guarantors per application",
                 "Automated repayment tracking & alerts",
@@ -325,11 +325,7 @@ export default function LearnMorePage() {
       {/* Footer */}
       <footer className="bg-[#111E29] text-gray-400 py-10">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2 text-xs">
-            <ShieldCheck className="h-4 w-4 text-[#C4A55A]" />
-            Licensed by Bank of Uganda · Tier IV Credit Institution Licence
-            #TCI-2024-0418
-          </div>
+          <ComplianceBadge className="text-[#C4A55A]" />
           <div className="flex items-center gap-4 text-xs">
             <Link
               href="/privacy-policy"

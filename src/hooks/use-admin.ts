@@ -268,6 +268,14 @@ export function useUpdateAdminSetting() {
   });
 }
 
+export function useExportAllPlatformData() {
+  return useMutation({
+    mutationFn: api.exportAllPlatformData,
+    onSuccess: () => toast.success("Export downloaded"),
+    onError: (err: Error) => toast.error(err.message || "Export failed"),
+  });
+}
+
 export function useOfferTemplatesForReview(status?: string) {
   return useQuery({
     queryKey: ["admin", "offer-templates", status],

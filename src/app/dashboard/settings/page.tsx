@@ -9,6 +9,7 @@ import { SessionsSection } from "@/components/sessions-section";
 import { DeactivateAccountDialog } from "@/components/deactivate-account-dialog";
 import { PasswordInput } from "@/components/ui/password-input";
 import { downloadJsonFile } from "@/lib/format";
+import { passwordRequirementErrors, PASSWORD_REQUIREMENTS_HINT } from "@/lib/password";
 
 function Toggle({ on, onChange }: { on: boolean; onChange: () => void }) {
   return (
@@ -36,8 +37,9 @@ export default function SettingsPage() {
   const [showDeactivate, setShowDeactivate] = useState(false);
 
   function handleChangePassword() {
-    if (newPassword.length < 8) {
-      toast.error("New password must be at least 8 characters");
+    const errors = passwordRequirementErrors(newPassword);
+    if (errors.length) {
+      toast.error(`New password needs: ${errors.join(", ").toLowerCase()}`);
       return;
     }
     changePassword.mutate(
@@ -177,6 +179,7 @@ export default function SettingsPage() {
                 onChange={(e) => setNewPassword(e.target.value)}
               />
             </div>
+            <p className="text-xs text-gray-400 mb-3">{PASSWORD_REQUIREMENTS_HINT}</p>
             <button
               onClick={handleChangePassword}
               disabled={changePassword.isPending || !oldPassword || !newPassword}

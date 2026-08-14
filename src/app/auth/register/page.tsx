@@ -9,6 +9,7 @@ import { ArrowLeft, ArrowRight, Mail } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
+import { PASSWORD_REQUIREMENTS_HINT } from "@/lib/password";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useRegister } from "@/hooks/use-auth";
@@ -651,10 +652,12 @@ export default function RegisterPage() {
                   aria-invalid={!!errors.password}
                   {...register("password")}
                 />
-                {errors.password && (
+                {errors.password ? (
                   <p className="mt-1 text-xs text-red-500">
                     {errors.password.message}
                   </p>
+                ) : (
+                  <p className="mt-1 text-xs text-gray-400">{PASSWORD_REQUIREMENTS_HINT}</p>
                 )}
               </div>
               <div>

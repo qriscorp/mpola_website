@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { PaginationControls } from "@/components/ui/pagination-controls";
-import { TrendingUp, Smartphone, Landmark, HandCoins, ArrowLeftRight, Download } from "lucide-react";
+import { TrendingUp, Smartphone, Landmark, HandCoins, ArrowLeftRight } from "lucide-react";
 import {
   Area,
   AreaChart,
@@ -25,7 +25,7 @@ import {
 } from "recharts";
 import { formatCurrency } from "@/lib/format";
 import { useAdminRevenue } from "@/hooks/use-admin";
-import { downloadCsv } from "@/lib/csv";
+import { ExportMenu } from "@/components/export-menu";
 import { CardSkeleton, TableSkeleton } from "@/components/skeletons";
 import { FadeSwap } from "@/components/motion/fade-swap";
 import { StaggerList, StaggerItem } from "@/components/motion/stagger";
@@ -61,17 +61,12 @@ export default function AdminRevenuePage() {
 
   const transactions = data?.transactions ?? [];
 
-  const handleExport = () => {
-    downloadCsv(
-      "mpola-revenue.csv",
-      transactions.map((t) => ({
-        date: t.created_at,
-        user: t.username ?? "",
-        category: t.category,
-        platform_fee: t.platform_fee,
-      })),
-    );
-  };
+  const exportRows = transactions.map((t) => ({
+    date: t.created_at,
+    user: t.username ?? "",
+    category: t.category,
+    platform_fee: t.platform_fee,
+  }));
 
   return (
     <FadeSwap
@@ -96,10 +91,7 @@ export default function AdminRevenuePage() {
             counted here.
           </p>
         </div>
-        <Button variant="outline" className="gap-2 w-full sm:w-auto" onClick={handleExport}>
-          <Download className="h-4 w-4" />
-          Export
-        </Button>
+        <ExportMenu filename="mpola-revenue" title="Revenue" rows={exportRows} />
       </div>
 
       {/* Summary */}

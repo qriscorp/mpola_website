@@ -11,11 +11,12 @@ export interface User {
   registrationNumber?: string;
   profilePic?: string;
   kycStatus: "pending" | "verified" | "rejected";
-  // When kycStatus last became "verified" — starts the 2-year re-upload
-  // lock that KYCUploadSection enforces client-side (backend is the source
-  // of truth; see KYC_REVERIFICATION_LOCK_DAYS in routers/users.py).
+  // When kycStatus last became "verified" — each KYCDocument has its own
+  // verified_at/locked_until now (see KYCUploadSection), this is just the
+  // account-wide timestamp, not a lock driver on its own.
   kycVerifiedAt: string | null;
   location?: string;
+  isSuperAdmin?: boolean;
   twoFactorEnabled?: boolean;
   notifNewApplication?: boolean;
   notifRepaymentReceived?: boolean;

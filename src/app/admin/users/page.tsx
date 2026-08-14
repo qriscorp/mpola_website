@@ -27,7 +27,6 @@ import {
   UserCheck,
   UserX,
   Trash2,
-  Download,
   Eye,
   ShieldPlus,
   ShieldMinus,
@@ -40,10 +39,11 @@ import {
   useSetUserAdminAccess,
 } from "@/hooks/use-admin";
 import { formatCurrency } from "@/lib/format";
-import { downloadCsv } from "@/lib/csv";
+import { ExportMenu } from "@/components/export-menu";
 import { CardSkeleton, TableSkeleton } from "@/components/skeletons";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
+import { useConfirm } from "@/hooks/use-confirm";
 import { toast } from "sonner";
 import { FadeSwap } from "@/components/motion/fade-swap";
 import { StaggerList, StaggerItem } from "@/components/motion/stagger";
@@ -65,6 +65,7 @@ export default function AdminUsersPage() {
 
   const users = data?.users ?? [];
   const total = data?.total ?? 0;
+  const { confirm, ConfirmDialog } = useConfirm();
 
   const handleSuspend = (username: string) => {
     suspend.mutate(username, {
@@ -72,29 +73,28 @@ export default function AdminUsersPage() {
     });
   };
 
-  const handleDelete = (username: string) => {
-    if (
-      !confirm(
-        `Permanently delete ${username}? This removes their account, loans, and applications right away — it cannot be undone (audit record kept for 30 days).`,
-      )
-    ) {
-      return;
-    }
+  const handleDelete = async (username: string) => {
+    const ok = await confirm({
+      title: `Permanently delete ${username}?`,
+      description: "This removes their account, loans, and applications right away — it cannot be undone (audit record kept for 30 days).",
+      confirmLabel: "Delete Permanently",
+      destructive: true,
+    });
+    if (!ok) return;
     deactivate.mutate(
       { username },
       { onSuccess: () => toast.success(`${username} deleted`) },
     );
   };
 
-  const handleGrantAdmin = (username: string, isSuperAdmin: boolean) => {
+  const handleGrantAdmin = async (username: string, isSuperAdmin: boolean) => {
     const label = isSuperAdmin ? "super admin" : "admin";
-    if (
-      !confirm(
-        `Grant ${label} access to ${username}? They'll keep their current role and can switch between it and the admin dashboard.`,
-      )
-    ) {
-      return;
-    }
+    const ok = await confirm({
+      title: `Grant ${label} access to ${username}?`,
+      description: "They'll keep their current role and can switch between it and the admin dashboard.",
+      confirmLabel: `Grant ${label === "super admin" ? "Super Admin" : "Admin"} Access`,
+    });
+    if (!ok) return;
     setAdminAccess.mutate(
       { username, isAdmin: true, isSuperAdmin },
       {
@@ -117,23 +117,18 @@ export default function AdminUsersPage() {
     );
   };
 
-  const handleExport = () => {
-    downloadCsv(
-      "mpola-users.csv",
-      users.map((u) => ({
-        username: u.username,
-        full_name: u.full_name ?? "",
-        email: u.email,
-        phone: u.phone_number ?? "",
-        role: u.role,
-        kyc_status: u.kyc_status,
-        active_loans: u.active_loans,
-        total_borrowed: u.total_borrowed,
-        status: u.is_active ? "active" : "suspended",
-        joined: u.created_at,
-      })),
-    );
-  };
+  const exportRows = users.map((u) => ({
+    username: u.username,
+    full_name: u.full_name ?? "",
+    email: u.email,
+    phone: u.phone_number ?? "",
+    role: u.role,
+    kyc_status: u.kyc_status,
+    active_loans: u.active_loans,
+    total_borrowed: u.total_borrowed,
+    status: u.is_active ? "active" : "suspended",
+    joined: u.created_at,
+  }));
 
   return (
     <FadeSwap
@@ -156,14 +151,7 @@ export default function AdminUsersPage() {
             Manage all registered borrowers and lenders
           </p>
         </div>
-        <Button
-          variant="outline"
-          className="gap-2 w-full sm:w-auto"
-          onClick={handleExport}
-        >
-          <Download className="h-4 w-4" />
-          Export CSV
-        </Button>
+        <ExportMenu filename="mpola-users" title="Users" rows={exportRows} />
       </div>
 
       {/* Summary Cards */}
@@ -419,6 +407,7 @@ export default function AdminUsersPage() {
           />
         </CardContent>
       </Card>
+      {ConfirmDialog}
     </div>
     </FadeSwap>
   );

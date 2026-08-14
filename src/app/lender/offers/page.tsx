@@ -19,6 +19,7 @@ import { formatCurrency, formatRate, formatDuration } from "@/lib/format";
 import type { LoanOffer } from "@/lib/types";
 import { FadeSwap } from "@/components/motion/fade-swap";
 import { StaggerList, StaggerItem } from "@/components/motion/stagger";
+import { useConfirm } from "@/hooks/use-confirm";
 
 const templateStatusLabel: Record<string, string> = {
   pending_review: "Pending Review",
@@ -154,9 +155,16 @@ export default function MyOffersPage() {
   const extendExpiry = useExtendOfferTemplateExpiry();
   const [editingExpiryId, setEditingExpiryId] = useState<string | null>(null);
   const [expiryValue, setExpiryValue] = useState("");
+  const { confirm, ConfirmDialog } = useConfirm();
 
-  const handleDelete = (id: string) => {
-    if (!confirm("Delete this standing offer? This can't be undone.")) return;
+  const handleDelete = async (id: string) => {
+    const ok = await confirm({
+      title: "Delete this standing offer?",
+      description: "This can't be undone.",
+      confirmLabel: "Delete Offer",
+      destructive: true,
+    });
+    if (!ok) return;
     deleteTemplate.mutate(id, {
       onSuccess: () => toast.success("Deleted."),
       onError: (err: Error) => toast.error(err.message || "Failed to delete"),
@@ -498,6 +506,7 @@ export default function MyOffersPage() {
           ))}
         </StaggerList>
       )}
+      {ConfirmDialog}
     </div>
     </FadeSwap>
   );

@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { useAdjustWalletBalance } from "@/hooks/use-admin";
 import { formatCurrency } from "@/lib/format";
 import { toast } from "sonner";
+import { useConfirm } from "@/hooks/use-confirm";
 
 interface AdminWalletAdjustModalProps {
   open: boolean;
@@ -31,6 +32,7 @@ export function AdminWalletAdjustModal({
   const [amount, setAmount] = useState("");
   const [reason, setReason] = useState("");
   const adjust = useAdjustWalletBalance(username);
+  const { confirm, ConfirmDialog } = useConfirm();
 
   // Prefill every time the modal opens — either from Reconciliation (exact
   // amount/direction to close a known drift) or, absent that, the current
@@ -61,15 +63,15 @@ export function AdminWalletAdjustModal({
     onClose();
   };
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     if (!valid) return;
-    if (
-      !confirm(
-        `${direction === "credit" ? "Credit" : "Debit"} ${username}'s wallet by ${formatCurrency(numericAmount)}?\n\nReason: ${reason}\n\nNew balance will be ${formatCurrency(resultingBalance)}. This is logged and cannot be undone automatically.`,
-      )
-    ) {
-      return;
-    }
+    const ok = await confirm({
+      title: `${direction === "credit" ? "Credit" : "Debit"} ${username}'s wallet?`,
+      description: `${formatCurrency(numericAmount)} — reason: "${reason}". New balance will be ${formatCurrency(resultingBalance)}. This is logged and cannot be undone automatically.`,
+      confirmLabel: direction === "credit" ? "Credit Wallet" : "Debit Wallet",
+      destructive: direction === "debit",
+    });
+    if (!ok) return;
     adjust.mutate(
       { amount: signedAmount, reason: reason.trim() },
       {
@@ -163,6 +165,7 @@ export function AdminWalletAdjustModal({
           </button>
         </div>
       </div>
+      {ConfirmDialog}
     </div>
   );
 }

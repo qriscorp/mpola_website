@@ -5,6 +5,7 @@ import Link from "next/link";
 import { BorrowerPageHeader } from "@/components/top-nav";
 import { InfoTip } from "@/components/info-tip";
 import { ConfirmModal } from "@/components/confirm-modal";
+import { useConfirm } from "@/hooks/use-confirm";
 import { useApplications } from "@/hooks/use-dashboard";
 import { useSearchGuarantorCandidate, useReplaceGuarantor, useRemindGuarantor } from "@/hooks/use-guarantors";
 import {
@@ -561,20 +562,30 @@ function ApplicationActions({ app }: { app: LoanApplication }) {
 
 function DiscardDraftLink({ applicationId }: { applicationId: string }) {
   const deleteApplication = useDeleteApplication();
-  const handleDiscard = () => {
-    if (!confirm("Discard this unfinished request? This can't be undone.")) return;
+  const { confirm, ConfirmDialog } = useConfirm();
+  const handleDiscard = async () => {
+    const ok = await confirm({
+      title: "Discard this unfinished request?",
+      description: "This can't be undone.",
+      confirmLabel: "Discard Draft",
+      destructive: true,
+    });
+    if (!ok) return;
     deleteApplication.mutate(applicationId, {
       onSuccess: () => toast.success("Draft discarded"),
     });
   };
   return (
-    <button
-      onClick={handleDiscard}
-      disabled={deleteApplication.isPending}
-      className="mt-3 text-xs font-medium text-gray-400 hover:text-red-500 disabled:opacity-50 dark:text-gray-500"
-    >
-      Discard draft
-    </button>
+    <>
+      <button
+        onClick={handleDiscard}
+        disabled={deleteApplication.isPending}
+        className="mt-3 text-xs font-medium text-gray-400 hover:text-red-500 disabled:opacity-50 dark:text-gray-500"
+      >
+        Discard draft
+      </button>
+      {ConfirmDialog}
+    </>
   );
 }
 

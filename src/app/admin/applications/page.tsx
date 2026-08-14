@@ -25,7 +25,6 @@ import {
   XCircle,
   Snowflake,
   Sun,
-  Download,
 } from "lucide-react";
 import {
   useAdminApplications,
@@ -35,10 +34,11 @@ import {
   useUnfreezeAdminApplication,
 } from "@/hooks/use-admin";
 import { formatCurrency, getApplicationStatusLabel, getApplicationStatusColor } from "@/lib/format";
-import { downloadCsv } from "@/lib/csv";
+import { ExportMenu } from "@/components/export-menu";
 import { CardSkeleton, TableSkeleton } from "@/components/skeletons";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
+import { useConfirm } from "@/hooks/use-confirm";
 import { toast } from "sonner";
 import { FadeSwap } from "@/components/motion/fade-swap";
 import { StaggerList, StaggerItem } from "@/components/motion/stagger";
@@ -73,9 +73,16 @@ export default function AdminApplicationsPage() {
   const unfreezeApplication = useUnfreezeAdminApplication();
   const applications = data?.applications ?? [];
   const total = data?.total ?? 0;
+  const { confirm, ConfirmDialog } = useConfirm();
 
-  const handleReject = (id: string) => {
-    if (!confirm("Close this loan request? This can't be undone.")) return;
+  const handleReject = async (id: string) => {
+    const ok = await confirm({
+      title: "Close this loan request?",
+      description: "This can't be undone.",
+      confirmLabel: "Close Request",
+      destructive: true,
+    });
+    if (!ok) return;
     updateStatus.mutate(
       { id, status: "reject" },
       { onSuccess: () => toast.success("Application closed") },
@@ -94,20 +101,15 @@ export default function AdminApplicationsPage() {
   const countFor = (status: string) =>
     breakdown.find((b) => b.status.toLowerCase() === status)?.count ?? 0;
 
-  const handleExport = () => {
-    downloadCsv(
-      "mpola-applications.csv",
-      applications.map((a) => ({
-        reference: a.reference_number,
-        borrower: a.borrower_name ?? "",
-        amount: a.amount,
-        loan_type: a.loan_type,
-        status: a.status,
-        offers: a.offer_count,
-        created_at: a.created_at,
-      })),
-    );
-  };
+  const exportRows = applications.map((a) => ({
+    reference: a.reference_number,
+    borrower: a.borrower_name ?? "",
+    amount: a.amount,
+    loan_type: a.loan_type,
+    status: a.status,
+    offers: a.offer_count,
+    created_at: a.created_at,
+  }));
 
   return (
     <FadeSwap
@@ -130,14 +132,7 @@ export default function AdminApplicationsPage() {
             Review and moderate loan applications
           </p>
         </div>
-        <Button
-          variant="outline"
-          className="gap-2 w-full sm:w-auto"
-          onClick={handleExport}
-        >
-          <Download className="h-4 w-4" />
-          Export
-        </Button>
+        <ExportMenu filename="mpola-applications" title="Applications" rows={exportRows} />
       </div>
 
       {/* Summary */}
@@ -336,6 +331,7 @@ export default function AdminApplicationsPage() {
           />
         </CardContent>
       </Card>
+      {ConfirmDialog}
     </div>
     </FadeSwap>
   );

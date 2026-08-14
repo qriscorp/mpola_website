@@ -329,6 +329,7 @@ interface RawUserProfile {
   profile_pic: string | null;
   kyc_status: string;
   kyc_verified_at: string | null;
+  is_super_admin?: boolean;
   two_factor_enabled?: boolean;
   notif_new_application?: boolean;
   notif_repayment_received?: boolean;
@@ -354,6 +355,7 @@ function mapUserProfile(u: RawUserProfile): User {
     phone: u.phone_number,
     nin: u.nin ?? "",
     accountType: u.account_type as User["accountType"],
+    isSuperAdmin: u.is_super_admin ?? false,
     twoFactorEnabled: u.two_factor_enabled ?? false,
     notifNewApplication: u.notif_new_application ?? true,
     notifRepaymentReceived: u.notif_repayment_received ?? true,
@@ -1518,6 +1520,26 @@ export const api = {
     return apiAuthPut(`/admin/settings/${key}`, { value });
   },
 
+  exportAllPlatformData: async (): Promise<void> => {
+    const token = getCookie("lf_token");
+    const res = await fetch(`${API_BASE_URL}/admin/export-all-data`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: "Export failed" }));
+      throw new Error(extractErrorMessage(err, res.status));
+    }
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `mpola-platform-export-${new Date().toISOString().slice(0, 10)}.zip`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+  },
+
   getAdminUserDetail: async (username: string): Promise<AdminUserDetail> => {
     return apiAuthGet(`/admin/users/${username}`);
   },
@@ -1777,6 +1799,15 @@ export const api = {
   // ─── Referrals ───
   getReferralInfo: async (): Promise<ReferralInfo> => {
     return apiAuthGet("/referrals/me");
+  },
+
+  // ─── Public (no auth) ───
+  getPlatformInfo: async (): Promise<{
+    platform_name: string;
+    support_email: string;
+    licence_number: string | null;
+  }> => {
+    return apiGet("/public/platform-info");
   },
 
   // ─── Support tickets ───

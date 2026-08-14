@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Logo } from "@/components/logo";
-import { ArrowRight, ShieldCheck } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import { ComplianceBadge } from "@/components/compliance-badge";
 
 export default function LandingPage() {
   return (
@@ -25,7 +26,6 @@ export default function LandingPage() {
             <p className="mt-6 text-gray-300 leading-relaxed max-w-lg">
               Discover pre-vetted borrowers across Uganda. Set your own rates,
               review KYC documentation, and deploy capital with confidence.
-              BoU-licensed, fully regulated.
             </p>
 
             <div className="flex items-center gap-4 mt-8">
@@ -65,11 +65,7 @@ export default function LandingPage() {
             </div>
           </div>
 
-          <div className="mt-8 lg:mt-0 flex items-center gap-2 text-gray-400 text-xs">
-            <ShieldCheck className="w-4 h-4" />
-            Licensed by Bank of Uganda · Tier IV Credit Institution Licence
-            #TCI-2024-0418
-          </div>
+          <ComplianceBadge className="mt-8 lg:mt-0 text-gray-400" />
         </div>
 
         {/* Divider */}
@@ -135,13 +131,13 @@ export default function LandingPage() {
           </div>
 
           <div className="mt-8 lg:mt-0 flex items-center gap-6 text-xs text-gray-400 dark:text-gray-500">
-            <Link href="#" className="hover:text-gray-600 dark:hover:text-gray-300">
+            <Link href="/privacy-policy" className="hover:text-gray-600 dark:hover:text-gray-300">
               Privacy
             </Link>
-            <Link href="#" className="hover:text-gray-600 dark:hover:text-gray-300">
+            <Link href="/platform-terms" className="hover:text-gray-600 dark:hover:text-gray-300">
               Terms
             </Link>
-            <Link href="#" className="hover:text-gray-600 dark:hover:text-gray-300">
+            <Link href="/learn-more" className="hover:text-gray-600 dark:hover:text-gray-300">
               Help Centre
             </Link>
             <span>© 2026 Mpola Uganda Ltd.</span>

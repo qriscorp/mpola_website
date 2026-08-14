@@ -3,6 +3,7 @@
 import { Monitor } from "lucide-react";
 import { useLoginSessions, useSignOutEverywhere } from "@/hooks/use-support";
 import { StaggerList, StaggerItem } from "@/components/motion/stagger";
+import { useConfirm } from "@/hooks/use-confirm";
 
 function summarizeUserAgent(ua: string | null): string {
   if (!ua) return "Unknown device";
@@ -17,6 +18,7 @@ function summarizeUserAgent(ua: string | null): string {
 export function SessionsSection() {
   const { data: sessions, isLoading } = useLoginSessions();
   const signOutEverywhere = useSignOutEverywhere();
+  const { confirm, ConfirmDialog } = useConfirm();
 
   return (
     <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-6">
@@ -25,10 +27,14 @@ export function SessionsSection() {
           Active Sessions
         </h2>
         <button
-          onClick={() => {
-            if (confirm("Sign out of Mpola on every device? You'll need to sign in again.")) {
-              signOutEverywhere.mutate();
-            }
+          onClick={async () => {
+            const ok = await confirm({
+              title: "Sign out everywhere?",
+              description: "You'll need to sign in again on every device.",
+              confirmLabel: "Sign Out Everywhere",
+              destructive: true,
+            });
+            if (ok) signOutEverywhere.mutate();
           }}
           disabled={signOutEverywhere.isPending}
           className="text-xs font-semibold text-red-500 hover:underline disabled:opacity-50"
@@ -77,6 +83,7 @@ export function SessionsSection() {
         Mpola keeps one active session per account — &quot;Sign out everywhere&quot; ends
         your current session on every device rather than a single one.
       </p>
+      {ConfirmDialog}
     </div>
   );
 }

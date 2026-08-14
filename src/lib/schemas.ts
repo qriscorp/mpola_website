@@ -1,4 +1,15 @@
 import { z } from "zod";
+import { passwordRequirementErrors, PASSWORD_REQUIREMENTS_HINT } from "./password";
+
+// Backend rejects anything that fails these same rules (repository/auth_repo.py
+// validate_password_strength) — checked here too so a weak password is caught
+// before submission, not after a confusing server rejection.
+const newPasswordField = z
+  .string()
+  .min(8, PASSWORD_REQUIREMENTS_HINT)
+  .refine((pw) => passwordRequirementErrors(pw).length === 0, {
+    message: PASSWORD_REQUIREMENTS_HINT,
+  });
 
 // ─── Auth Schemas ───
 export const signInSchema = z.object({
@@ -26,7 +37,7 @@ export const registerIndividualSchema = z
       .min(9, "Enter 9 digits (e.g. 772843901)")
       .regex(/^\d{9,10}$/, "Enter 9 digits without country code"),
     email: z.string().email("Valid email required"),
-    password: z.string().min(8, "Password must be at least 8 characters"),
+    password: newPasswordField,
     confirmPassword: z.string(),
     agreeToTerms: z.literal(true, { message: "You must agree to the terms" }),
   })
@@ -53,7 +64,7 @@ export const registerBusinessSchema = z
       .min(9, "Enter 9 digits (e.g. 772843901)")
       .regex(/^\d{9,10}$/, "Enter 9 digits without country code"),
     email: z.string().email("Valid email required"),
-    password: z.string().min(8, "8+ characters required"),
+    password: newPasswordField,
     confirmPassword: z.string(),
     agreeToTerms: z.literal(true, { message: "You must agree to the terms" }),
   })

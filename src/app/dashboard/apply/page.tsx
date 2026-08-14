@@ -16,6 +16,7 @@ import {
   useDeleteApplication,
 } from "@/hooks/use-application";
 import { useSearchGuarantorCandidate, useAttachGuarantors } from "@/hooks/use-guarantors";
+import { useConfirm } from "@/hooks/use-confirm";
 import { formatCurrency, formatDuration } from "@/lib/format";
 
 const STEPS = ["Loan Details", "Guarantors", "Review"];
@@ -703,6 +704,7 @@ function SuccessView({ reference }: { reference: string }) {
 
 export default function ApplyPage() {
   const router = useRouter();
+  const { confirm, ConfirmDialog } = useConfirm();
   const [currentStep, setCurrentStep] = useState(1);
   const [reference, setReference] = useState<string | null>(null);
 
@@ -881,7 +883,13 @@ export default function ApplyPage() {
 
   const handleStartOver = async () => {
     if (!applicationId) return;
-    if (!confirm("Discard this loan request and start over? This can't be undone.")) return;
+    const ok = await confirm({
+      title: "Discard this loan request?",
+      description: "This can't be undone — you'll start over from the beginning.",
+      confirmLabel: "Discard & Start Over",
+      destructive: true,
+    });
+    if (!ok) return;
     try {
       await deleteApplication.mutateAsync(applicationId);
       setApplicationId(null);
@@ -1025,6 +1033,7 @@ export default function ApplyPage() {
           </div>
         </>
       )}
+      {ConfirmDialog}
     </div>
   );
 }
