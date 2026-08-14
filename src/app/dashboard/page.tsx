@@ -11,6 +11,7 @@ import {
 import { formatCurrency } from "@/lib/format";
 import { DashboardSkeleton } from "@/components/skeletons";
 import { BorrowerPageHeader } from "@/components/top-nav";
+import { InfoTip } from "@/components/info-tip";
 import { FadeSwap } from "@/components/motion/fade-swap";
 import { StaggerList, StaggerItem } from "@/components/motion/stagger";
 
@@ -103,9 +104,12 @@ export default function DashboardPage() {
           </Link>
         </StaggerItem>
         <StaggerItem className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 border-t-4 border-t-[#C4A55A] p-5">
-          <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-            Credit Score
-          </p>
+          <div className="flex items-center gap-1.5">
+            <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+              Credit Score
+            </p>
+            <InfoTip text="Starts at a neutral 50 and only moves once one of your loans is fully resolved — repaying it in full raises your score, defaulting or going overdue lowers it. Recalculated once a day, so it won't move while a loan is still active." />
+          </div>
           <p className="text-3xl font-bold text-[#1B2B3A] dark:text-white mt-1">
             {user?.creditScore || "—"}
           </p>
