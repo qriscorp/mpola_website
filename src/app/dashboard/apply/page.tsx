@@ -169,8 +169,11 @@ function LoanCalculator({
   );
 }
 
-const MIN_AMOUNT = 1000;
-const MAX_AMOUNT = 50000000;
+// Fallback only, used for the one frame before the eligibility check (which
+// carries the live admin-configured bounds) resolves — see minAmount/
+// maxAmount below, threaded down as props rather than these constants.
+const DEFAULT_MIN_AMOUNT = 1000;
+const DEFAULT_MAX_AMOUNT = 50000000;
 
 const EMERGENCY_DAY_PRESETS = [1, 3, 7, 14];
 
@@ -178,6 +181,8 @@ function Step1({
   amount,
   setAmount,
   amountError,
+  minAmount,
+  maxAmount,
   duration,
   setDuration,
   durationDays,
@@ -195,6 +200,8 @@ function Step1({
   amount: string;
   setAmount: (v: string) => void;
   amountError: string | null;
+  minAmount: number;
+  maxAmount: number;
   duration: number;
   setDuration: (v: number) => void;
   durationDays: number | null;
@@ -238,11 +245,11 @@ function Step1({
               </span>
               <input
                 type="number"
-                min={MIN_AMOUNT}
-                max={MAX_AMOUNT}
+                min={minAmount}
+                max={maxAmount}
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                placeholder={`e.g. ${MIN_AMOUNT.toLocaleString()}`}
+                placeholder={`e.g. ${minAmount.toLocaleString()}`}
                 className="flex-1 px-4 py-3 text-sm font-medium text-[#1B2B3A] outline-none dark:text-white"
               />
             </div>
@@ -250,7 +257,7 @@ function Step1({
               <p className="mt-1.5 text-xs text-red-500">{amountError}</p>
             ) : (
               <p className="mt-1.5 text-xs text-gray-400 dark:text-gray-500">
-                Between {formatCurrency(MIN_AMOUNT)} and {formatCurrency(MAX_AMOUNT)}.
+                Between {formatCurrency(minAmount)} and {formatCurrency(maxAmount)}.
               </p>
             )}
           </div>
@@ -737,6 +744,12 @@ export default function ApplyPage() {
 
   const { data: draft, isLoading: draftLoading } = useDraftApplication();
   const { data: eligibility, isLoading: eligibilityLoading } = useApplicationEligibility();
+  // Live, admin-configured bounds (Settings > Min/Max Loan Amount) — the
+  // defaults only cover the single frame before eligibility resolves; the
+  // page shows a loading spinner until then, so real form interaction
+  // always happens against real numbers, never a stale hardcoded guess.
+  const minAmount = eligibility?.min_amount ?? DEFAULT_MIN_AMOUNT;
+  const maxAmount = eligibility?.max_amount ?? DEFAULT_MAX_AMOUNT;
   const submitApplication = useSubmitApplication();
   const updateApplication = useUpdateApplication();
   const deleteApplication = useDeleteApplication();
@@ -789,12 +802,12 @@ export default function ApplyPage() {
       setAmountError("Enter an amount");
       return false;
     }
-    if (numAmount < 1000) {
-      setAmountError("Minimum loan is UGX 1,000");
+    if (numAmount < minAmount) {
+      setAmountError(`Minimum loan is ${formatCurrency(minAmount)}`);
       return false;
     }
-    if (numAmount > 50000000) {
-      setAmountError("Maximum loan is UGX 50,000,000");
+    if (numAmount > maxAmount) {
+      setAmountError(`Maximum loan is ${formatCurrency(maxAmount)}`);
       return false;
     }
     setAmountError(null);
@@ -917,7 +930,7 @@ export default function ApplyPage() {
 
   const isSubmitting =
     submitApplication.isPending || updateApplication.isPending || attachGuarantors.isPending;
-  const step1AmountValid = Number(amount) >= 1000 && Number(amount) <= 50000000;
+  const step1AmountValid = Number(amount) >= minAmount && Number(amount) <= maxAmount;
   const step1RateValid =
     !maxInterestRate.trim() || (Number(maxInterestRate) >= 0.1 && Number(maxInterestRate) <= 25);
   const step1DurationValid = loanType !== "emergency" || durationDays != null;
@@ -1014,6 +1027,8 @@ export default function ApplyPage() {
                   amount={amount}
                   setAmount={(v) => { setAmount(v); if (amountError) setAmountError(null); }}
                   amountError={amountError}
+                  minAmount={minAmount}
+                  maxAmount={maxAmount}
                   duration={duration}
                   setDuration={setDuration}
                   durationDays={durationDays}

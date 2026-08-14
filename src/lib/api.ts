@@ -1178,6 +1178,18 @@ export const api = {
     return apiAuthGet(`/wallet/withdraw/bank/status/${reference}`);
   },
 
+  // Live, admin-configured lending bounds (Settings > Min/Max Loan Amount,
+  // Max Interest Rate) — used by every form that submits a loan amount or
+  // rate (borrower apply wizard, lender manual offer, lender standing offer
+  // template) so none of them drift from a hardcoded guess.
+  getLendingLimits: async (): Promise<{
+    min_amount: number;
+    max_amount: number;
+    max_interest_rate: number;
+  }> => {
+    return apiAuthGet("/loans/limits");
+  },
+
   // Checked before letting a borrower start the Apply wizard — one
   // outstanding loan at a time (see OUTSTANDING_LOAN_STATUSES in
   // routers/loans.py, the authoritative gate that also blocks the actual
@@ -1194,6 +1206,8 @@ export const api = {
       next_payment_date: string | null;
       next_payment_amount: number | null;
     } | null;
+    min_amount: number;
+    max_amount: number;
   }> => {
     return apiAuthGet("/loans/applications/eligibility");
   },

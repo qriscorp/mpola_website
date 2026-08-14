@@ -2,6 +2,14 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
 
+export function useLendingLimits() {
+  return useQuery({
+    queryKey: ["lending-limits"],
+    queryFn: api.getLendingLimits,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
 export function useMarketplace(
   page: number = 1,
   pageSize: number = 20,

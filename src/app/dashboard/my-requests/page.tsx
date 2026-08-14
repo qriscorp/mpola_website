@@ -13,6 +13,7 @@ import {
   useDeleteApplication,
   useFreezeApplication,
   useUnfreezeApplication,
+  useApplicationEligibility,
 } from "@/hooks/use-application";
 import { formatCurrency, formatRate, formatDuration, getApplicationStatusColor, getApplicationStatusLabel } from "@/lib/format";
 import { TableSkeleton } from "@/components/skeletons";
@@ -243,10 +244,15 @@ function EditApplicationForm({ app, onDone }: { app: LoanApplication; onDone: ()
   );
   const [validUntil, setValidUntil] = useState(app.valid_until ? app.valid_until.slice(0, 10) : "");
   const update = useUpdateApplication();
+  // Live, admin-configured bounds (Settings > Min/Max Loan Amount) — the
+  // fallbacks only apply for the one frame before this resolves.
+  const { data: eligibility } = useApplicationEligibility();
+  const minAmount = eligibility?.min_amount ?? 1000;
+  const maxAmount = eligibility?.max_amount ?? 50000000;
 
   const isEmergency = loanType === "emergency";
   const numAmount = Number(amount);
-  const amountInvalid = !amount.trim() || Number.isNaN(numAmount) || numAmount < 1000 || numAmount > 50000000;
+  const amountInvalid = !amount.trim() || Number.isNaN(numAmount) || numAmount < minAmount || numAmount > maxAmount;
   const rateInvalid =
     maxInterestRate.trim() !== "" &&
     (Number.isNaN(Number(maxInterestRate)) || Number(maxInterestRate) < 0.1 || Number(maxInterestRate) > 25);
@@ -294,14 +300,14 @@ function EditApplicationForm({ app, onDone }: { app: LoanApplication; onDone: ()
           </label>
           <input
             type="number"
-            min={1000}
-            max={50000000}
+            min={minAmount}
+            max={maxAmount}
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#2BB5A0] dark:border-gray-700"
           />
           {amountInvalid && (
-            <p className="mt-1 text-xs text-red-500">Between UGX 1,000 and UGX 50,000,000</p>
+            <p className="mt-1 text-xs text-red-500">Between {formatCurrency(minAmount)} and {formatCurrency(maxAmount)}</p>
           )}
         </div>
         <div>

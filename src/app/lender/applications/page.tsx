@@ -11,6 +11,7 @@ import {
   useMyOffers,
   useMakeOffer,
   useSkipApplication,
+  useLendingLimits,
 } from "@/hooks/use-lender";
 import { formatCurrency, formatDuration, getInitials } from "@/lib/format";
 import { DOCUMENT_LABEL_OPTIONS } from "@/lib/document-labels";
@@ -78,6 +79,11 @@ export default function ApplicationsPage() {
   const { data: myOffers } = useMyOffers();
   const makeOffer = useMakeOffer();
   const skipApplication = useSkipApplication();
+  // Live, admin-configured cap (Settings > Max Interest Rate) — the fallback
+  // (25, the model's absolute structural ceiling) only applies for the one
+  // frame before this resolves.
+  const { data: lendingLimits } = useLendingLimits();
+  const maxRateAllowed = lendingLimits?.max_interest_rate ?? 25;
 
   const applications = marketplace?.applications ?? [];
   const pendingOffersCount = (myOffers ?? []).filter(
@@ -92,7 +98,7 @@ export default function ApplicationsPage() {
   // "Approved"/"Declined" are always empty here by design, not a bug.
   const filtered = tab === "All" || tab === "Pending" ? applications : [];
 
-  const rateInvalid = rate !== "" && (Number(rate) < 0.1 || Number(rate) > 25);
+  const rateInvalid = rate !== "" && (Number(rate) < 0.1 || Number(rate) > maxRateAllowed);
   const isEmergency = offerModal?.duration_days != null;
   const offerNumRate = Number(rate) || 0;
   const offerTotalInterest = offerModal
@@ -295,7 +301,7 @@ export default function ApplicationsPage() {
                 <input
                   type="number"
                   min={0.1}
-                  max={25}
+                  max={maxRateAllowed}
                   step={0.1}
                   value={rate}
                   onChange={(e) => setRate(e.target.value)}
@@ -303,7 +309,7 @@ export default function ApplicationsPage() {
                 />
               </div>
               {rateInvalid && (
-                <p className="text-xs text-red-500 text-right">Rate must be between 0.1% and 25%</p>
+                <p className="text-xs text-red-500 text-right">Rate must be between 0.1% and {maxRateAllowed}%</p>
               )}
             </div>
 

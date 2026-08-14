@@ -11,6 +11,7 @@ import {
   useCreateOfferTemplate,
   useUpdateOfferTemplate,
   useOfferTemplates,
+  useLendingLimits,
 } from "@/hooks/use-lender";
 import { DOCUMENT_LABEL_OPTIONS } from "@/lib/document-labels";
 
@@ -46,6 +47,11 @@ function PostOfferContent() {
   const editId = searchParams.get("edit");
   const { data: templates } = useOfferTemplates();
   const editingTemplate = editId ? templates?.find((t) => t.id === editId) : undefined;
+  // Live, admin-configured cap (Settings > Max Interest Rate) — the fallback
+  // (25, the model's absolute structural ceiling) only applies for the one
+  // frame before this resolves.
+  const { data: lendingLimits } = useLendingLimits();
+  const maxRateAllowed = lendingLimits?.max_interest_rate ?? 25;
 
   const [selectedTypes, setSelectedTypes] = useState<string[]>([
     "Business",
@@ -145,7 +151,7 @@ function PostOfferContent() {
 
   const amountRangeInvalid =
     minAmount !== "" && maxAmount !== "" && Number(minAmount) >= Number(maxAmount);
-  const rateInvalid = rate !== "" && (Number(rate) < 0.1 || Number(rate) > 25);
+  const rateInvalid = rate !== "" && (Number(rate) < 0.1 || Number(rate) > maxRateAllowed);
   const durationInvalid = unit === "days" && durationDays == null;
 
   function handlePost(draft: boolean) {
@@ -154,7 +160,7 @@ function PostOfferContent() {
       return;
     }
     if (rate === "" || rateInvalid) {
-      toast.error("Interest rate must be between 0.1% and 25%");
+      toast.error(`Interest rate must be between 0.1% and ${maxRateAllowed}%`);
       return;
     }
     if (durationInvalid) {
@@ -270,7 +276,7 @@ function PostOfferContent() {
             <Input
               type="number"
               min={0.1}
-              max={25}
+              max={maxRateAllowed}
               step={0.1}
               placeholder="2"
               value={rate}
@@ -278,7 +284,7 @@ function PostOfferContent() {
               className="max-w-xs"
             />
             {rateInvalid && (
-              <p className="text-xs text-red-500">Rate must be between 0.1% and 25%</p>
+              <p className="text-xs text-red-500">Rate must be between 0.1% and {maxRateAllowed}%</p>
             )}
           </div>
 

@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { useApplicationDetail, useMakeOffer } from "@/hooks/use-lender";
+import { useApplicationDetail, useMakeOffer, useLendingLimits } from "@/hooks/use-lender";
 import { useUser } from "@/hooks/use-dashboard";
 import { formatCurrency, formatDuration, getApplicationStatusLabel } from "@/lib/format";
 import { DOCUMENT_LABEL_OPTIONS } from "@/lib/document-labels";
@@ -46,6 +46,13 @@ export default function ApplicationDetailPage({
   const { data: application, isLoading } = useApplicationDetail(id);
   const { data: user } = useUser();
   const { mutate: makeOffer, isPending } = useMakeOffer();
+  // Live, admin-configured bounds (Settings > Min/Max Loan Amount, Max
+  // Interest Rate) — the fallbacks only apply for the one frame before this
+  // resolves.
+  const { data: lendingLimits } = useLendingLimits();
+  const minOfferAmount = lendingLimits?.min_amount ?? 1000;
+  const maxOfferAmount = lendingLimits?.max_amount ?? 100000000;
+  const maxRateAllowed = lendingLimits?.max_interest_rate ?? 25;
 
   const [showOfferForm, setShowOfferForm] = useState(false);
   const [amount, setAmount] = useState("");
@@ -100,7 +107,8 @@ export default function ApplicationDetailPage({
   const numAmount = Number(amount) || 0;
   const numRate = Number(interestRate) || 0;
   const numDuration = Number(duration) || 0;
-  const rateInvalid = interestRate !== "" && (numRate < 0.1 || numRate > 25);
+  const rateInvalid = interestRate !== "" && (numRate < 0.1 || numRate > maxRateAllowed);
+  const amountInvalid = amount !== "" && (numAmount < minOfferAmount || numAmount > maxOfferAmount);
   const totalInterest = isEmergency
     ? numAmount * (numRate / 100) * (numDuration / 30)
     : numAmount * (numRate / 100) * numDuration;
@@ -217,10 +225,17 @@ export default function ApplicationDetailPage({
                 </Label>
                 <Input
                   type="number"
+                  min={minOfferAmount}
+                  max={maxOfferAmount}
                   placeholder={String(application.amount)}
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                 />
+                {amountInvalid && (
+                  <p className="text-xs text-red-500">
+                    Amount must be between {formatCurrency(minOfferAmount)} and {formatCurrency(maxOfferAmount)}
+                  </p>
+                )}
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs font-bold uppercase tracking-wider text-gray-500">
@@ -229,13 +244,13 @@ export default function ApplicationDetailPage({
                 <Input
                   type="number"
                   min={0.1}
-                  max={25}
+                  max={maxRateAllowed}
                   step={0.1}
                   value={interestRate}
                   onChange={(e) => setInterestRate(e.target.value)}
                 />
                 {rateInvalid && (
-                  <p className="text-xs text-red-500">Rate must be between 0.1% and 25%</p>
+                  <p className="text-xs text-red-500">Rate must be between 0.1% and {maxRateAllowed}%</p>
                 )}
               </div>
               <div className="space-y-1.5">
@@ -339,7 +354,7 @@ export default function ApplicationDetailPage({
               </Button>
               <Button
                 onClick={handleSubmitOffer}
-                disabled={isPending || !numAmount || !numDuration || !numRate || rateInvalid}
+                disabled={isPending || !numAmount || !numDuration || !numRate || rateInvalid || amountInvalid}
                 className="bg-[#C4A55A] hover:bg-[#b3944a] text-white"
               >
                 {isPending ? "Sending…" : "Send Offer"}
