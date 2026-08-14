@@ -205,7 +205,7 @@ function PostOfferContent() {
   }
 
   return (
-    <div className="space-y-6 max-w-4xl">
+    <div className="space-y-6">
       <LenderPageHeader title={isEditing ? "Edit Offer" : "Post an Offer"} />
 
       <Card className="bg-white dark:bg-gray-900">

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
+import { Eye, EyeOff } from "lucide-react";
 import { useLenderSignIn } from "@/hooks/use-auth";
 import { signInSchema, type SignInFormData } from "@/lib/schemas";
 import { TwoFactorSignInModal } from "@/components/two-factor-signin-modal";
@@ -11,6 +12,7 @@ import { TwoFactorSignInModal } from "@/components/two-factor-signin-modal";
 export default function LenderSignInPage() {
   const { mutate: signIn, isPending } = useLenderSignIn();
   const [twoFAUsername, setTwoFAUsername] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const {
     register,
@@ -110,14 +112,25 @@ export default function LenderSignInPage() {
               <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 dark:text-gray-400">
                 Password
               </label>
-              <input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                className="w-full h-12 px-4 rounded-lg border border-gray-200 bg-gray-50 text-[#1B2B3A] text-sm placeholder:text-gray-400 outline-none focus:border-[#C4A55A] focus:ring-2 focus:ring-[#C4A55A]/20 transition-colors dark:border-gray-800 dark:text-white dark:bg-gray-800/60"
-                aria-invalid={!!errors.password}
-                {...register("password")}
-              />
+              <div className="relative">
+                <input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="••••••••"
+                  className="w-full h-12 px-4 pr-11 rounded-lg border border-gray-200 bg-gray-50 text-[#1B2B3A] text-sm placeholder:text-gray-400 outline-none focus:border-[#C4A55A] focus:ring-2 focus:ring-[#C4A55A]/20 transition-colors dark:border-gray-800 dark:text-white dark:bg-gray-800/60"
+                  aria-invalid={!!errors.password}
+                  {...register("password")}
+                />
+                <button
+                  type="button"
+                  tabIndex={-1}
+                  onClick={() => setShowPassword((v) => !v)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
               {errors.password && (
                 <p className="text-red-500 text-xs mt-1">
                   {errors.password.message}

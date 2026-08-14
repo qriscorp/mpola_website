@@ -42,7 +42,7 @@ export default function LenderAccountPage() {
 
   if (error) {
     return (
-      <div className="space-y-6 max-w-5xl">
+      <div className="space-y-6">
         <LenderPageHeader title="Account & Licence" />
         <p className="text-sm text-gray-500">
           Couldn&apos;t load your account. Please try again.
@@ -53,7 +53,7 @@ export default function LenderAccountPage() {
 
   if (isLoading || !user) {
     return (
-      <div className="space-y-6 max-w-5xl">
+      <div className="space-y-6">
         <LenderPageHeader title="Account & Licence" />
         <CardSkeleton count={2} />
       </div>
@@ -74,7 +74,7 @@ export default function LenderAccountPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-5xl">
+    <div className="space-y-6">
       <LenderPageHeader title="Account & Licence" />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

@@ -913,7 +913,7 @@ export default function ApplyPage() {
 
   if (resuming) {
     return (
-      <div className="max-w-5xl space-y-6">
+      <div className="space-y-6">
         <BorrowerPageHeader title="Apply - Loan Details" />
         <div className="flex items-center justify-center py-24">
           <Loader2 className="h-6 w-6 animate-spin text-[#2BB5A0]" />
@@ -923,7 +923,7 @@ export default function ApplyPage() {
   }
 
   return (
-    <div className="max-w-5xl space-y-6">
+    <div className="space-y-6">
       <BorrowerPageHeader
         title={reference ? "Apply - Submitted" : stepTitles[currentStep - 1]}
       />

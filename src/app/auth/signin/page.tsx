@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { Eye, EyeOff } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useSignIn } from "@/hooks/use-auth";
@@ -13,6 +14,7 @@ export default function SignInPage() {
   const { mutate: signIn, isPending } = useSignIn();
   const [otpModalOpen, setOtpModalOpen] = useState(false);
   const [twoFAUsername, setTwoFAUsername] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const {
     register,
@@ -112,13 +114,24 @@ export default function SignInPage() {
                   Forgot password?
                 </Link>
               </div>
-              <input
-                type="password"
-                placeholder="••••••••"
-                className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm text-[#1B2B3A] outline-none focus:ring-2 focus:ring-[#2BB5A0] focus:border-[#2BB5A0] dark:border-gray-700 dark:text-white"
-                aria-invalid={!!errors.password}
-                {...register("password")}
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="••••••••"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-3 pr-11 text-sm text-[#1B2B3A] outline-none focus:ring-2 focus:ring-[#2BB5A0] focus:border-[#2BB5A0] dark:border-gray-700 dark:text-white"
+                  aria-invalid={!!errors.password}
+                  {...register("password")}
+                />
+                <button
+                  type="button"
+                  tabIndex={-1}
+                  onClick={() => setShowPassword((v) => !v)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
               {errors.password && (
                 <p className="text-red-500 text-xs mt-1">
                   {errors.password.message}

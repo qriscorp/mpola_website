@@ -96,13 +96,13 @@ export default function LenderPortfolioPage() {
     <FadeSwap
       loading={isLoading}
       skeleton={
-        <div className="space-y-6 max-w-6xl">
+        <div className="space-y-6">
           <LenderPageHeader title="My Portfolio" />
           <TableSkeleton rows={4} />
         </div>
       }
     >
-    <div className="space-y-6 max-w-6xl">
+    <div className="space-y-6">
       <LenderPageHeader title="My Portfolio" />
 
       {/* Stat cards */}

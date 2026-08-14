@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 
 interface WalletSetupModalProps {
@@ -43,8 +43,7 @@ export function WalletSetupModal({
           <Label className="text-xs font-bold uppercase tracking-wider text-gray-500">
             Wallet PIN
           </Label>
-          <Input
-            type="password"
+          <PasswordInput
             inputMode="numeric"
             maxLength={6}
             placeholder="••••"

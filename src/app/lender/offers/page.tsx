@@ -214,13 +214,13 @@ export default function MyOffersPage() {
     <FadeSwap
       loading={isLoading}
       skeleton={
-        <div className="space-y-6 max-w-5xl">
+        <div className="space-y-6">
           <LenderPageHeader title="My Offers" />
           <CardSkeleton count={3} />
         </div>
       }
     >
-    <div className="space-y-6 max-w-5xl">
+    <div className="space-y-6">
       <LenderPageHeader title="My Offers" />
 
       {/* Origin filter — combined view across every standing offer's

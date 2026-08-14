@@ -34,7 +34,7 @@ export default function DashboardPage() {
 
   return (
     <FadeSwap loading={loading} skeleton={<DashboardSkeleton />}>
-    <div className="space-y-6 max-w-300">
+    <div className="space-y-6">
       <BorrowerPageHeader title="Dashboard" />
 
       {/* Active Loan Hero Banner */}

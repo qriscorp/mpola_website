@@ -7,6 +7,7 @@ import { CardSkeleton } from "@/components/skeletons";
 import { useUser, useUpdateProfile, useChangePassword, useExportMyData } from "@/hooks/use-dashboard";
 import { SessionsSection } from "@/components/sessions-section";
 import { DeactivateAccountDialog } from "@/components/deactivate-account-dialog";
+import { PasswordInput } from "@/components/ui/password-input";
 import { downloadJsonFile } from "@/lib/format";
 
 function Toggle({
@@ -87,7 +88,7 @@ export default function LenderSettingsPage() {
 
   if (error) {
     return (
-      <div className="space-y-6 max-w-3xl">
+      <div className="space-y-6">
         <LenderPageHeader title="Settings" />
         <p className="text-sm text-gray-500">
           Couldn&apos;t load your settings. Please try again.
@@ -98,7 +99,7 @@ export default function LenderSettingsPage() {
 
   if (isLoading || !user) {
     return (
-      <div className="space-y-6 max-w-3xl">
+      <div className="space-y-6">
         <LenderPageHeader title="Settings" />
         <CardSkeleton count={3} />
       </div>
@@ -106,7 +107,7 @@ export default function LenderSettingsPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-3xl">
+    <div className="space-y-6">
       <LenderPageHeader title="Settings" />
 
       {/* Notifications */}
@@ -184,19 +185,15 @@ export default function LenderSettingsPage() {
             Change Password
           </p>
           <div className="grid gap-3 sm:grid-cols-2 mb-3">
-            <input
-              type="password"
+            <PasswordInput
               placeholder="Current password"
               value={oldPassword}
               onChange={(e) => setOldPassword(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent px-3 py-2 text-sm text-[#1B2B3A] dark:text-white"
             />
-            <input
-              type="password"
+            <PasswordInput
               placeholder="New password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent px-3 py-2 text-sm text-[#1B2B3A] dark:text-white"
             />
           </div>
           <button

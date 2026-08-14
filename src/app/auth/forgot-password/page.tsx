@@ -3,9 +3,10 @@
 import { Suspense, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Eye, EyeOff } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import {
@@ -52,7 +53,6 @@ function ForgotPasswordContent() {
   const [code, setCode] = useState(["", "", "", "", "", ""]);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [showPw, setShowPw] = useState(false);
   const inputs = useRef<(HTMLInputElement | null)[]>([]);
 
   const { mutate: sendCode, isPending: isSending } = useSendPasswordResetCode();
@@ -351,35 +351,21 @@ function ForgotPasswordContent() {
               <form onSubmit={handleReset} className="space-y-4">
                 <div>
                   <Label htmlFor="newPassword">New password</Label>
-                  <div className="relative mt-1.5">
-                    <Input
-                      id="newPassword"
-                      type={showPw ? "text" : "password"}
-                      placeholder="........"
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                      required
-                      minLength={8}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPw((value) => !value)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 transition-colors hover:text-gray-600 dark:hover:text-gray-300 dark:text-gray-500"
-                    >
-                      {showPw ? (
-                        <EyeOff className="h-4 w-4" />
-                      ) : (
-                        <Eye className="h-4 w-4" />
-                      )}
-                    </button>
-                  </div>
+                  <PasswordInput
+                    id="newPassword"
+                    placeholder="........"
+                    className="mt-1.5"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    required
+                    minLength={8}
+                  />
                 </div>
 
                 <div>
                   <Label htmlFor="confirmPassword">Confirm password</Label>
-                  <Input
+                  <PasswordInput
                     id="confirmPassword"
-                    type={showPw ? "text" : "password"}
                     placeholder="........"
                     className="mt-1.5"
                     value={confirmPassword}

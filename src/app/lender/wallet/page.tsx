@@ -27,7 +27,7 @@ export default function LenderWalletPage() {
   const isWalletSetup = wallet?.is_wallet_setup ?? false;
 
   return (
-    <div className="space-y-6 max-w-5xl">
+    <div className="space-y-6">
       <LenderPageHeader title="Wallet" />
 
       <WalletBalanceCard

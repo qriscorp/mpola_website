@@ -7,6 +7,7 @@ import { useUser, useUpdateProfile, useChangePassword, useExportMyData } from "@
 import { CardSkeleton } from "@/components/skeletons";
 import { SessionsSection } from "@/components/sessions-section";
 import { DeactivateAccountDialog } from "@/components/deactivate-account-dialog";
+import { PasswordInput } from "@/components/ui/password-input";
 import { downloadJsonFile } from "@/lib/format";
 
 function Toggle({ on, onChange }: { on: boolean; onChange: () => void }) {
@@ -165,19 +166,15 @@ export default function SettingsPage() {
               Change Password
             </p>
             <div className="grid gap-3 sm:grid-cols-2 mb-3">
-              <input
-                type="password"
+              <PasswordInput
                 placeholder="Current password"
                 value={oldPassword}
                 onChange={(e) => setOldPassword(e.target.value)}
-                className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent px-3 py-2 text-sm text-[#1B2B3A] dark:text-white"
               />
-              <input
-                type="password"
+              <PasswordInput
                 placeholder="New password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent px-3 py-2 text-sm text-[#1B2B3A] dark:text-white"
               />
             </div>
             <button

@@ -126,13 +126,13 @@ export default function ApplicationsPage() {
     <FadeSwap
       loading={isLoading}
       skeleton={
-        <div className="space-y-6 max-w-5xl">
+        <div className="space-y-6">
           <LenderPageHeader title="Applications Inbox" />
           <CardSkeleton count={3} />
         </div>
       }
     >
-    <div className="space-y-6 max-w-5xl">
+    <div className="space-y-6">
       <LenderPageHeader title="Applications Inbox" />
 
       {/* Context banner */}

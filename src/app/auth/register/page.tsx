@@ -8,6 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, ArrowRight, Mail } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useRegister } from "@/hooks/use-auth";
@@ -644,8 +645,7 @@ export default function RegisterPage() {
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <Label>Password</Label>
-                <Input
-                  type="password"
+                <PasswordInput
                   className="mt-1.5"
                   placeholder="8+ characters"
                   aria-invalid={!!errors.password}
@@ -659,8 +659,7 @@ export default function RegisterPage() {
               </div>
               <div>
                 <Label>Confirm Password</Label>
-                <Input
-                  type="password"
+                <PasswordInput
                   className="mt-1.5"
                   placeholder="Re-enter"
                   aria-invalid={!!errors.confirmPassword}

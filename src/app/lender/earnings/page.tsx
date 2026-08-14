@@ -47,13 +47,13 @@ export default function LenderEarningsPage() {
     <FadeSwap
       loading={isLoading}
       skeleton={
-        <div className="max-w-6xl space-y-6">
+        <div className="space-y-6">
           <LenderPageHeader title="Earnings Summary" />
           <CardSkeleton count={4} />
         </div>
       }
     >
-    <div className="max-w-6xl space-y-6">
+    <div className="space-y-6">
       <LenderPageHeader title="Earnings Summary" />
 
       {earnings?.concentration_warning && (

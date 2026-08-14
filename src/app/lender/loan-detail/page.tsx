@@ -55,7 +55,7 @@ function LoanDetailContent() {
   const totalInterest = loan.total_repayable - loan.amount;
 
   return (
-    <div className="space-y-6 max-w-4xl">
+    <div className="space-y-6">
       {/* Hero card */}
       <div className="rounded-2xl bg-[#1B2B3A] p-6 sm:p-8 text-white">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
@@ -270,7 +270,7 @@ function LoanDetailContent() {
 
 export default function LoanDetailPage() {
   return (
-    <div className="space-y-6 max-w-4xl">
+    <div className="space-y-6">
       <LenderPageHeader title="Loan Detail" />
       <Suspense fallback={<CardSkeleton count={2} />}>
         <LoanDetailContent />

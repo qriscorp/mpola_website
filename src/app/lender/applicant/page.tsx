@@ -207,7 +207,7 @@ function ApplicantContent() {
 
 export default function ApplicantProfilePage() {
   return (
-    <div className="space-y-6 max-w-5xl">
+    <div className="space-y-6">
       <LenderPageHeader title="Applicant Profile" />
       <Suspense fallback={<CardSkeleton count={2} />}>
         <ApplicantContent />

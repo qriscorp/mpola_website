@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { AlertTriangle } from "lucide-react";
 import { useDeactivateAccount } from "@/hooks/use-dashboard";
@@ -63,8 +64,7 @@ export function DeactivateAccountDialog({
         <div className="space-y-3 mt-2">
           <div className="space-y-1.5">
             <Label>Confirm your password</Label>
-            <Input
-              type="password"
+            <PasswordInput
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
