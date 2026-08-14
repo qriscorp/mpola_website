@@ -107,7 +107,6 @@ function resolvePostAuthDestination(role: string): string {
 }
 
 export function useSignIn() {
-  const router = useRouter();
   return useMutation({
     mutationFn: (data: SignInFormData) =>
       api.signIn({
@@ -119,7 +118,12 @@ export function useSignIn() {
       if (result.requires2FA) return; // caller shows the 2FA code modal instead
       toast.success("Welcome back!");
       const role = getCookie("lf_role") || "borrower";
-      router.push(resolvePostAuthDestination(role));
+      // Hard navigation, not router.push: the Next.js client Router Cache can
+      // hold onto the pre-login middleware redirect (guest -> sign-in) for
+      // this route, so a soft push can silently no-op immediately after the
+      // auth cookies change. A full navigation always re-runs middleware
+      // against the fresh cookies.
+      window.location.href = resolvePostAuthDestination(role);
     },
     onError: (error: Error) => {
       toast.error(error.message || "Invalid credentials. Please try again.");
@@ -128,14 +132,13 @@ export function useSignIn() {
 }
 
 export function useVerifyLogin2FA() {
-  const router = useRouter();
   return useMutation({
     mutationFn: ({ username, code }: { username: string; code: string }) =>
       api.verifyLogin2FA(username, code),
     onSuccess: () => {
       toast.success("Welcome back!");
       const role = getCookie("lf_role") || "borrower";
-      router.push(resolvePostAuthDestination(role));
+      window.location.href = resolvePostAuthDestination(role);
     },
     onError: (error: Error) => {
       toast.error(error.message || "Invalid code. Please try again.");
@@ -173,7 +176,6 @@ export function useRegister() {
 }
 
 export function useLenderSignIn() {
-  const router = useRouter();
   return useMutation({
     mutationFn: (data: { phoneOrEmail: string; password: string }) =>
       api.lenderSignIn({
@@ -184,7 +186,7 @@ export function useLenderSignIn() {
       if (result.requires2FA) return; // caller shows the 2FA code modal instead
       toast.success("Welcome back!");
       const role = getCookie("lf_role") || "lender";
-      router.push(resolvePostAuthDestination(role));
+      window.location.href = resolvePostAuthDestination(role);
     },
     onError: (error: Error) => {
       toast.error(error.message || "Invalid credentials. Please try again.");
@@ -375,7 +377,9 @@ export function useVerifyPhoneOtp() {
       } else {
         toast.success("Phone verified! Your account is ready.");
         const role = getCookie("lf_role") || "borrower";
-        router.push(role === "lender" ? "/lender" : "/dashboard");
+        // Hard navigation — same Router Cache staleness reasoning as the
+        // sign-in success handlers above.
+        window.location.href = role === "lender" ? "/lender" : "/dashboard";
       }
     },
     onError: (error: Error) => {
@@ -443,7 +447,6 @@ export function useSendLoginPhoneOtp() {
 }
 
 export function useVerifyLoginPhoneOtp(portal?: "borrower" | "lender") {
-  const router = useRouter();
   return useMutation({
     mutationFn: ({
       phoneNumber,
@@ -481,7 +484,7 @@ export function useVerifyLoginPhoneOtp(portal?: "borrower" | "lender") {
       }
 
       toast.success("Signed in!");
-      router.push(resolvePostAuthDestination(role));
+      window.location.href = resolvePostAuthDestination(role);
     },
     onError: (error: Error) => {
       toast.error(error.message || "Invalid code. Please try again.");
