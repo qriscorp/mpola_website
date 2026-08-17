@@ -198,8 +198,15 @@ async function apiAuthGet<T>(path: string): Promise<T> {
     },
   });
   if (res.status === 401) {
-    redirectToSignIn();
-    throw new Error("Session expired");
+    // Only a real session expiry (a token was attached and the server
+    // rejected it) should bounce to sign-in. A 401 with no token just
+    // means this call fired before the user ever logged in — nothing to
+    // expire, and redirecting would yank them off whatever page they're on.
+    if (token) {
+      redirectToSignIn();
+      throw new Error("Session expired");
+    }
+    throw new Error("Not authenticated");
   }
   if (!res.ok) {
     const err = await res
@@ -222,8 +229,15 @@ async function apiAuthPost<T>(path: string, body: unknown): Promise<T> {
     body: JSON.stringify(body),
   });
   if (res.status === 401) {
-    redirectToSignIn();
-    throw new Error("Session expired");
+    // Only a real session expiry (a token was attached and the server
+    // rejected it) should bounce to sign-in. A 401 with no token just
+    // means this call fired before the user ever logged in — nothing to
+    // expire, and redirecting would yank them off whatever page they're on.
+    if (token) {
+      redirectToSignIn();
+      throw new Error("Session expired");
+    }
+    throw new Error("Not authenticated");
   }
   if (!res.ok) {
     const err = await res
@@ -245,8 +259,15 @@ async function apiAuthUpload<T>(path: string, formData: FormData): Promise<T> {
     body: formData,
   });
   if (res.status === 401) {
-    redirectToSignIn();
-    throw new Error("Session expired");
+    // Only a real session expiry (a token was attached and the server
+    // rejected it) should bounce to sign-in. A 401 with no token just
+    // means this call fired before the user ever logged in — nothing to
+    // expire, and redirecting would yank them off whatever page they're on.
+    if (token) {
+      redirectToSignIn();
+      throw new Error("Session expired");
+    }
+    throw new Error("Not authenticated");
   }
   if (!res.ok) {
     const err = await res
@@ -266,8 +287,15 @@ async function apiAuthDelete<T>(path: string): Promise<T> {
     },
   });
   if (res.status === 401) {
-    redirectToSignIn();
-    throw new Error("Session expired");
+    // Only a real session expiry (a token was attached and the server
+    // rejected it) should bounce to sign-in. A 401 with no token just
+    // means this call fired before the user ever logged in — nothing to
+    // expire, and redirecting would yank them off whatever page they're on.
+    if (token) {
+      redirectToSignIn();
+      throw new Error("Session expired");
+    }
+    throw new Error("Not authenticated");
   }
   if (!res.ok) {
     const err = await res
@@ -289,8 +317,15 @@ async function apiAuthPut<T>(path: string, body: unknown): Promise<T> {
     body: JSON.stringify(body),
   });
   if (res.status === 401) {
-    redirectToSignIn();
-    throw new Error("Session expired");
+    // Only a real session expiry (a token was attached and the server
+    // rejected it) should bounce to sign-in. A 401 with no token just
+    // means this call fired before the user ever logged in — nothing to
+    // expire, and redirecting would yank them off whatever page they're on.
+    if (token) {
+      redirectToSignIn();
+      throw new Error("Session expired");
+    }
+    throw new Error("Not authenticated");
   }
   if (!res.ok) {
     const err = await res
