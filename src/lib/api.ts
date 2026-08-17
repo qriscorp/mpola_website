@@ -111,6 +111,12 @@ export interface SignupDraftStatusResponse {
   message: string;
   account_created?: boolean;
   draft?: SignupDraftPayload;
+  // Present only when this call is the one that completes the signup —
+  // lets the frontend log the new user straight in instead of sending
+  // them to sign-in to re-enter the password they just typed.
+  access_token?: string;
+  refresh_token?: string;
+  user?: AuthResponse["user"];
 }
 
 /** FastAPI's `detail` is a plain string for HTTPException, but an array of
@@ -653,6 +659,9 @@ export const api = {
     );
     if (res.account_created || res.draft?.is_completed) {
       clearSignupDraftCookies();
+      if (res.access_token && res.refresh_token && res.user) {
+        storeTokens(res as AuthResponse);
+      }
     } else if (res.draft) {
       storeSignupDraftFromPayload(res.draft);
     }
@@ -696,6 +705,9 @@ export const api = {
     );
     if (res.account_created || res.draft?.is_completed) {
       clearSignupDraftCookies();
+      if (res.access_token && res.refresh_token && res.user) {
+        storeTokens(res as AuthResponse);
+      }
     } else if (res.draft) {
       storeSignupDraftFromPayload(res.draft);
     }

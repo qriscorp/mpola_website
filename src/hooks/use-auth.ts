@@ -239,9 +239,18 @@ export function useVerifySignupEmailOtp() {
       api.verifySignupEmailOtp(draftId, code),
     onSuccess: (data) => {
       toast.success("Email verified!");
-      const role = data.draft?.role || getCookie("lf_signup_role") || "borrower";
+      const role = data.user?.role || data.draft?.role || getCookie("lf_signup_role") || "borrower";
       if (data.account_created || data.draft?.is_completed) {
         clearSignupDraftCookies();
+        if (data.user) {
+          toast.success("Welcome to Mpola!");
+          // Hard navigation so middleware re-runs against the freshly-set
+          // auth cookies — same reasoning as useSignIn.
+          window.location.href = resolvePostAuthDestination(role);
+          return;
+        }
+        // Tokens weren't issued for some reason — fall back to asking the
+        // user to sign in manually rather than leaving them stuck.
         router.push(role === "lender" ? "/auth/lender-signin" : "/auth/signin");
         return;
       }
@@ -284,10 +293,19 @@ export function useVerifySignupPhoneOtp() {
       code: string;
     }) => api.verifySignupPhoneOtp(draftId, phoneNumber, code),
     onSuccess: (data) => {
-      const role = data.draft?.role || getCookie("lf_signup_role") || "borrower";
+      const role = data.user?.role || data.draft?.role || getCookie("lf_signup_role") || "borrower";
 
       if (data.account_created || data.draft?.is_completed) {
         clearSignupDraftCookies();
+        if (data.user) {
+          toast.success("Welcome to Mpola!");
+          // Hard navigation so middleware re-runs against the freshly-set
+          // auth cookies — same reasoning as useSignIn.
+          window.location.href = resolvePostAuthDestination(role);
+          return;
+        }
+        // Tokens weren't issued for some reason — fall back to asking the
+        // user to sign in manually rather than leaving them stuck.
         toast.success("Account verified! Please sign in to continue.");
         router.push(role === "lender" ? "/auth/lender-signin" : "/auth/signin");
         return;
