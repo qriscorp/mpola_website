@@ -10,12 +10,14 @@ import {
   useWithdrawMobileMoney,
   useBankWithdraw,
   useBanks,
+  useSendWithdrawOtp,
 } from "@/hooks/use-wallet";
 import {
   calcMobileMoneyWithdrawalCharges,
   calcBankWithdrawalCharges,
   detectCarrier,
 } from "@/lib/fees";
+import { OtpConfirmModal } from "@/components/otp-confirm-modal";
 
 interface WalletWithdrawModalProps {
   open: boolean;
@@ -44,9 +46,13 @@ export function WalletWithdrawModal({
   const [accountBank, setAccountBank] = useState("");
   const [accountNumber, setAccountNumber] = useState("");
   const [beneficiaryName, setBeneficiaryName] = useState("");
+  const [showOtpModal, setShowOtpModal] = useState(false);
+  const [otpError, setOtpError] = useState<string | null>(null);
+  const [resendingOtp, setResendingOtp] = useState(false);
 
   const mobileMoney = useWithdrawMobileMoney();
   const bankWithdraw = useBankWithdraw();
+  const sendOtp = useSendWithdrawOtp();
   const { data: bankList, isLoading: banksLoading } = useBanks("UG");
 
   // Auto-fill from the account's saved phone number and auto-select the
@@ -73,17 +79,46 @@ export function WalletWithdrawModal({
 
   if (!open) return null;
 
-  const isPending = mobileMoney.isPending || bankWithdraw.isPending;
+  const isPending = mobileMoney.isPending || bankWithdraw.isPending || sendOtp.isPending;
   const phoneError =
     method === "mobile_money" && phone.length > 0 && phone.length !== 9
       ? "Enter a full 9-digit number after +256"
       : null;
 
+  // "Confirm Withdrawal" only requests the SMS code — the actual submission
+  // (and the real charge/payout) happens in handleVerifyOtp once that code
+  // comes back verified.
   const handleConfirm = () => {
+    setOtpError(null);
+    sendOtp.mutate(undefined, { onSuccess: () => setShowOtpModal(true) });
+  };
+
+  const handleResendOtp = () => {
+    setResendingOtp(true);
+    setOtpError(null);
+    sendOtp.mutate(undefined, {
+      onSettled: () => setResendingOtp(false),
+      onError: (err: Error) => setOtpError(err.message || "Couldn't resend the code."),
+    });
+  };
+
+  const handleVerifyOtp = (otp_code: string) => {
+    setOtpError(null);
+    const onError = (err: Error) => {
+      // Stays open so a wrong/expired code can be retried without redoing
+      // the whole form.
+      setOtpError(err.message || "Please try again.");
+    };
     if (method === "mobile_money") {
       mobileMoney.mutate(
-        { amount: numericAmount, phone: `+256${phone}`, carrier },
-        { onSuccess: onClose },
+        { amount: numericAmount, phone: `+256${phone}`, carrier, otp_code },
+        {
+          onSuccess: () => {
+            setShowOtpModal(false);
+            onClose();
+          },
+          onError,
+        },
       );
     } else {
       bankWithdraw.mutate(
@@ -92,8 +127,15 @@ export function WalletWithdrawModal({
           account_bank: accountBank,
           account_number: accountNumber,
           beneficiary_name: beneficiaryName,
+          otp_code,
         },
-        { onSuccess: onClose },
+        {
+          onSuccess: () => {
+            setShowOtpModal(false);
+            onClose();
+          },
+          onError,
+        },
       );
     }
   };
@@ -257,10 +299,23 @@ export function WalletWithdrawModal({
             }
             className={`flex-1 py-2.5 text-white rounded-xl text-sm font-semibold disabled:opacity-50 ${ACCENT_BUTTON_CLASSES[accent]}`}
           >
-            {isPending ? "Processing…" : "Confirm Withdrawal"}
+            {sendOtp.isPending ? "Sending code…" : isPending ? "Processing…" : "Confirm Withdrawal"}
           </button>
         </div>
       </div>
+
+      <OtpConfirmModal
+        open={showOtpModal}
+        onOpenChange={setShowOtpModal}
+        title="Enter verification code"
+        description="We sent a 6-digit code to your registered phone number to confirm this withdrawal."
+        onConfirm={handleVerifyOtp}
+        onResend={handleResendOtp}
+        loading={mobileMoney.isPending || bankWithdraw.isPending}
+        resending={resendingOtp}
+        error={otpError}
+        accentClassName={ACCENT_BUTTON_CLASSES[accent]}
+      />
     </div>
   );
 }

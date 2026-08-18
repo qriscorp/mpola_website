@@ -82,10 +82,16 @@ export function useDepositMobileMoney() {
   });
 }
 
+export function useSendWithdrawOtp() {
+  return useMutation({
+    mutationFn: api.sendWithdrawOtp,
+  });
+}
+
 export function useWithdrawMobileMoney() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: { amount: number; phone: string; carrier?: string }) =>
+    mutationFn: (data: { amount: number; phone: string; carrier?: string; otp_code: string }) =>
       api.withdrawMobileMoney(data),
     onSuccess: (result) => {
       toast.success(
@@ -134,6 +140,7 @@ export function useBankWithdraw() {
       account_number: string;
       beneficiary_name: string;
       narration?: string;
+      otp_code: string;
     }) => {
       const { reference } = await api.initiateBankWithdraw(data);
       return pollUntilResolved(() => api.getBankWithdrawStatus(reference));
