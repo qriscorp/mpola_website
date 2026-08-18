@@ -48,7 +48,7 @@ const sections = [
 export default function PrivacyPolicyPage() {
   return (
     <div className="min-h-screen bg-[linear-gradient(180deg,#F6FAF9_0%,#FFFFFF_26%)] dark:bg-none dark:bg-gray-950">
-      <header className="border-b border-gray-200 bg-white/90 backdrop-blur dark:border-gray-800">
+      <header className="border-b border-gray-200 bg-white/90 backdrop-blur dark:border-gray-800 dark:bg-gray-900/90">
         <div className="mx-auto flex h-16 w-full max-w-5xl items-center justify-between px-4 sm:px-6">
           <Logo asLink={false} />
           <Link
@@ -82,7 +82,7 @@ export default function PrivacyPolicyPage() {
             {sections.map((section) => (
               <section
                 key={section.title}
-                className="rounded-xl border border-gray-200 bg-gray-50/60 p-5 sm:p-6 dark:border-gray-800"
+                className="rounded-xl border border-gray-200 bg-gray-50/60 p-5 sm:p-6 dark:border-gray-800 dark:bg-gray-800/60"
               >
                 <h2 className="text-lg font-bold text-[#1B2B3A] dark:text-white">
                   {section.title}
@@ -99,7 +99,7 @@ export default function PrivacyPolicyPage() {
             ))}
           </div>
 
-          <div className="mt-8 grid gap-3 rounded-xl border border-[#DDEBE8] bg-[#F3FBF9] p-4 sm:grid-cols-2">
+          <div className="mt-8 grid gap-3 rounded-xl border border-[#DDEBE8] bg-[#F3FBF9] p-4 dark:border-[#149D8E]/40 dark:bg-[#149D8E]/15 sm:grid-cols-2">
             <Link
               href="/auth/register"
               className="inline-flex items-center justify-center rounded-lg border border-[#2BB5A0] bg-white px-4 py-2.5 text-sm font-semibold text-[#149D8E] transition-colors hover:bg-[#EAF8F5] dark:text-[#5EEAD4] dark:bg-gray-900"

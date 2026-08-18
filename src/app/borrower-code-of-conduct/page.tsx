@@ -14,7 +14,7 @@ const principles = [
 export default function BorrowerCodeOfConductPage() {
   return (
     <div className="min-h-screen bg-[linear-gradient(180deg,#EFFAF8_0%,#FFFFFF_25%)] dark:bg-none dark:bg-gray-950">
-      <header className="border-b border-gray-200 bg-white/90 backdrop-blur dark:border-gray-800">
+      <header className="border-b border-gray-200 bg-white/90 backdrop-blur dark:border-gray-800 dark:bg-gray-900/90">
         <div className="mx-auto flex h-16 w-full max-w-5xl items-center justify-between px-4 sm:px-6">
           <Logo asLink={false} />
           <Link
