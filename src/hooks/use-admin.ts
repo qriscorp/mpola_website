@@ -85,6 +85,26 @@ export function useDeactivateUser() {
   });
 }
 
+export function useDeactivatedAccounts(page: number = 1, pageSize: number = 20, search?: string) {
+  return useQuery({
+    queryKey: ["admin", "deactivated-accounts", page, pageSize, search],
+    queryFn: () => api.getDeactivatedAccounts(page, pageSize, search),
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function useRestoreDeactivatedAccount() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (username: string) => api.restoreDeactivatedAccount(username),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin", "deactivated-accounts"] });
+      qc.invalidateQueries({ queryKey: ["admin", "users"] });
+    },
+    onError: (err: Error) => toast.error(err.message || "Couldn't restore this account."),
+  });
+}
+
 export function useAdminUserDetail(username: string) {
   return useQuery({
     queryKey: ["admin", "user-detail", username],

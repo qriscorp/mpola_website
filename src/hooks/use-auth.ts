@@ -106,6 +106,27 @@ function resolvePostAuthDestination(role: string): string {
   return getRedirectParam() ?? computed;
 }
 
+/** An admin-restored account is on a server-generated temp password until
+ * this fires — routes to Settings (where change-password lives) instead of
+ * the normal post-login destination, with a toast explaining why. */
+function landPostLogin(role: string, mustChangePassword: boolean) {
+  if (mustChangePassword) {
+    toast.success(
+      "You're signed in with a temporary password. For your security, set a new one now.",
+      { duration: 8000 },
+    );
+    window.location.href = role === "lender" ? "/lender/settings" : "/dashboard/settings";
+    return;
+  }
+  toast.success("Welcome back!");
+  // Hard navigation, not router.push: the Next.js client Router Cache can
+  // hold onto the pre-login middleware redirect (guest -> sign-in) for this
+  // route, so a soft push can silently no-op immediately after the auth
+  // cookies change. A full navigation always re-runs middleware against the
+  // fresh cookies.
+  window.location.href = resolvePostAuthDestination(role);
+}
+
 export function useSignIn() {
   return useMutation({
     mutationFn: (data: SignInFormData) =>
@@ -116,14 +137,8 @@ export function useSignIn() {
       }),
     onSuccess: (result) => {
       if (result.requires2FA) return; // caller shows the 2FA code modal instead
-      toast.success("Welcome back!");
       const role = getCookie("lf_role") || "borrower";
-      // Hard navigation, not router.push: the Next.js client Router Cache can
-      // hold onto the pre-login middleware redirect (guest -> sign-in) for
-      // this route, so a soft push can silently no-op immediately after the
-      // auth cookies change. A full navigation always re-runs middleware
-      // against the fresh cookies.
-      window.location.href = resolvePostAuthDestination(role);
+      landPostLogin(role, result.mustChangePassword);
     },
     onError: (error: Error) => {
       toast.error(error.message || "Invalid credentials. Please try again.");
@@ -135,10 +150,9 @@ export function useVerifyLogin2FA() {
   return useMutation({
     mutationFn: ({ username, code }: { username: string; code: string }) =>
       api.verifyLogin2FA(username, code),
-    onSuccess: () => {
-      toast.success("Welcome back!");
+    onSuccess: (result) => {
       const role = getCookie("lf_role") || "borrower";
-      window.location.href = resolvePostAuthDestination(role);
+      landPostLogin(role, result.mustChangePassword);
     },
     onError: (error: Error) => {
       toast.error(error.message || "Invalid code. Please try again.");
@@ -184,9 +198,8 @@ export function useLenderSignIn() {
       }),
     onSuccess: (result) => {
       if (result.requires2FA) return; // caller shows the 2FA code modal instead
-      toast.success("Welcome back!");
       const role = getCookie("lf_role") || "lender";
-      window.location.href = resolvePostAuthDestination(role);
+      landPostLogin(role, result.mustChangePassword);
     },
     onError: (error: Error) => {
       toast.error(error.message || "Invalid credentials. Please try again.");

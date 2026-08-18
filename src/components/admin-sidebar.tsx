@@ -18,6 +18,7 @@ import {
   Scale,
   LifeBuoy,
   LogOut,
+  UserX,
 } from "lucide-react";
 import { SignOutModal } from "@/components/sign-out-modal";
 import { SwitchToPortalLink } from "@/components/portal-switch-link";
@@ -31,6 +32,7 @@ const overviewNav = [
 
 const platformNav = [
   { href: "/admin/users", label: "Users", icon: Users },
+  { href: "/admin/deactivated-accounts", label: "Deactivated Accounts", icon: UserX },
   {
     href: "/admin/verification",
     label: "Verification",

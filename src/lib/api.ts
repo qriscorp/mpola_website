@@ -64,6 +64,10 @@ export interface AuthResponse {
     is_kyc_verified: boolean;
     kyc_status: string;
     credit_score: number | null;
+    // Set when an admin restored this account — see the backend's
+    // User.must_change_password. Nudges sign-in to prompt a real password
+    // before the user carries on with a server-generated temp one.
+    must_change_password?: boolean;
   };
   access_token: string;
   refresh_token: string;
@@ -82,7 +86,7 @@ type LoginApiResponse = AuthResponse | RequiresTwoFactorResponse;
 
 export type SignInOutcome =
   | { requires2FA: true; username: string }
-  | { requires2FA: false; user: User };
+  | { requires2FA: false; user: User; mustChangePassword: boolean };
 
 export interface SignupDraftResponse {
   status: number;
@@ -566,17 +570,20 @@ export const api = {
       return { requires2FA: true, username: res.username };
     }
     storeTokens(res);
-    return { requires2FA: false, user: mapAuthUser(res) };
+    return { requires2FA: false, user: mapAuthUser(res), mustChangePassword: !!res.user?.must_change_password };
   },
 
   /** Completes a sign-in that returned requires2FA — verifies the SMS code and issues tokens. */
-  verifyLogin2FA: async (username: string, code: string): Promise<User> => {
+  verifyLogin2FA: async (
+    username: string,
+    code: string,
+  ): Promise<{ user: User; mustChangePassword: boolean }> => {
     const res = await apiPost<AuthResponse>("/auth/verify_login_2fa", {
       username,
       code,
     });
     storeTokens(res);
-    return mapAuthUser(res);
+    return { user: mapAuthUser(res), mustChangePassword: !!res.user?.must_change_password };
   },
 
   register: async (
@@ -628,7 +635,7 @@ export const api = {
       );
     }
     storeTokens(res);
-    return { requires2FA: false, user: mapAuthUser(res) };
+    return { requires2FA: false, user: mapAuthUser(res), mustChangePassword: !!res.user?.must_change_password };
   },
 
   lenderRegister: async (
@@ -1486,6 +1493,44 @@ export const api = {
   ): Promise<{ success: boolean; message: string }> => {
     const qs = reason ? `?reason=${encodeURIComponent(reason)}` : "";
     return apiAuthPost(`/admin/users/${username}/deactivate${qs}`, {});
+  },
+
+  getDeactivatedAccounts: async (
+    page: number = 1,
+    pageSize: number = 20,
+    search?: string,
+  ): Promise<{
+    total: number;
+    users: {
+      id: string;
+      original_username: string;
+      original_email: string;
+      original_phone_number: string | null;
+      deactivated_by: string | null;
+      reason: string | null;
+      scheduled_deletion_date: string | null;
+      created_at: string;
+    }[];
+  }> => {
+    const params = new URLSearchParams({
+      skip: String((page - 1) * pageSize),
+      limit: String(pageSize),
+    });
+    if (search) params.set("search", search);
+    return apiAuthGet(`/admin/users/deactivated/list?${params.toString()}`);
+  },
+
+  restoreDeactivatedAccount: async (
+    username: string,
+  ): Promise<{
+    success: boolean;
+    username: string;
+    temporary_password: string;
+    sms_sent: boolean;
+    phone_number: string | null;
+    message: string;
+  }> => {
+    return apiAuthPost(`/admin/users/${username}/restore`, {});
   },
 
   getAdminLoans: async (
