@@ -153,14 +153,14 @@ export function AllOffersList() {
                   Repayable: {formatCurrency(offer.total_repayable ?? 0)}
                 </p>
                 <Link
-                  href={`/dashboard/offers-received?applicationId=${offer.application_id}`}
+                  href={`/dashboard/offers/detail?offerId=${offer.id}&applicationId=${offer.application_id}`}
                   className={`mt-3 inline-flex items-center justify-center px-5 py-2 rounded-xl text-sm font-semibold transition-colors ${
                     offer.status === "pending"
                       ? "bg-[#2BB5A0] text-white hover:bg-[#239E8C]"
                       : "border border-gray-300 text-gray-700 hover:border-gray-400"
                   }`}
                 >
-                  {offer.status === "pending" ? "View & Respond" : "View"}
+                  View Details
                 </Link>
               </div>
             </StaggerItem>

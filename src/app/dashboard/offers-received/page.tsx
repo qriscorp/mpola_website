@@ -5,10 +5,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { BorrowerPageHeader } from "@/components/top-nav";
 import { InfoTip } from "@/components/info-tip";
 import { useApplicationDetail } from "@/hooks/use-lender";
-import { useRespondToOffer } from "@/hooks/use-offers";
 import { formatCurrency, formatRate, formatDuration } from "@/lib/format";
 import { CardSkeleton } from "@/components/skeletons";
-import { RequiredDocumentsChecklist } from "@/components/required-documents-checklist";
 import { AllOffersList } from "@/components/all-offers-list";
 
 const avatarColors = ["#1B2B3A", "#2BB5A0", "#C4A55A", "#B0923E"];
@@ -34,7 +32,6 @@ function OffersReceivedContent() {
   const { data: application, isLoading } = useApplicationDetail(
     applicationId ?? "",
   );
-  const { mutate: respond, isPending } = useRespondToOffer();
 
   if (!applicationId) {
     return (
@@ -117,7 +114,14 @@ function OffersReceivedContent() {
             return (
               <div
                 key={offer.id}
-                className={`bg-white dark:bg-gray-900 rounded-2xl border p-5 ${
+                onClick={() =>
+                  router.push(
+                    `/dashboard/offers/detail?offerId=${offer.id}&applicationId=${application.id}`,
+                  )
+                }
+                role="button"
+                tabIndex={0}
+                className={`bg-white dark:bg-gray-900 rounded-2xl border p-5 cursor-pointer transition-colors hover:border-[#2BB5A0]/50 ${
                   isBest
                     ? "border-[#2BB5A0] shadow-sm"
                     : "border-gray-200 dark:border-gray-800"
@@ -177,46 +181,10 @@ function OffersReceivedContent() {
                       <span className="capitalize">{offer.status}</span>
                     </p>
                   </div>
-                  {offer.status === "pending" && (
-                    <div className="flex gap-2 shrink-0">
-                      <button
-                        onClick={() =>
-                          respond({
-                            offerId: offer.id,
-                            applicationId: application.id,
-                            status: "declined",
-                          })
-                        }
-                        disabled={isPending}
-                        className="px-4 py-2 rounded-xl border border-gray-300 text-sm font-semibold text-gray-700 hover:border-red-300 hover:text-red-500 transition-colors disabled:opacity-50"
-                      >
-                        Decline
-                      </button>
-                      <button
-                        onClick={() =>
-                          router.push(
-                            `/dashboard/offers/accept?offerId=${offer.id}&applicationId=${application.id}`,
-                          )
-                        }
-                        disabled={isPending}
-                        className="px-5 py-2 rounded-xl bg-[#2BB5A0] text-white text-sm font-semibold hover:bg-[#239E8C] transition-colors disabled:opacity-50"
-                      >
-                        Review &amp; Accept
-                      </button>
-                    </div>
-                  )}
+                  <span className="shrink-0 text-sm font-semibold text-[#2BB5A0]">
+                    View details →
+                  </span>
                 </div>
-                {offer.required_documents_status.length > 0 && (
-                  <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
-                    <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
-                      Documents this lender requires
-                    </p>
-                    <RequiredDocumentsChecklist
-                      items={offer.required_documents_status}
-                      applicationId={application.id}
-                    />
-                  </div>
-                )}
               </div>
             );
           })}
