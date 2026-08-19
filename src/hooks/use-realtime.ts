@@ -60,14 +60,22 @@ export function useRealtimeNotifications() {
   pathnameRef.current = pathname;
 
   useEffect(() => {
-    const token = getCookie("lf_token");
-    if (!token) return;
+    if (!getCookie("lf_token")) return;
 
     let socket: WebSocket | null = null;
     let retryTimer: ReturnType<typeof setTimeout> | null = null;
     closedByUsRef.current = false;
 
     const connect = () => {
+      // Re-read the cookie on every (re)connect, not just once at mount —
+      // access tokens are short-lived (15min) and get silently refreshed
+      // in place elsewhere in the app (see refreshToken() in lib/api.ts).
+      // Reusing a stale closured token meant that once it expired, every
+      // reconnect attempt kept retrying the SAME dead token forever,
+      // getting rejected (code 4001, logged server-side as 403) in an
+      // infinite loop instead of picking up the refreshed one.
+      const token = getCookie("lf_token");
+      if (!token) return; // logged out — stop retrying rather than loop on no-token
       socket = new WebSocket(wsUrl(token));
 
       socket.onopen = () => {
