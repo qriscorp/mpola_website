@@ -3,6 +3,8 @@ import type {
   User,
   DashboardStats,
   ActiveLoan,
+  DisbursementQueue,
+  BatchDisbursementResult,
   LoanRepayment,
   RepaymentHistoryItem,
   LoanApplication,
@@ -1039,6 +1041,12 @@ export const api = {
     loanId: string,
   ): Promise<{ status: number; message: string; loan: ActiveLoan }> => {
     return apiAuthPost(`/loans/active/${loanId}/approve-disbursement`, {});
+  },
+  getDisbursementQueue: async (): Promise<DisbursementQueue> => {
+    return apiAuthGet("/loans/disbursement-queue");
+  },
+  batchApproveDisbursement: async (): Promise<BatchDisbursementResult> => {
+    return apiAuthPost("/loans/disbursement/batch", {});
   },
   getApplications: async (): Promise<LoanApplication[]> => {
     const res = await apiAuthGet<{

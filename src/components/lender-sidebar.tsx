@@ -19,11 +19,12 @@ import {
   AlertTriangle,
   CheckCircle2,
   Search,
+  Send,
 } from "lucide-react";
 import { SignOutModal } from "@/components/sign-out-modal";
 import { SwitchToAdminLink } from "@/components/portal-switch-link";
 import { useUser } from "@/hooks/use-dashboard";
-import { useMyOffers, useMarketplace, useLenderActiveLoans } from "@/hooks/use-lender";
+import { useMyOffers, useMarketplace, useDisbursementQueue } from "@/hooks/use-lender";
 import { useGuarantorRequests } from "@/hooks/use-guarantors";
 import { getInitials } from "@/lib/format";
 
@@ -57,6 +58,12 @@ const lendingNav = [
 ];
 
 const financeNav = [
+  {
+    href: "/lender/disbursement",
+    label: "Disbursement",
+    icon: Send,
+    badgeKey: "awaitingDisbursement" as const,
+  },
   { href: "/lender/wallet", label: "Wallet", icon: Wallet },
   { href: "/lender/earnings", label: "Earnings", icon: TrendingUp },
 ];
@@ -90,11 +97,11 @@ export function LenderSidebarContent({
   const { data: offers } = useMyOffers();
   const { data: marketplace } = useMarketplace();
   const { data: guarantorRequests } = useGuarantorRequests("pending");
-  const { data: activeLoans } = useLenderActiveLoans();
+  const { data: disbursementQueue } = useDisbursementQueue();
   const pendingOffers = (offers ?? []).filter((o) => o.status === "pending").length;
   const openApplications = marketplace?.total ?? 0;
   const pendingApprovals = guarantorRequests?.requests.length ?? 0;
-  const awaitingDisbursement = (activeLoans ?? []).filter((l) => l.status === "pending_disbursement").length;
+  const awaitingDisbursement = disbursementQueue?.pending_count ?? 0;
 
   const navLink = (item: NavItem) => {
     const badge =

@@ -184,8 +184,31 @@ export function useApproveDisbursement() {
       qc.invalidateQueries({ queryKey: ["lender", "earnings"] });
       qc.invalidateQueries({ queryKey: ["lender", "wallet"] });
       qc.invalidateQueries({ queryKey: ["lender", "transactions"] });
+      qc.invalidateQueries({ queryKey: ["lender", "disbursement-queue"] });
     },
     onError: (err: Error) => toast.error(err.message || "Failed to approve disbursement"),
+  });
+}
+
+export function useDisbursementQueue() {
+  return useQuery({
+    queryKey: ["lender", "disbursement-queue"],
+    queryFn: api.getDisbursementQueue,
+  });
+}
+
+export function useBatchApproveDisbursement() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => api.batchApproveDisbursement(),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["lender", "active-loans"] });
+      qc.invalidateQueries({ queryKey: ["lender", "earnings"] });
+      qc.invalidateQueries({ queryKey: ["lender", "wallet"] });
+      qc.invalidateQueries({ queryKey: ["lender", "transactions"] });
+      qc.invalidateQueries({ queryKey: ["lender", "disbursement-queue"] });
+    },
+    onError: (err: Error) => toast.error(err.message || "Batch disbursement failed"),
   });
 }
 

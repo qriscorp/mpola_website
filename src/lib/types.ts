@@ -156,6 +156,21 @@ export interface ActiveLoan {
   repayments?: LoanRepayment[];
 }
 
+export interface DisbursementQueue {
+  pending: ActiveLoan[];
+  pending_count: number;
+  pending_total: number;
+  disbursed_today_count: number;
+  disbursed_today_amount: number;
+  wallet_balance: number;
+}
+
+export interface BatchDisbursementResult {
+  status: number;
+  disbursed: string[];
+  failed: { loan_id: string; reason: string }[];
+}
+
 export interface Guarantor {
   id: string;
   guarantor_user_id: string;
