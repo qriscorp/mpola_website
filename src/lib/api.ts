@@ -3,6 +3,7 @@ import type {
   User,
   DashboardStats,
   ActiveLoan,
+  MarketplacePreview,
   DisbursementQueue,
   BatchDisbursementResult,
   LoanRepayment,
@@ -1952,6 +1953,9 @@ export const api = {
     licence_number: string | null;
   }> => {
     return apiGet("/public/platform-info");
+  },
+  getMarketplacePreview: async (): Promise<MarketplacePreview> => {
+    return apiGet("/public/marketplace-preview");
   },
 
   // ─── Support tickets ───

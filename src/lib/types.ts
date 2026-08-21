@@ -156,6 +156,29 @@ export interface ActiveLoan {
   repayments?: LoanRepayment[];
 }
 
+export interface MarketplacePreviewOffer {
+  id: string;
+  lender_name: string;
+  min_amount: number;
+  max_amount: number;
+  interest_rate: number;
+  loan_types: string | null; // JSON-encoded string list — parse before use
+}
+
+export interface MarketplacePreviewRequest {
+  id: string;
+  borrower_name: string; // already reduced to "First L." server-side
+  amount: number;
+  loan_type: string;
+  duration: number | null;
+  duration_days: number | null;
+}
+
+export interface MarketplacePreview {
+  offers: MarketplacePreviewOffer[];
+  requests: MarketplacePreviewRequest[];
+}
+
 export interface DisbursementQueue {
   pending: ActiveLoan[];
   pending_count: number;
