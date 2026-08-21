@@ -231,7 +231,7 @@ export default function HowItWorksPage() {
               {
                 icon: Wallet,
                 title: "Flexible Payments",
-                desc: "Pay via Mpola Wallet, MTN MoMo, or Airtel Money. Track your repayment schedule in real-time.",
+                desc: "Pay from your Mpola Wallet — top it up anytime via MTN MoMo, Airtel Money, or card. Track your repayment schedule in real-time.",
               },
               {
                 icon: MessageCircle,

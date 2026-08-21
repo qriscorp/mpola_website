@@ -100,7 +100,7 @@ export default function LearnMorePage() {
               {
                 icon: Wallet,
                 title: "Integrated Wallet",
-                desc: "Deposit via Mobile Money or bank transfer. Disbursements and repayments flow through your wallet automatically.",
+                desc: "Deposit via Mobile Money or card. Disbursements move wallet-to-wallet instantly, and you can withdraw earnings to Mobile Money or your bank account anytime.",
               },
               {
                 icon: BarChart3,

@@ -130,8 +130,10 @@ export default async function LandingPage({
             </h1>
             <p className="mt-6 text-gray-300 leading-relaxed max-w-lg">
               Post a lending offer or a borrowing request. Connect directly with
-              verified counterparts. Funded via MTN MoMo or Airtel Money —
-              real transactions happen once you&apos;re signed in.
+              verified counterparts. Loans move wallet-to-wallet instantly —
+              top up or cash out your Mpola Wallet via MTN MoMo, Airtel Money,
+              card, or bank transfer. Real transactions happen once you&apos;re
+              signed in.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 mt-8">
               <Link
@@ -298,7 +300,7 @@ export default async function LandingPage({
           <div className="flex flex-col items-center gap-2">
             <Wallet className="w-5 h-5 text-[#2BB5A0]" />
             <p className="text-xs font-semibold text-gray-600 dark:text-gray-300">
-              MTN MoMo &amp; Airtel
+              Wallet, MoMo, Card &amp; Bank
             </p>
           </div>
         </div>
@@ -350,7 +352,7 @@ export default async function LandingPage({
                   { title: "Create your profile", desc: "with your NIN and phone number. Done in under 5 minutes." },
                   { title: "Browse lender offers", desc: "publicly, or post your own request and receive competing offers." },
                   { title: "Apply or accept an offer.", desc: "Upload documents and add guarantors — all on your phone." },
-                  { title: "Get funded in 24 hours.", desc: "Money in your MTN MoMo or Airtel wallet after approval." },
+                  { title: "Get funded in 24 hours.", desc: "Funds move wallet-to-wallet instantly once the lender approves — withdraw to MTN MoMo, Airtel Money, or your bank anytime." },
                 ].map((step, i) => (
                   <div key={step.title} className="flex gap-3">
                     <span className="h-7 w-7 rounded-full bg-[#ecfeff] text-[#2BB5A0] text-sm font-bold flex items-center justify-center shrink-0 dark:bg-[#2BB5A0]/15">
@@ -423,7 +425,7 @@ export default async function LandingPage({
             </li>
             <li className="flex items-center gap-2.5 text-sm text-gray-600 dark:text-gray-300">
               <CheckCircle2 className="w-4 h-4 text-[#2BB5A0] shrink-0" />
-              Money in MoMo or Airtel in 24 hours
+              Funds land in your wallet instantly — cash out to MoMo, Airtel, or bank
             </li>
           </ul>
           <Link
@@ -471,7 +473,7 @@ export default async function LandingPage({
               </div>
             </div>
           </div>
-          <p className="mt-4 text-xs text-gray-500">Works on MTN &amp; Airtel Money</p>
+          <p className="mt-4 text-xs text-gray-500">Wallet funded via MoMo, Airtel Money, card &amp; bank transfer</p>
         </div>
       </section>
 
