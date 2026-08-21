@@ -43,15 +43,15 @@ export function SiteHeader() {
           <ThemeToggle onDark />
           <Link
             href="/auth/signin"
-            className="text-gray-300 hover:text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+            className="bg-[#2BB5A0] text-white px-3 py-2 rounded-lg text-sm font-semibold hover:bg-[#239E8C] transition-colors"
           >
-            Sign In
+            Borrower Sign In
           </Link>
           <Link
-            href="/auth/signin"
-            className="bg-[#C4A55A] text-[#1B2B3A] px-4 py-2 rounded-lg text-sm font-semibold hover:bg-[#d4b56a] transition-colors"
+            href="/auth/lender-signin"
+            className="bg-[#C4A55A] text-[#1B2B3A] px-3 py-2 rounded-lg text-sm font-semibold hover:bg-[#d4b56a] transition-colors"
           >
-            Join Free
+            Lender Sign In
           </Link>
         </div>
       </div>

@@ -136,13 +136,13 @@ export default async function LandingPage({
             <div className="flex flex-col sm:flex-row gap-3 mt-8">
               <Link
                 href="/auth/signin"
-                className="bg-[#C4A55A] text-[#1B2B3A] px-6 py-3 rounded-lg font-semibold text-sm inline-flex items-center justify-center gap-2 hover:bg-[#d4b56a] transition-colors"
+                className="bg-[#2BB5A0] text-white px-6 py-3 rounded-lg font-semibold text-sm inline-flex items-center justify-center gap-2 hover:bg-[#239E8C] transition-colors"
               >
                 Start Borrowing <ArrowRight className="w-4 h-4" />
               </Link>
               <Link
                 href="/auth/lender-signin"
-                className="text-white px-6 py-3 rounded-lg font-medium text-sm border border-white/20 hover:bg-white/10 transition-colors inline-flex items-center justify-center gap-2"
+                className="bg-[#C4A55A] text-[#1B2B3A] px-6 py-3 rounded-lg font-semibold text-sm inline-flex items-center justify-center gap-2 hover:bg-[#d4b56a] transition-colors"
               >
                 Start Lending <ArrowRight className="w-4 h-4" />
               </Link>
