@@ -11,18 +11,19 @@ import {
   GraduationCap,
   Landmark,
 } from "lucide-react";
-import { Logo } from "@/components/logo";
+import { SiteHeader } from "@/components/site-header";
 import { ComplianceBadge } from "@/components/compliance-badge";
+import { MarketplaceFeed } from "@/components/marketplace-feed";
 import { api } from "@/lib/api";
 import { formatCurrency, formatRate, formatDuration } from "@/lib/format";
 import type { MarketplacePreviewOffer, MarketplacePreviewRequest } from "@/lib/types";
 
 const CATEGORIES = [
-  { icon: Briefcase, label: "Business" },
-  { icon: Users, label: "Personal" },
-  { icon: Landmark, label: "Agricultural" },
-  { icon: Heart, label: "Emergency" },
-  { icon: GraduationCap, label: "Education" },
+  { icon: Briefcase, label: "Business", key: "business" },
+  { icon: Users, label: "Personal", key: "personal" },
+  { icon: Landmark, label: "Agricultural", key: "agricultural" },
+  { icon: Heart, label: "Emergency", key: "emergency" },
+  { icon: GraduationCap, label: "Education", key: "education" },
 ];
 
 const AVATAR_COLORS = ["#163256", "#4e1a6e", "#1a5e42", "#6e3a1a", "#1a2a5e", "#5e1a1a"];
@@ -66,6 +67,7 @@ function OfferRow({ offer, i }: { offer: MarketplacePreviewOffer; i: number }) {
         </p>
         <p className="text-xs text-gray-400 dark:text-gray-500">
           {types.length > 0 ? types.join(" · ") : "Multiple loan types"}
+          {offer.city ? ` · ${offer.city}` : ""}
         </p>
       </div>
       <div className="text-right shrink-0">
@@ -88,6 +90,7 @@ function RequestRow({ request, i }: { request: MarketplacePreviewRequest; i: num
         </p>
         <p className="text-xs text-gray-400 capitalize dark:text-gray-500">
           {request.loan_type} · {formatDuration(request.duration, request.duration_days)}
+          {request.city ? ` · ${request.city}` : ""}
         </p>
       </div>
       <p className="font-bold text-[#2BB5A0] shrink-0">{formatCurrency(request.amount)}</p>
@@ -96,41 +99,27 @@ function RequestRow({ request, i }: { request: MarketplacePreviewRequest; i: num
 }
 
 export default async function LandingPage() {
-  const preview = await api.getMarketplacePreview().catch(() => ({ offers: [], requests: [] }));
+  const preview = await api.getMarketplacePreview().catch(() => ({
+    offers: [],
+    requests: [],
+    total_offers: 0,
+    total_requests: 0,
+    category_counts: {} as Record<string, number>,
+  }));
+  const totalListings = preview.total_offers + preview.total_requests;
+
+  // Hero's small "Live Activity" widget mixes both kinds, newest first —
+  // a smaller, denser preview than the full feed section further down.
+  const heroFeed = [
+    ...preview.offers.map((o) => ({ kind: "offer" as const, data: o, createdAt: o.created_at })),
+    ...preview.requests.map((r) => ({ kind: "request" as const, data: r, createdAt: r.created_at })),
+  ]
+    .sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || ""))
+    .slice(0, 4);
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900">
-      {/* Nav */}
-      <header className="sticky top-0 z-50 bg-[#1B2B3A] border-b border-white/10">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16 gap-6">
-          <Logo variant="light" />
-          <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-300">
-            <a href="#activity" className="hover:text-white transition-colors">
-              Browse
-            </a>
-            <Link href="/how-it-works" className="hover:text-white transition-colors">
-              How It Works
-            </Link>
-            <Link href="/learn-more" className="hover:text-white transition-colors">
-              For Lenders
-            </Link>
-          </nav>
-          <div className="flex items-center gap-2 shrink-0">
-            <Link
-              href="/auth/signin"
-              className="text-gray-300 hover:text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors"
-            >
-              Sign In
-            </Link>
-            <Link
-              href="/auth/register"
-              className="bg-[#C4A55A] text-[#1B2B3A] px-4 py-2 rounded-lg text-sm font-semibold hover:bg-[#d4b56a] transition-colors"
-            >
-              Join Free
-            </Link>
-          </div>
-        </div>
-      </header>
+      <SiteHeader />
 
       {/* Hero */}
       <section className="bg-[#1B2B3A] text-white py-16 lg:py-24">
@@ -150,13 +139,13 @@ export default async function LandingPage() {
             </p>
             <div className="flex flex-col sm:flex-row gap-3 mt-8">
               <Link
-                href="/auth/register"
+                href="/auth/signin"
                 className="bg-[#C4A55A] text-[#1B2B3A] px-6 py-3 rounded-lg font-semibold text-sm inline-flex items-center justify-center gap-2 hover:bg-[#d4b56a] transition-colors"
               >
                 Start Borrowing <ArrowRight className="w-4 h-4" />
               </Link>
               <Link
-                href="/auth/lender-register"
+                href="/auth/lender-signin"
                 className="text-white px-6 py-3 rounded-lg font-medium text-sm border border-white/20 hover:bg-white/10 transition-colors inline-flex items-center justify-center gap-2"
               >
                 Start Lending <ArrowRight className="w-4 h-4" />
@@ -179,23 +168,22 @@ export default async function LandingPage() {
               <span className="text-xs font-bold text-gray-300 ml-2">Live Activity</span>
               <span className="ml-auto flex items-center gap-1.5 text-[11px] font-bold text-emerald-400">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                Live
+                {totalListings} Active
               </span>
             </div>
             <div className="bg-white dark:bg-gray-900 p-4">
-              {preview.offers.length === 0 && preview.requests.length === 0 ? (
+              {heroFeed.length === 0 ? (
                 <p className="text-sm text-gray-400 text-center py-6">
                   New offers and requests appear here as they&apos;re posted.
                 </p>
               ) : (
-                <>
-                  {preview.offers.slice(0, 3).map((o, i) => (
-                    <OfferRow key={o.id} offer={o} i={i} />
-                  ))}
-                  {preview.requests.slice(0, 3).map((r, i) => (
-                    <RequestRow key={r.id} request={r} i={i} />
-                  ))}
-                </>
+                heroFeed.map((item, i) =>
+                  item.kind === "offer" ? (
+                    <OfferRow key={`offer-${item.data.id}`} offer={item.data} i={i} />
+                  ) : (
+                    <RequestRow key={`request-${item.data.id}`} request={item.data} i={i} />
+                  ),
+                )
               )}
             </div>
           </div>
@@ -211,22 +199,25 @@ export default async function LandingPage() {
           {CATEGORIES.map((cat) => (
             <Link
               key={cat.label}
-              href="/auth/register"
+              href="/auth/signin"
               className="flex items-center gap-2 shrink-0 px-4 py-2 rounded-lg border border-gray-200 hover:border-[#2BB5A0] hover:bg-[#E8F8F5]/40 transition-colors dark:border-gray-800 dark:hover:bg-gray-800"
             >
               <cat.icon className="w-4 h-4 text-[#2BB5A0]" />
               <span className="text-sm font-semibold text-[#1B2B3A] dark:text-white">
                 {cat.label}
               </span>
+              <span className="text-xs text-gray-400 dark:text-gray-500">
+                ({preview.category_counts[cat.key] ?? 0})
+              </span>
             </Link>
           ))}
         </div>
       </section>
 
-      {/* Recent activity, full width */}
-      <section className="py-16 lg:py-20">
+      {/* Marketplace feed, full width */}
+      <section id="activity-feed" className="py-16 lg:py-20">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
+          <div className="text-center mb-8">
             <p className="text-[#C4A55A] text-xs font-semibold uppercase tracking-widest mb-3">
               Real Activity, Right Now
             </p>
@@ -234,59 +225,43 @@ export default async function LandingPage() {
               Recent offers &amp; requests
             </h2>
             <p className="mt-3 text-gray-500 max-w-xl mx-auto dark:text-gray-400">
-              A preview of what&apos;s happening on Mpola — sign in to browse
+              <strong className="text-[#1B2B3A] dark:text-white">{totalListings} listings</strong>{" "}
+              — a live preview of what&apos;s happening on Mpola. Sign in to browse
               everything, apply, or respond.
             </p>
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-6">
-            <div className="bg-white rounded-2xl border border-gray-100 p-6 dark:bg-gray-900 dark:border-gray-800">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="font-bold text-[#1B2B3A] dark:text-white">Lender Offers</h3>
-                <span className="text-[10px] font-bold uppercase tracking-wider bg-[#FFF8ED] text-[#C4A55A] px-2 py-1 rounded-full dark:bg-[#C4A55A]/10">
-                  Offer
-                </span>
-              </div>
-              {preview.offers.length === 0 ? (
-                <p className="text-sm text-gray-400 text-center py-8 dark:text-gray-500">
-                  No open offers right now — check back soon.
-                </p>
-              ) : (
-                preview.offers.map((o, i) => <OfferRow key={o.id} offer={o} i={i} />)
-              )}
-            </div>
-
-            <div className="bg-white rounded-2xl border border-gray-100 p-6 dark:bg-gray-900 dark:border-gray-800">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="font-bold text-[#1B2B3A] dark:text-white">Borrower Requests</h3>
-                <span className="text-[10px] font-bold uppercase tracking-wider bg-[#E8F8F5] text-[#2BB5A0] px-2 py-1 rounded-full dark:bg-[#2BB5A0]/10">
-                  Request
-                </span>
-              </div>
-              {preview.requests.length === 0 ? (
-                <p className="text-sm text-gray-400 text-center py-8 dark:text-gray-500">
-                  No open requests right now — check back soon.
-                </p>
-              ) : (
-                preview.requests.map((r, i) => <RequestRow key={r.id} request={r} i={i} />)
-              )}
-            </div>
-          </div>
-
-          <div className="mt-8 bg-[#1B2B3A] rounded-2xl px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+          {/* Post your listing banner */}
+          <div className="mb-6 bg-[#1B2B3A] rounded-2xl px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div>
-              <p className="font-bold text-white">Want to see the full marketplace?</p>
+              <p className="font-bold text-white">Post your listing</p>
               <p className="text-sm text-gray-400">
-                Sign up to browse every open offer and request, apply, and message directly.
+                Lenders: post your offer · Borrowers: post your need — both are public
               </p>
             </div>
-            <Link
-              href="/auth/register"
-              className="bg-[#C4A55A] text-[#1B2B3A] px-5 py-2.5 rounded-lg font-semibold text-sm inline-flex items-center gap-2 hover:bg-[#d4b56a] transition-colors shrink-0"
-            >
-              Join Free <ArrowRight className="w-4 h-4" />
-            </Link>
+            <div className="flex gap-2 shrink-0">
+              <Link
+                href="/auth/lender-signin"
+                className="bg-[#C4A55A] text-[#1B2B3A] px-4 py-2 rounded-lg font-semibold text-sm hover:bg-[#d4b56a] transition-colors whitespace-nowrap"
+              >
+                + Post Lending Offer
+              </Link>
+              <Link
+                href="/auth/signin"
+                className="bg-[#2BB5A0] text-white px-4 py-2 rounded-lg font-semibold text-sm hover:bg-[#239E8C] transition-colors whitespace-nowrap"
+              >
+                + Post Borrowing Request
+              </Link>
+            </div>
           </div>
+
+          <MarketplaceFeed
+            offers={preview.offers}
+            requests={preview.requests}
+            totalOffers={preview.total_offers}
+            totalRequests={preview.total_requests}
+            categoryCounts={preview.category_counts}
+          />
         </div>
       </section>
 
@@ -334,7 +309,7 @@ export default async function LandingPage() {
             borrowers across Uganda.
           </p>
           <Link
-            href="/auth/lender-register"
+            href="/auth/lender-signin"
             className="bg-[#C4A55A] text-white px-6 py-3 rounded-lg font-semibold text-sm inline-flex items-center gap-2 hover:bg-[#b3944a] transition-colors"
           >
             Become a Lender <ArrowRight className="w-4 h-4" />
@@ -352,7 +327,7 @@ export default async function LandingPage() {
             directly to your wallet.
           </p>
           <Link
-            href="/auth/register"
+            href="/auth/signin"
             className="bg-[#2BB5A0] text-white px-6 py-3 rounded-lg font-semibold text-sm inline-flex items-center gap-2 hover:bg-[#239E8C] transition-colors"
           >
             Apply for a Loan <ArrowRight className="w-4 h-4" />

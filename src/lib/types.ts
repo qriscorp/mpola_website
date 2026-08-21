@@ -159,24 +159,31 @@ export interface ActiveLoan {
 export interface MarketplacePreviewOffer {
   id: string;
   lender_name: string;
+  city: string | null;
   min_amount: number;
   max_amount: number;
   interest_rate: number;
   loan_types: string | null; // JSON-encoded string list — parse before use
+  created_at: string | null;
 }
 
 export interface MarketplacePreviewRequest {
   id: string;
   borrower_name: string; // already reduced to "First L." server-side
+  city: string | null;
   amount: number;
   loan_type: string;
   duration: number | null;
   duration_days: number | null;
+  created_at: string | null;
 }
 
 export interface MarketplacePreview {
   offers: MarketplacePreviewOffer[];
   requests: MarketplacePreviewRequest[];
+  total_offers: number;
+  total_requests: number;
+  category_counts: Record<string, number>;
 }
 
 export interface DisbursementQueue {

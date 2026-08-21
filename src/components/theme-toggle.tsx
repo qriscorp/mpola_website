@@ -16,7 +16,7 @@ const OPTIONS = [
   { value: "dark", label: "Dark", icon: Moon },
 ] as const;
 
-export function ThemeToggle() {
+export function ThemeToggle({ onDark = false }: { onDark?: boolean }) {
   const { theme, setTheme } = useTheme();
   // Avoids a hydration mismatch: next-themes doesn't know the stored
   // preference until after mount, so the trigger defaults to the
@@ -30,7 +30,11 @@ export function ThemeToggle() {
     <DropdownMenu>
       <DropdownMenuTrigger
         aria-label="Change theme"
-        className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground outline-none"
+        className={
+          onDark
+            ? "inline-flex h-8 w-8 items-center justify-center rounded-lg text-gray-300 transition-colors hover:bg-white/10 hover:text-white outline-none"
+            : "inline-flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground outline-none"
+        }
       >
         <TriggerIcon className="h-4 w-4" />
       </DropdownMenuTrigger>

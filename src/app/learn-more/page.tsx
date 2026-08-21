@@ -1,8 +1,7 @@
 import Link from "next/link";
-import { Logo } from "@/components/logo";
+import { SiteHeader } from "@/components/site-header";
 import { ComplianceBadge } from "@/components/compliance-badge";
 import {
-  ArrowLeft,
   ArrowRight,
   ShieldCheck,
   TrendingUp,
@@ -25,29 +24,7 @@ export const metadata = {
 export default function LearnMorePage() {
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900">
-      {/* Nav */}
-      <header className="sticky top-0 z-50 bg-[#1B2B3A] border-b border-white/10">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
-          <Link href="/" className="flex items-center gap-3">
-            <Logo variant="light" asLink={false} />
-          </Link>
-          <div className="flex items-center gap-3">
-            <Link
-              href="/"
-              className="text-gray-300 hover:text-white text-sm font-medium transition-colors inline-flex items-center gap-1"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Home
-            </Link>
-            <Link
-              href="/auth/lender-signin"
-              className="bg-[#C4A55A] text-[#1B2B3A] px-4 py-2 rounded-lg text-sm font-semibold hover:bg-[#d4b56a] transition-colors"
-            >
-              Sign In
-            </Link>
-          </div>
-        </div>
-      </header>
+      <SiteHeader />
 
       {/* Hero */}
       <section className="bg-[#1B2B3A] text-white py-20 lg:py-28">
@@ -67,7 +44,7 @@ export default function LearnMorePage() {
           </p>
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
-              href="/auth/lender-register"
+              href="/auth/lender-signin"
               className="bg-[#C4A55A] text-[#1B2B3A] px-8 py-3.5 rounded-lg font-semibold text-sm inline-flex items-center gap-2 hover:bg-[#d4b56a] transition-colors"
             >
               Create Lender Account <ArrowRight className="w-4 h-4" />
@@ -309,7 +286,7 @@ export default function LearnMorePage() {
           </p>
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
-              href="/auth/lender-register"
+              href="/auth/lender-signin"
               className="bg-[#C4A55A] text-[#1B2B3A] px-8 py-3.5 rounded-lg font-semibold text-sm inline-flex items-center gap-2 hover:bg-[#d4b56a] transition-colors"
             >
               Create Lender Account <ArrowRight className="w-4 h-4" />
