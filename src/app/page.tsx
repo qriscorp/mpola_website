@@ -88,7 +88,7 @@ export default function LandingPage() {
               <span className="text-[#2BB5A0] italic">on your terms</span>.
             </h1>
             <p className="mt-6 text-gray-500 leading-relaxed max-w-lg dark:text-gray-400">
-              Apply once. Compare offers from licensed lenders side-by-side. No
+              Apply once. Compare offers from verified lenders side-by-side. No
               hidden fees, transparent rates, and repayment schedules you can
               actually live with.
             </p>

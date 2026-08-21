@@ -19,7 +19,7 @@ import {
 export const metadata = {
   title: "Learn More – Mpola for Lenders",
   description:
-    "Discover how Mpola connects licensed lenders with vetted borrowers in Uganda.",
+    "Discover how Mpola connects verified lenders with vetted borrowers in Uganda.",
 };
 
 export default function LearnMorePage() {
@@ -60,10 +60,10 @@ export default function LearnMorePage() {
             <span className="text-[#C4A55A] italic">Their opportunity.</span>
           </h1>
           <p className="mt-6 text-lg text-gray-300 max-w-2xl mx-auto leading-relaxed">
-            Mpola is Uganda&apos;s regulated peer-to-peer lending marketplace.
-            We connect licensed lenders with pre-vetted borrowers, handling KYC,
-            documentation, and repayment tracking so you can focus on deploying
-            capital confidently.
+            Mpola is operated by Qriscorp (U) Limited, a licensed money lender
+            in Uganda. We connect verified lenders with pre-vetted borrowers,
+            handling KYC, documentation, and repayment tracking so you can
+            focus on deploying capital confidently.
           </p>
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
@@ -94,7 +94,7 @@ export default function LearnMorePage() {
             </h2>
             <p className="mt-4 text-gray-500 max-w-xl mx-auto dark:text-gray-400">
               Every feature is designed to minimize risk and maximize returns
-              for licensed lending institutions and individuals.
+              for verified lending institutions and individuals.
             </p>
           </div>
 
@@ -168,7 +168,7 @@ export default function LearnMorePage() {
                 step: "01",
                 icon: Lock,
                 title: "Create & Verify Your Account",
-                desc: "Register as an Individual or Company lender. Complete KYC verification including National ID and BoU licensing details.",
+                desc: "Register as an Individual or Company lender. Complete KYC verification including National ID and business registration details.",
               },
               {
                 step: "02",
@@ -194,7 +194,7 @@ export default function LearnMorePage() {
                   <div className="h-14 w-14 rounded-2xl bg-[#1B2B3A] flex items-center justify-center shrink-0">
                     <item.icon className="h-6 w-6 text-[#C4A55A]" />
                   </div>
-                  {i < 3 && <div className="w-0.5 h-16 bg-[#1B2B3A]/10 my-2" />}
+                  {i < 3 && <div className="w-0.5 h-16 bg-[#1B2B3A]/10 my-2 dark:bg-white/10" />}
                 </div>
                 <div className="pb-12">
                   <span className="text-[10px] text-[#C4A55A] font-bold uppercase tracking-widest">
@@ -248,14 +248,16 @@ export default function LearnMorePage() {
                 Regulated lending, reduced risk
               </h2>
               <p className="mt-4 text-gray-500 leading-relaxed dark:text-gray-400">
-                All lending activities on Mpola comply with Ugandan financial
-                regulation and consumer protection law.
+                Mpola is operated by Qriscorp (U) Limited, a licensed money
+                lender under Uganda&apos;s Tier 4 Microfinance Institutions
+                and Money Lenders Act, and all lending activity complies with
+                Ugandan consumer protection law.
               </p>
             </div>
 
             <div className="space-y-4">
               {[
-                "Compliant with Ugandan lending regulations",
+                "Licensed under Uganda's Tier 4 Money Lenders Act",
                 "All borrowers KYC-verified with National ID",
                 "2+ confirmed guarantors per application",
                 "Automated repayment tracking & alerts",
@@ -273,7 +275,7 @@ export default function LearnMorePage() {
       </section>
 
       {/* Testimonial */}
-      <section className="py-16 bg-[#F5F0E0]/50">
+      <section className="py-16 bg-[#F5F0E0]/50 dark:bg-gray-800/40">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="flex items-center justify-center gap-1 mb-4">
             {Array.from({ length: 5 }).map((_, i) => (
@@ -288,7 +290,7 @@ export default function LearnMorePage() {
           <div className="mt-6">
             <p className="font-bold text-[#1B2B3A] dark:text-white">Joseph M.</p>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Licensed Individual Lender · Kampala
+              Verified Individual Lender · Kampala
             </p>
           </div>
         </div>
@@ -302,7 +304,7 @@ export default function LearnMorePage() {
             <span className="text-[#C4A55A] italic">confidence</span>
           </h2>
           <p className="mt-4 text-gray-300 max-w-xl mx-auto">
-            Join thousands of lenders on Uganda&apos;s most trusted regulated
+            Join thousands of lenders on Uganda&apos;s most trusted licensed
             lending marketplace.
           </p>
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">

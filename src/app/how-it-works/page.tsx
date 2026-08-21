@@ -50,7 +50,7 @@ export default function HowItWorksPage() {
       </header>
 
       {/* Hero */}
-      <section className="py-20 lg:py-28 bg-linear-to-b from-[#E8F8F5]/50 to-white">
+      <section className="py-20 lg:py-28 bg-linear-to-b from-[#E8F8F5]/50 to-white dark:from-gray-800/40 dark:to-gray-900">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <p className="text-[#2BB5A0] text-xs font-semibold uppercase tracking-widest mb-4">
             For Borrowers
@@ -60,7 +60,7 @@ export default function HowItWorksPage() {
             <span className="text-[#2BB5A0] italic">made simple</span>
           </h1>
           <p className="mt-6 text-lg text-gray-500 max-w-2xl mx-auto leading-relaxed dark:text-gray-400">
-            Apply once, get multiple offers from licensed lenders, compare rates
+            Apply once, get multiple offers from verified lenders, compare rates
             transparently, and receive funds directly to your wallet. No hidden
             fees, no surprises.
           </p>
@@ -120,7 +120,7 @@ export default function HowItWorksPage() {
                 step: "04",
                 icon: Star,
                 title: "Choose Lenders & Submit",
-                desc: "Browse available licensed lenders, compare their rates and maximum loan amounts. Select up to 5 lenders to receive your application. Review everything, then submit.",
+                desc: "Browse available verified lenders, compare their rates and maximum loan amounts. Select up to 5 lenders to receive your application. Review everything, then submit.",
                 color: "bg-[#1B2B3A]",
               },
               {
@@ -249,7 +249,7 @@ export default function HowItWorksPage() {
               {
                 icon: ShieldCheck,
                 title: "Regulated & Safe",
-                desc: "Mpola operates in compliance with Ugandan lending regulations. Your data is encrypted, your funds are protected.",
+                desc: "Mpola is operated by Qriscorp (U) Limited, a licensed money lender under Uganda's Tier 4 Microfinance Institutions and Money Lenders Act. Your data is encrypted, your funds are protected.",
               },
               {
                 icon: Wallet,
@@ -330,7 +330,7 @@ export default function HowItWorksPage() {
               },
               {
                 q: "Is my data safe?",
-                a: "Absolutely. Mpola uses bank-grade encryption, operates in compliance with Ugandan financial regulations, and never shares your data without consent.",
+                a: "Absolutely. Mpola uses bank-grade encryption, is operated by a Ministry of Finance-licensed money lender, and never shares your data without consent.",
               },
             ].map((faq) => (
               <div
@@ -353,7 +353,7 @@ export default function HowItWorksPage() {
           </h2>
           <p className="mt-4 text-gray-300 max-w-xl mx-auto">
             Create your account, submit your application, and start comparing
-            offers from licensed lenders today.
+            offers from verified lenders today.
           </p>
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link

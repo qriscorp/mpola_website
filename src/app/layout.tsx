@@ -11,7 +11,7 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Mpola – Borrower Portal",
   description:
-    "Lend me, grow together. Apply once. Compare offers from licensed lenders side-by-side.",
+    "Lend me, grow together. Apply once. Compare offers from verified lenders side-by-side.",
   applicationName: "Mpola",
   manifest: "/manifest.webmanifest",
   icons: {

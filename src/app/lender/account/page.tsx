@@ -182,7 +182,20 @@ export default function LenderAccountPage() {
                 Licence No.
               </p>
               <p className="font-bold text-white mt-0.5">
-                {user.licenceNumber ?? "—"}
+                {user.licenceNumber ? (
+                  user.licenceNumber
+                ) : licenceStatus === "not_issued" ? (
+                  // No real number exists yet to show or hide — the backend
+                  // no longer sends one pre-issuance (see
+                  // repository/user_repo.py's _lender_licence_info) — this
+                  // is a masked placeholder, not a blurred version of the
+                  // real thing.
+                  <span className="blur-[3px] select-none" aria-hidden="true">
+                    LND-XXXX-XXXX
+                  </span>
+                ) : (
+                  "—"
+                )}
               </p>
             </div>
             <div>

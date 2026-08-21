@@ -279,7 +279,7 @@ export default function AdminSettingsPage() {
               <Input
                 value={form.licence_number}
                 onChange={(e) => setForm({ ...form, licence_number: e.target.value })}
-                placeholder="e.g. Licensed by Bank of Uganda — Tier IV Credit Institution Licence #XXXXX"
+                placeholder="e.g. Licensed by [Regulator] — Licence #XXXXX"
                 disabled={isLoading}
               />
               <p className="text-xs text-muted-foreground">
