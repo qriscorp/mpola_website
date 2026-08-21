@@ -4,6 +4,7 @@ import type {
   DashboardStats,
   ActiveLoan,
   MarketplacePreview,
+  MarketplacePreviewParams,
   DisbursementQueue,
   BatchDisbursementResult,
   LoanRepayment,
@@ -1954,8 +1955,17 @@ export const api = {
   }> => {
     return apiGet("/public/platform-info");
   },
-  getMarketplacePreview: async (): Promise<MarketplacePreview> => {
-    return apiGet("/public/marketplace-preview");
+  getMarketplacePreview: async (params: MarketplacePreviewParams = {}): Promise<MarketplacePreview> => {
+    const qs = new URLSearchParams();
+    if (params.search) qs.set("search", params.search);
+    if (params.listingType && params.listingType !== "all") qs.set("listing_type", params.listingType);
+    if (params.rate?.length) qs.set("rate", params.rate.join(","));
+    if (params.loanType?.length) qs.set("loan_type", params.loanType.join(","));
+    if (params.duration?.length) qs.set("duration", params.duration.join(","));
+    if (params.city?.length) qs.set("city", params.city.join(","));
+    qs.set("offset", String(params.offset ?? 0));
+    qs.set("limit", String(params.limit ?? 6));
+    return apiGet(`/public/marketplace-preview?${qs.toString()}`);
   },
 
   // ─── Support tickets ───

@@ -156,31 +156,54 @@ export interface ActiveLoan {
   repayments?: LoanRepayment[];
 }
 
-export interface MarketplacePreviewOffer {
+export interface MarketplaceListingOffer {
+  kind: "offer";
   id: string;
   lender_name: string;
   city: string | null;
+  description: string | null;
   min_amount: number;
   max_amount: number;
   interest_rate: number;
   loan_types: string | null; // JSON-encoded string list — parse before use
+  max_duration: number | null;
+  max_duration_days: number | null;
+  offer_count: number; // real LoanOffer rows generated from this template
   created_at: string | null;
 }
 
-export interface MarketplacePreviewRequest {
+export interface MarketplaceListingRequest {
+  kind: "request";
   id: string;
   borrower_name: string; // already reduced to "First L." server-side
   city: string | null;
+  purpose: string | null;
+  credit_score: number | null;
   amount: number;
   loan_type: string;
   duration: number | null;
   duration_days: number | null;
+  offer_count: number; // real LoanOffer rows made against this application
   created_at: string | null;
 }
 
+export type MarketplaceListing = MarketplaceListingOffer | MarketplaceListingRequest;
+
+export interface MarketplacePreviewParams {
+  search?: string;
+  listingType?: "all" | "offers" | "requests";
+  rate?: string[]; // RATE_BAND keys
+  loanType?: string[];
+  duration?: string[]; // DURATION_BAND keys
+  city?: string[];
+  offset?: number;
+  limit?: number;
+}
+
 export interface MarketplacePreview {
-  offers: MarketplacePreviewOffer[];
-  requests: MarketplacePreviewRequest[];
+  listings: MarketplaceListing[];
+  total_matching: number;
+  has_more: boolean;
   total_offers: number;
   total_requests: number;
   category_counts: Record<string, number>;

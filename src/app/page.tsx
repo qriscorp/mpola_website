@@ -16,7 +16,7 @@ import { ComplianceBadge } from "@/components/compliance-badge";
 import { MarketplaceFeed } from "@/components/marketplace-feed";
 import { api } from "@/lib/api";
 import { formatCurrency, formatRate, formatDuration } from "@/lib/format";
-import type { MarketplacePreviewOffer, MarketplacePreviewRequest } from "@/lib/types";
+import type { MarketplaceListing } from "@/lib/types";
 
 const CATEGORIES = [
   { icon: Briefcase, label: "Business", key: "business" },
@@ -56,66 +56,56 @@ function parseLoanTypes(json: string | null): string[] {
   }
 }
 
-function OfferRow({ offer, i }: { offer: MarketplacePreviewOffer; i: number }) {
-  const types = parseLoanTypes(offer.loan_types);
+function ListingRow({ item, i }: { item: MarketplaceListing; i: number }) {
+  const name = item.kind === "offer" ? item.lender_name : item.borrower_name;
   return (
     <div className="flex items-center gap-3 py-3 border-b border-gray-100 last:border-0 dark:border-gray-800">
-      {initialsAvatar(offer.lender_name, i)}
+      {initialsAvatar(name, i)}
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-bold text-[#1B2B3A] truncate dark:text-white">
-          {offer.lender_name}
-        </p>
-        <p className="text-xs text-gray-400 dark:text-gray-500">
-          {types.length > 0 ? types.join(" · ") : "Multiple loan types"}
-          {offer.city ? ` · ${offer.city}` : ""}
+        <p className="text-sm font-bold text-[#1B2B3A] truncate dark:text-white">{name}</p>
+        <p className="text-xs text-gray-400 dark:text-gray-500 capitalize">
+          {item.kind === "offer"
+            ? parseLoanTypes(item.loan_types).join(" · ") || "Multiple loan types"
+            : `${item.loan_type} · ${formatDuration(item.duration, item.duration_days)}`}
+          {item.city ? ` · ${item.city}` : ""}
         </p>
       </div>
       <div className="text-right shrink-0">
-        <p className="font-bold text-[#C4A55A]">{formatRate(offer.interest_rate)}</p>
-        <p className="text-[11px] text-gray-400 dark:text-gray-500">
-          {formatCurrency(offer.min_amount)}–{formatCurrency(offer.max_amount)}
-        </p>
+        {item.kind === "offer" ? (
+          <>
+            <p className="font-bold text-[#C4A55A]">{formatRate(item.interest_rate)}</p>
+            <p className="text-[11px] text-gray-400 dark:text-gray-500">
+              {formatCurrency(item.min_amount)}–{formatCurrency(item.max_amount)}
+            </p>
+          </>
+        ) : (
+          <p className="font-bold text-[#2BB5A0]">{formatCurrency(item.amount)}</p>
+        )}
       </div>
     </div>
   );
 }
 
-function RequestRow({ request, i }: { request: MarketplacePreviewRequest; i: number }) {
-  return (
-    <div className="flex items-center gap-3 py-3 border-b border-gray-100 last:border-0 dark:border-gray-800">
-      {initialsAvatar(request.borrower_name, i)}
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-bold text-[#1B2B3A] truncate dark:text-white">
-          {request.borrower_name}
-        </p>
-        <p className="text-xs text-gray-400 capitalize dark:text-gray-500">
-          {request.loan_type} · {formatDuration(request.duration, request.duration_days)}
-          {request.city ? ` · ${request.city}` : ""}
-        </p>
-      </div>
-      <p className="font-bold text-[#2BB5A0] shrink-0">{formatCurrency(request.amount)}</p>
-    </div>
-  );
-}
+export default async function LandingPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ q?: string }>;
+}) {
+  const params = (await searchParams) ?? {};
+  const initialSearch = params.q ?? "";
 
-export default async function LandingPage() {
-  const preview = await api.getMarketplacePreview().catch(() => ({
-    offers: [],
-    requests: [],
-    total_offers: 0,
-    total_requests: 0,
-    category_counts: {} as Record<string, number>,
-  }));
+  const preview = await api
+    .getMarketplacePreview({ search: initialSearch || undefined, limit: 6 })
+    .catch(() => ({
+      listings: [] as MarketplaceListing[],
+      total_matching: 0,
+      has_more: false,
+      total_offers: 0,
+      total_requests: 0,
+      category_counts: {} as Record<string, number>,
+    }));
   const totalListings = preview.total_offers + preview.total_requests;
-
-  // Hero's small "Live Activity" widget mixes both kinds, newest first —
-  // a smaller, denser preview than the full feed section further down.
-  const heroFeed = [
-    ...preview.offers.map((o) => ({ kind: "offer" as const, data: o, createdAt: o.created_at })),
-    ...preview.requests.map((r) => ({ kind: "request" as const, data: r, createdAt: r.created_at })),
-  ]
-    .sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || ""))
-    .slice(0, 4);
+  const heroFeed = preview.listings.slice(0, 4);
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900">
@@ -151,12 +141,24 @@ export default async function LandingPage() {
                 Start Lending <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
-            <div className="hidden sm:flex items-center gap-2 mt-8 bg-white/5 border border-white/10 rounded-xl px-4 py-3 max-w-md">
-              <Search className="w-4 h-4 text-gray-400 shrink-0" />
-              <span className="text-sm text-gray-400">
-                Search offers, rates, loan types… sign in to browse the full marketplace
-              </span>
-            </div>
+            <form action="/" method="GET" className="mt-8 max-w-md">
+              <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus-within:border-[#C4A55A] transition-colors">
+                <Search className="w-4 h-4 text-gray-400 shrink-0" />
+                <input
+                  type="text"
+                  name="q"
+                  defaultValue={initialSearch}
+                  placeholder="Search offers, rates, loan types…"
+                  className="flex-1 bg-transparent text-sm text-white placeholder:text-gray-400 focus:outline-none"
+                />
+                <button
+                  type="submit"
+                  className="text-xs font-bold text-[#C4A55A] hover:text-[#d4b56a] transition-colors shrink-0"
+                >
+                  Search
+                </button>
+              </div>
+            </form>
           </div>
 
           {/* Live feed preview */}
@@ -177,13 +179,9 @@ export default async function LandingPage() {
                   New offers and requests appear here as they&apos;re posted.
                 </p>
               ) : (
-                heroFeed.map((item, i) =>
-                  item.kind === "offer" ? (
-                    <OfferRow key={`offer-${item.data.id}`} offer={item.data} i={i} />
-                  ) : (
-                    <RequestRow key={`request-${item.data.id}`} request={item.data} i={i} />
-                  ),
-                )
+                heroFeed.map((item, i) => (
+                  <ListingRow key={`${item.kind}-${item.id}`} item={item} i={i} />
+                ))
               )}
             </div>
           </div>
@@ -255,13 +253,7 @@ export default async function LandingPage() {
             </div>
           </div>
 
-          <MarketplaceFeed
-            offers={preview.offers}
-            requests={preview.requests}
-            totalOffers={preview.total_offers}
-            totalRequests={preview.total_requests}
-            categoryCounts={preview.category_counts}
-          />
+          <MarketplaceFeed initial={preview} initialSearch={initialSearch} />
         </div>
       </section>
 
