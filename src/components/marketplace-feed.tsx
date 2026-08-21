@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { api } from "@/lib/api";
 import { formatCurrency, formatRate, formatDuration } from "@/lib/format";
 import type { MarketplaceListing, MarketplacePreview, MarketplacePreviewParams } from "@/lib/types";
@@ -81,17 +81,26 @@ function Avatar({ name, seed }: { name: string; seed: number }) {
 export function MarketplaceFeed({
   initial,
   initialSearch = "",
+  initialLoanType = "",
 }: {
   initial: MarketplacePreview;
   initialSearch?: string;
+  initialLoanType?: string;
 }) {
   const [search, setSearch] = useState(initialSearch);
-  const [tab, setTab] = useState<Tab>("all");
+  // Listing Type (sidebar checkboxes) and the All/Offers/Requests tab above
+  // the feed are the same underlying filter shown two ways in the design —
+  // one piece of state drives both so they can never disagree.
   const [listingType, setListingType] = useState({ offers: true, requests: true });
   const [rateFilter, setRateFilter] = useState<Set<string>>(new Set());
-  const [typeFilter, setTypeFilter] = useState<Set<string>>(new Set());
+  const [typeFilter, setTypeFilter] = useState<Set<string>>(
+    new Set(initialLoanType ? [initialLoanType] : []),
+  );
   const [durationFilter, setDurationFilter] = useState<Set<string>>(new Set());
   const [locationFilter, setLocationFilter] = useState<Set<string>>(new Set());
+  const activeTab: Tab =
+    listingType.offers && listingType.requests ? "all" : listingType.offers ? "offers" : "requests";
+  const noListingTypeSelected = !listingType.offers && !listingType.requests;
 
   const [data, setData] = useState<MarketplacePreview>(initial);
   const [loading, setLoading] = useState(false);
@@ -104,7 +113,7 @@ export function MarketplaceFeed({
   const buildParams = useCallback(
     (offset: number): MarketplacePreviewParams => ({
       search: search || undefined,
-      listingType: tab,
+      listingType: activeTab,
       rate: rateFilter.size ? [...rateFilter] : undefined,
       loanType: typeFilter.size ? [...typeFilter] : undefined,
       duration: durationFilter.size ? [...durationFilter] : undefined,
@@ -112,7 +121,7 @@ export function MarketplaceFeed({
       offset,
       limit: PAGE_SIZE,
     }),
-    [search, tab, rateFilter, typeFilter, durationFilter, locationFilter],
+    [search, activeTab, rateFilter, typeFilter, durationFilter, locationFilter],
   );
 
   // Re-fetch from the backend whenever a real filter/search/tab changes —
@@ -122,6 +131,12 @@ export function MarketplaceFeed({
   // clicks fetch immediately since there's no typing to wait out.
   useEffect(() => {
     const seq = ++requestSeq.current;
+    if (noListingTypeSelected) {
+      // Both "Lender Offers" and "Borrower Requests" unchecked — nothing to show.
+      setLoading(false);
+      setData((prev) => ({ ...prev, listings: [], total_matching: 0, has_more: false }));
+      return;
+    }
     setLoading(true);
     const handle = setTimeout(
       () => {
@@ -141,7 +156,7 @@ export function MarketplaceFeed({
     );
     return () => clearTimeout(handle);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search, tab, rateFilter, typeFilter, durationFilter, locationFilter]);
+  }, [search, listingType, rateFilter, typeFilter, durationFilter, locationFilter]);
 
   const loadMore = async () => {
     setLoadingMore(true);
@@ -171,6 +186,11 @@ export function MarketplaceFeed({
     setter(next);
   };
 
+  const setTab = (t: Tab) =>
+    setListingType(
+      t === "all" ? { offers: true, requests: true } : t === "offers" ? { offers: true, requests: false } : { offers: false, requests: true },
+    );
+
   const tabLabel = (t: Tab) =>
     t === "all"
       ? `All (${data.total_offers + data.total_requests})`
@@ -197,8 +217,18 @@ export function MarketplaceFeed({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search listings…"
-            className="w-full pl-9 pr-3 py-2 rounded-lg border border-gray-200 text-sm bg-white focus:outline-none focus:border-[#2BB5A0] dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+            className="w-full pl-9 pr-8 py-2 rounded-lg border border-gray-200 text-sm bg-white focus:outline-none focus:border-[#2BB5A0] dark:bg-gray-800 dark:border-gray-700 dark:text-white"
           />
+          {search && (
+            <button
+              type="button"
+              onClick={() => setSearch("")}
+              aria-label="Clear search"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
         </div>
 
         <div className="pb-4 mb-4 border-b border-gray-100 dark:border-gray-800">
@@ -318,15 +348,25 @@ export function MarketplaceFeed({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search listings…"
-            className="w-full pl-9 pr-3 py-2.5 rounded-lg border border-gray-200 text-sm bg-white focus:outline-none focus:border-[#2BB5A0] dark:bg-gray-900 dark:border-gray-700 dark:text-white"
+            className="w-full pl-9 pr-8 py-2.5 rounded-lg border border-gray-200 text-sm bg-white focus:outline-none focus:border-[#2BB5A0] dark:bg-gray-900 dark:border-gray-700 dark:text-white"
           />
+          {search && (
+            <button
+              type="button"
+              onClick={() => setSearch("")}
+              aria-label="Clear search"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
         </div>
 
         <div className="flex items-center bg-white rounded-xl border border-gray-100 p-1.5 mb-4 dark:bg-gray-900 dark:border-gray-800">
           <button
             onClick={() => setTab("all")}
             className={`px-4 py-2 rounded-lg text-sm font-bold transition-colors ${
-              tab === "all"
+              listingType.offers && listingType.requests
                 ? "bg-[#1B2B3A] text-white"
                 : "text-gray-500 hover:text-[#1B2B3A] dark:text-gray-400 dark:hover:text-white"
             }`}
@@ -337,7 +377,9 @@ export function MarketplaceFeed({
           <button
             onClick={() => setTab("offers")}
             className={`px-3 py-2 rounded-lg text-sm font-semibold transition-colors ${
-              tab === "offers" ? "text-[#1B2B3A] dark:text-white" : "text-gray-400 hover:text-[#1B2B3A] dark:hover:text-white"
+              listingType.offers && !listingType.requests
+                ? "text-[#1B2B3A] dark:text-white"
+                : "text-gray-400 hover:text-[#1B2B3A] dark:hover:text-white"
             }`}
           >
             {tabLabel("offers")}
@@ -345,7 +387,9 @@ export function MarketplaceFeed({
           <button
             onClick={() => setTab("requests")}
             className={`px-3 py-2 rounded-lg text-sm font-semibold transition-colors ${
-              tab === "requests" ? "text-[#1B2B3A] dark:text-white" : "text-gray-400 hover:text-[#1B2B3A] dark:hover:text-white"
+              listingType.requests && !listingType.offers
+                ? "text-[#1B2B3A] dark:text-white"
+                : "text-gray-400 hover:text-[#1B2B3A] dark:hover:text-white"
             }`}
           >
             {tabLabel("requests")}

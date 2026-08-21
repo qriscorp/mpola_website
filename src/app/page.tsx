@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   ArrowRight,
+  CheckCircle2,
   Search,
   ShieldCheck,
   FileCheck,
@@ -89,13 +90,18 @@ function ListingRow({ item, i }: { item: MarketplaceListing; i: number }) {
 export default async function LandingPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ q?: string }>;
+  searchParams?: Promise<{ q?: string; type?: string }>;
 }) {
   const params = (await searchParams) ?? {};
   const initialSearch = params.q ?? "";
+  const initialLoanType = params.type ?? "";
 
   const preview = await api
-    .getMarketplacePreview({ search: initialSearch || undefined, limit: 6 })
+    .getMarketplacePreview({
+      search: initialSearch || undefined,
+      loanType: initialLoanType ? [initialLoanType] : undefined,
+      limit: 6,
+    })
     .catch(() => ({
       listings: [] as MarketplaceListing[],
       total_matching: 0,
@@ -194,21 +200,28 @@ export default async function LandingPage({
           <span className="text-xs font-bold text-gray-400 uppercase tracking-wider shrink-0 dark:text-gray-500">
             Browse by loan type
           </span>
-          {CATEGORIES.map((cat) => (
-            <Link
-              key={cat.label}
-              href="/auth/signin"
-              className="flex items-center gap-2 shrink-0 px-4 py-2 rounded-lg border border-gray-200 hover:border-[#2BB5A0] hover:bg-[#E8F8F5]/40 transition-colors dark:border-gray-800 dark:hover:bg-gray-800"
-            >
-              <cat.icon className="w-4 h-4 text-[#2BB5A0]" />
-              <span className="text-sm font-semibold text-[#1B2B3A] dark:text-white">
-                {cat.label}
-              </span>
-              <span className="text-xs text-gray-400 dark:text-gray-500">
-                ({preview.category_counts[cat.key] ?? 0})
-              </span>
-            </Link>
-          ))}
+          {CATEGORIES.map((cat) => {
+            const active = initialLoanType === cat.key;
+            return (
+              <Link
+                key={cat.label}
+                href={active ? "/#activity-feed" : `/?type=${cat.key}#activity-feed`}
+                className={`flex items-center gap-2 shrink-0 px-4 py-2 rounded-lg border transition-colors ${
+                  active
+                    ? "border-[#2BB5A0] bg-[#E8F8F5]/60 dark:bg-[#2BB5A0]/10"
+                    : "border-gray-200 hover:border-[#2BB5A0] hover:bg-[#E8F8F5]/40 dark:border-gray-800 dark:hover:bg-gray-800"
+                }`}
+              >
+                <cat.icon className="w-4 h-4 text-[#2BB5A0]" />
+                <span className="text-sm font-semibold text-[#1B2B3A] dark:text-white">
+                  {cat.label}
+                </span>
+                <span className="text-xs text-gray-400 dark:text-gray-500">
+                  ({preview.category_counts[cat.key] ?? 0})
+                </span>
+              </Link>
+            );
+          })}
         </div>
       </section>
 
@@ -253,7 +266,11 @@ export default async function LandingPage({
             </div>
           </div>
 
-          <MarketplaceFeed initial={preview} initialSearch={initialSearch} />
+          <MarketplaceFeed
+            initial={preview}
+            initialSearch={initialSearch}
+            initialLoanType={initialLoanType}
+          />
         </div>
       </section>
 
@@ -287,6 +304,69 @@ export default async function LandingPage({
         </div>
       </section>
 
+      {/* How It Works */}
+      <section className="py-16 lg:py-24">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-14">
+            <p className="text-[#C4A55A] text-xs font-bold uppercase tracking-widest mb-3">
+              How It Works
+            </p>
+            <h2 className="text-3xl lg:text-4xl font-bold text-[#1B2B3A] dark:text-white">
+              Simple on both sides of the marketplace
+            </h2>
+            <p className="mt-3 text-gray-500 max-w-xl mx-auto dark:text-gray-400">
+              Post once. Connect directly. Get funded — or start earning — in 24 hours.
+            </p>
+          </div>
+          <div className="grid sm:grid-cols-2 gap-10 sm:gap-16">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-widest text-[#C4A55A] mb-5">
+                For Lenders
+              </p>
+              <div className="space-y-5">
+                {[
+                  { title: "Register & get verified", desc: "as a lender on Mpola before posting any offer." },
+                  { title: "Post your lending offer", desc: "publicly — set your rate, amount range, and accepted loan types." },
+                  { title: "Review borrower applications.", desc: "See credit scores, docs, and guarantors. Approve in one tap." },
+                  { title: "Collect interest payments.", desc: "Track your portfolio and earnings dashboard." },
+                ].map((step, i) => (
+                  <div key={step.title} className="flex gap-3">
+                    <span className="h-7 w-7 rounded-full bg-[#fef9e8] text-[#C4A55A] text-sm font-bold flex items-center justify-center shrink-0 dark:bg-[#C4A55A]/15">
+                      {i + 1}
+                    </span>
+                    <p className="text-sm text-gray-600 leading-relaxed dark:text-gray-300">
+                      <strong className="text-[#1B2B3A] dark:text-white">{step.title}</strong> {step.desc}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className="text-xs font-bold uppercase tracking-widest text-[#2BB5A0] mb-5">
+                For Borrowers
+              </p>
+              <div className="space-y-5">
+                {[
+                  { title: "Create your profile", desc: "with your NIN and phone number. Done in under 5 minutes." },
+                  { title: "Browse lender offers", desc: "publicly, or post your own request and receive competing offers." },
+                  { title: "Apply or accept an offer.", desc: "Upload documents and add guarantors — all on your phone." },
+                  { title: "Get funded in 24 hours.", desc: "Money in your MTN MoMo or Airtel wallet after approval." },
+                ].map((step, i) => (
+                  <div key={step.title} className="flex gap-3">
+                    <span className="h-7 w-7 rounded-full bg-[#ecfeff] text-[#2BB5A0] text-sm font-bold flex items-center justify-center shrink-0 dark:bg-[#2BB5A0]/15">
+                      {i + 1}
+                    </span>
+                    <p className="text-sm text-gray-600 leading-relaxed dark:text-gray-300">
+                      <strong className="text-[#1B2B3A] dark:text-white">{step.title}</strong> {step.desc}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Dual CTA */}
       <section className="grid lg:grid-cols-2 border-b border-gray-100 dark:border-gray-800">
         <div className="p-10 lg:p-16 bg-linear-to-br from-[#FFF8ED] to-white dark:from-gray-900 dark:to-gray-900 border-b lg:border-b-0 lg:border-r border-gray-100 dark:border-gray-800">
@@ -294,17 +374,29 @@ export default async function LandingPage({
             For Lenders
           </p>
           <h2 className="text-2xl font-bold text-[#1B2B3A] mb-3 dark:text-white">
-            Put your capital to work
+            Post your offer. Let borrowers apply to you.
           </h2>
           <p className="text-gray-500 mb-6 max-w-sm dark:text-gray-400">
-            Set your own rates, review KYC documentation, and fund verified
-            borrowers across Uganda.
+            Set your terms once. Your offer is public. Qualified borrowers apply and
+            you review before approving.
           </p>
+          <ul className="space-y-2.5 mb-8">
+            {[
+              "Verified lender approval process",
+              "Review credit scores & docs before approving",
+              "Earn interest, track repayments",
+            ].map((item) => (
+              <li key={item} className="flex items-center gap-2.5 text-sm text-gray-600 dark:text-gray-300">
+                <CheckCircle2 className="w-4 h-4 text-[#C4A55A] shrink-0" />
+                {item}
+              </li>
+            ))}
+          </ul>
           <Link
             href="/auth/lender-signin"
             className="bg-[#C4A55A] text-white px-6 py-3 rounded-lg font-semibold text-sm inline-flex items-center gap-2 hover:bg-[#b3944a] transition-colors"
           >
-            Become a Lender <ArrowRight className="w-4 h-4" />
+            Post a Lending Offer <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
         <div className="p-10 lg:p-16 bg-linear-to-br from-[#E8F8F5] to-white dark:from-gray-900 dark:to-gray-900">
@@ -312,33 +404,98 @@ export default async function LandingPage({
             For Borrowers
           </p>
           <h2 className="text-2xl font-bold text-[#1B2B3A] mb-3 dark:text-white">
-            Fair credit, on your terms
+            Post your request. Let lenders compete for you.
           </h2>
           <p className="text-gray-500 mb-6 max-w-sm dark:text-gray-400">
-            Apply once, compare offers from verified lenders, and get funded
-            directly to your wallet.
+            Browse public lender offers and apply directly, or post your need and
+            get multiple competing offers.
           </p>
+          <ul className="space-y-2.5 mb-8">
+            <li className="flex items-center gap-2.5 text-sm text-gray-600 dark:text-gray-300">
+              <CheckCircle2 className="w-4 h-4 text-[#2BB5A0] shrink-0" />
+              {preview.total_offers > 0
+                ? `${preview.total_offers} live lender offer${preview.total_offers === 1 ? "" : "s"} to choose from`
+                : "New lender offers posted regularly"}
+            </li>
+            <li className="flex items-center gap-2.5 text-sm text-gray-600 dark:text-gray-300">
+              <CheckCircle2 className="w-4 h-4 text-[#2BB5A0] shrink-0" />
+              Compare rates before accepting
+            </li>
+            <li className="flex items-center gap-2.5 text-sm text-gray-600 dark:text-gray-300">
+              <CheckCircle2 className="w-4 h-4 text-[#2BB5A0] shrink-0" />
+              Money in MoMo or Airtel in 24 hours
+            </li>
+          </ul>
           <Link
             href="/auth/signin"
             className="bg-[#2BB5A0] text-white px-6 py-3 rounded-lg font-semibold text-sm inline-flex items-center gap-2 hover:bg-[#239E8C] transition-colors"
           >
-            Apply for a Loan <ArrowRight className="w-4 h-4" />
+            Post a Borrowing Request <ArrowRight className="w-4 h-4" />
           </Link>
+        </div>
+      </section>
+
+      {/* Mobile App */}
+      <section className="bg-[#1B2B3A] py-16 text-center">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+          <p className="text-[#C4A55A] text-xs font-bold uppercase tracking-widest mb-3">
+            Mobile App
+          </p>
+          <h2 className="text-3xl lg:text-4xl font-bold text-white leading-tight">
+            The full marketplace in your pocket
+          </h2>
+          <p className="mt-4 text-gray-400">
+            Browse listings, post offers or requests, manage applications, and track
+            repayments — coming soon on iOS and Android.
+          </p>
+          {/* The app isn't published to either store yet — these are
+              deliberately unclickable "coming soon" badges, not links to
+              store pages that don't exist. */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-8">
+            <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-lg px-5 py-3 min-w-45 opacity-60 cursor-not-allowed">
+              <svg viewBox="0 0 24 24" className="w-6 h-6 fill-white shrink-0">
+                <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+              </svg>
+              <div className="text-left">
+                <p className="text-[10px] text-gray-400 leading-none">Coming soon on the</p>
+                <p className="text-sm font-bold text-white leading-tight mt-0.5">App Store</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-lg px-5 py-3 min-w-45 opacity-60 cursor-not-allowed">
+              <svg viewBox="0 0 24 24" className="w-6 h-6 fill-white shrink-0">
+                <path d="M3 20.53V3.47c0-.55.32-1.03.78-1.26l10.7 9.79-10.7 9.79c-.46-.23-.78-.71-.78-1.26zm14.06-6.53l2.5-1.44c.75-.43.75-1.66 0-2.09l-2.5-1.44-2.61 2.49 2.61 2.48zm-3.55-2.48l-9.19-8.4 9.99 5.76-.8 2.64z"/>
+              </svg>
+              <div className="text-left">
+                <p className="text-[10px] text-gray-400 leading-none">Coming soon on</p>
+                <p className="text-sm font-bold text-white leading-tight mt-0.5">Google Play</p>
+              </div>
+            </div>
+          </div>
+          <p className="mt-4 text-xs text-gray-500">Works on MTN &amp; Airtel Money</p>
         </div>
       </section>
 
       {/* Footer */}
       <footer className="bg-[#111E29] text-gray-400 py-10">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-6 text-xs">
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs">
+            <Link href="/#activity-feed" className="hover:text-white transition-colors">
+              Marketplace
+            </Link>
+            <Link href="/auth/signin" className="hover:text-white transition-colors">
+              Post a Listing
+            </Link>
+            <Link href="/how-it-works" className="hover:text-white transition-colors">
+              How It Works
+            </Link>
+            <Link href="/learn-more" className="hover:text-white transition-colors">
+              For Lenders
+            </Link>
             <Link href="/privacy-policy" className="hover:text-white transition-colors">
               Privacy
             </Link>
             <Link href="/platform-terms" className="hover:text-white transition-colors">
               Terms
-            </Link>
-            <Link href="/learn-more" className="hover:text-white transition-colors">
-              Help Centre
             </Link>
           </div>
           <ComplianceBadge className="text-gray-400" />
