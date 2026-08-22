@@ -5,6 +5,7 @@ import type {
   ActiveLoan,
   MarketplacePreview,
   MarketplacePreviewParams,
+  OfferTemplateDetail,
   DisbursementQueue,
   BatchDisbursementResult,
   LoanRepayment,
@@ -1872,6 +1873,9 @@ export const api = {
       `/loans/offer-templates/${templateId}/matches`,
     );
     return res.offers;
+  },
+  getOfferTemplateDetail: async (templateId: string): Promise<OfferTemplateDetail> => {
+    return apiAuthGet<OfferTemplateDetail>(`/loans/offer-templates/${templateId}/public-detail`);
   },
   updateOfferTemplate: async (
     id: string,

@@ -18,6 +18,14 @@ export function useApplicationEligibility() {
   });
 }
 
+export function useOfferTemplateDetail(templateId: string | null) {
+  return useQuery({
+    queryKey: ["offer-templates", templateId, "public-detail"],
+    queryFn: () => api.getOfferTemplateDetail(templateId as string),
+    enabled: !!templateId,
+  });
+}
+
 export function useSubmitApplication() {
   return useMutation({
     mutationFn: (data: {

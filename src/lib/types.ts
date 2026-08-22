@@ -172,6 +172,28 @@ export interface MarketplaceListingOffer {
   created_at: string | null;
 }
 
+/** Full detail behind one lender's standing offer, for a logged-in borrower
+ * browsing before applying (GET /loans/offer-templates/{id}/public-detail) —
+ * richer than MarketplaceListingOffer (adds required docs, lender KYC status,
+ * member-since) but deliberately omits any licence number. */
+export interface OfferTemplateDetail {
+  id: string;
+  lender_name: string | null;
+  city: string | null;
+  lender_member_since: string | null;
+  lender_kyc_status: string | null;
+  interest_rate: number;
+  min_amount: number;
+  max_amount: number;
+  max_duration: number | null;
+  max_duration_days: number | null;
+  accepted_loan_types: string[];
+  required_documents: string[];
+  description: string | null;
+  valid_until: string | null;
+  applications_count: number;
+}
+
 export interface MarketplaceListingRequest {
   kind: "request";
   id: string;

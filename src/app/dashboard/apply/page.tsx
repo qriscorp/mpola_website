@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, Loader2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
@@ -711,8 +711,9 @@ function SuccessView({ reference }: { reference: string }) {
   );
 }
 
-export default function ApplyPage() {
+function ApplyPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { confirm, ConfirmDialog } = useConfirm();
   const [currentStep, setCurrentStep] = useState(1);
   const [reference, setReference] = useState<string | null>(null);
@@ -780,8 +781,33 @@ export default function ApplyPage() {
       setMaxInterestRate(draft.max_interest_rate != null ? String(draft.max_interest_rate) : "");
       setValidUntil(draft.valid_until ? draft.valid_until.slice(0, 10) : "");
       setCurrentStep(2);
+    } else {
+      // No draft to resume — if we arrived from "Apply to This Offer" on a
+      // browsed lender's standing offer (see /dashboard/browse-offers/[id]),
+      // pre-fill Step 1 with that offer's terms. This is just a convenience
+      // default: submitting still broadcasts to every qualifying lender via
+      // the normal auto-match flow, not just the one browsed.
+      const prefillLoanType = searchParams.get("loanType");
+      const prefillRate = searchParams.get("maxInterestRate");
+      const prefillDuration = searchParams.get("duration");
+      const prefillDurationDays = searchParams.get("durationDays");
+      if (prefillLoanType) setLoanType(prefillLoanType);
+      if (prefillRate) setMaxInterestRate(prefillRate);
+      // durationDays only means anything once loanType is "emergency" — the
+      // wizard's day-picker UI, validation, and submit payload all gate on
+      // that (see isEmergency below and the submit handler), so setting
+      // durationDays while a different loan type is selected would silently
+      // submit a day-based request the user never saw or chose. Only trust
+      // the offer's day-based duration when the browsed offer was itself
+      // emergency-typed; otherwise fall back to its month-based duration.
+      if (prefillLoanType === "emergency" && prefillDurationDays) {
+        setDurationDays(Number(prefillDurationDays));
+      } else if (prefillDuration) {
+        setDuration(Number(prefillDuration));
+      }
     }
     setResuming(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [draft, draftLoading]);
 
   const stepTitles = [
@@ -1092,5 +1118,13 @@ export default function ApplyPage() {
       )}
       {ConfirmDialog}
     </div>
+  );
+}
+
+export default function ApplyPage() {
+  return (
+    <Suspense fallback={<div className="space-y-6"><BorrowerPageHeader title="Apply for a Loan" /></div>}>
+      <ApplyPageContent />
+    </Suspense>
   );
 }

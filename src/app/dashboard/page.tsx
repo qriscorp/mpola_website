@@ -139,6 +139,12 @@ export default function DashboardPage() {
               Apply for a Loan
             </Link>
             <Link
+              href="/dashboard/browse-offers"
+              className="flex items-center justify-center py-4 px-3 rounded-xl border-2 border-gray-200 dark:border-gray-700 text-[#1B2B3A] dark:text-white text-sm font-semibold hover:border-[#2BB5A0] hover:text-[#2BB5A0] transition-colors text-center"
+            >
+              Browse Lender Offers
+            </Link>
+            <Link
               href="/dashboard/my-requests"
               className="flex items-center justify-center py-4 px-3 rounded-xl border-2 border-gray-200 dark:border-gray-700 text-[#1B2B3A] dark:text-white text-sm font-semibold hover:border-[#2BB5A0] hover:text-[#2BB5A0] transition-colors text-center"
             >
