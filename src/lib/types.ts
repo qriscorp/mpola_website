@@ -152,6 +152,10 @@ export interface ActiveLoan {
   borrower_note: string | null;
   required_documents: string[];
   required_documents_status: RequiredDocumentStatus[];
+  // Only present on GET /loans/disbursement-queue entries — true when this
+  // borrower already went active with a different lender, so disbursing
+  // THIS loan will be rejected until that one's repaid.
+  borrower_has_active_loan_elsewhere?: boolean;
   guarantors: LoanGuarantor[];
   repayments?: LoanRepayment[];
 }
