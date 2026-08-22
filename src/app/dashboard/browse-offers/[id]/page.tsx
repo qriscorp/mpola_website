@@ -6,6 +6,7 @@ import { BorrowerPageHeader } from "@/components/top-nav";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CardSkeleton } from "@/components/skeletons";
+import { RequiredDocumentsChecklist } from "@/components/required-documents-checklist";
 import { useOfferTemplateDetail } from "@/hooks/use-application";
 import { formatCurrency, formatRate, formatDuration } from "@/lib/format";
 
@@ -22,7 +23,7 @@ export default function OfferTemplateDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const { data: offer, isLoading, isError } = useOfferTemplateDetail(id);
+  const { data: offer, isLoading, isError, error } = useOfferTemplateDetail(id);
 
   if (isLoading) {
     return (
@@ -34,11 +35,18 @@ export default function OfferTemplateDetailPage({
   }
 
   if (isError || !offer) {
+    // The backend gives a specific message when this is "you already have
+    // an offer from this lender" rather than a generic 404 — surface it
+    // as-is instead of the generic fallback when present.
+    const message =
+      error instanceof Error && error.message
+        ? error.message
+        : "This offer is no longer available.";
     return (
       <div className="space-y-6">
         <BorrowerPageHeader title="Offer Detail" />
         <p className="text-sm text-gray-500">
-          This offer is no longer available.{" "}
+          {message}{" "}
           <Link href="/dashboard/browse-offers" className="text-[#2BB5A0] underline">
             Back to Browse Offers
           </Link>
@@ -136,21 +144,16 @@ export default function OfferTemplateDetailPage({
             </div>
           </div>
 
-          {offer.required_documents.length > 0 && (
+          {offer.required_documents_status.length > 0 && (
             <div>
               <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">
                 Required Documents
               </p>
-              <div className="flex flex-wrap gap-2">
-                {offer.required_documents.map((d) => (
-                  <span
-                    key={d}
-                    className="px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 capitalize"
-                  >
-                    {d.replace(/_/g, " ")}
-                  </span>
-                ))}
-              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+                Get ready before you apply — already-uploaded ones (KYC or a
+                past application) count automatically.
+              </p>
+              <RequiredDocumentsChecklist items={offer.required_documents_status} />
             </div>
           )}
 

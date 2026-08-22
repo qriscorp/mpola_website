@@ -6,6 +6,7 @@ import type {
   MarketplacePreview,
   MarketplacePreviewParams,
   OfferTemplateDetail,
+  BrowseOfferTemplatesResponse,
   DisbursementQueue,
   BatchDisbursementResult,
   LoanRepayment,
@@ -1876,6 +1877,24 @@ export const api = {
   },
   getOfferTemplateDetail: async (templateId: string): Promise<OfferTemplateDetail> => {
     return apiAuthGet<OfferTemplateDetail>(`/loans/offer-templates/${templateId}/public-detail`);
+  },
+  // Authenticated "Browse Lender Offers" list — distinct from
+  // getMarketplacePreview (fully anonymous, used by the public homepage):
+  // this one excludes any offer template the current borrower already has
+  // a real LoanOffer from (pending/accepted/declined), so an offer they
+  // already declined doesn't keep reappearing.
+  browseOfferTemplates: async (params: {
+    search?: string;
+    rate?: string;
+    offset?: number;
+    limit?: number;
+  } = {}): Promise<BrowseOfferTemplatesResponse> => {
+    const qs = new URLSearchParams();
+    if (params.search) qs.set("search", params.search);
+    if (params.rate) qs.set("rate", params.rate);
+    qs.set("offset", String(params.offset ?? 0));
+    qs.set("limit", String(params.limit ?? 20));
+    return apiAuthGet(`/loans/offer-templates/browse?${qs.toString()}`);
   },
   updateOfferTemplate: async (
     id: string,

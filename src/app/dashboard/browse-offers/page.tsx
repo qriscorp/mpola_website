@@ -7,7 +7,7 @@ import { BorrowerPageHeader } from "@/components/top-nav";
 import { CardSkeleton } from "@/components/skeletons";
 import { api } from "@/lib/api";
 import { formatCurrency, formatRate, formatDuration } from "@/lib/format";
-import type { MarketplaceListingOffer, MarketplacePreview } from "@/lib/types";
+import type { MarketplaceListingOffer, BrowseOfferTemplatesResponse } from "@/lib/types";
 
 const avatarColors = ["#1B2B3A", "#2BB5A0", "#C4A55A", "#B0923E"];
 
@@ -42,7 +42,7 @@ export default function BrowseOffersPage() {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [rate, setRate] = useState("");
-  const [data, setData] = useState<MarketplacePreview | null>(null);
+  const [data, setData] = useState<BrowseOfferTemplatesResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const requestSeq = useRef(0);
 
@@ -52,10 +52,9 @@ export default function BrowseOffersPage() {
     const handle = setTimeout(
       () => {
         api
-          .getMarketplacePreview({
+          .browseOfferTemplates({
             search: search || undefined,
-            listingType: "offers",
-            rate: rate ? [rate] : undefined,
+            rate: rate || undefined,
             limit: 20,
           })
           .then((res) => {
@@ -70,7 +69,7 @@ export default function BrowseOffersPage() {
     return () => clearTimeout(handle);
   }, [search, rate]);
 
-  const offers = (data?.listings ?? []) as MarketplaceListingOffer[];
+  const offers: MarketplaceListingOffer[] = data?.listings ?? [];
 
   return (
     <div className="space-y-6">

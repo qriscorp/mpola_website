@@ -189,9 +189,21 @@ export interface OfferTemplateDetail {
   max_duration_days: number | null;
   accepted_loan_types: string[];
   required_documents: string[];
+  required_documents_status: RequiredDocumentStatus[];
   description: string | null;
   valid_until: string | null;
   applications_count: number;
+}
+
+/** GET /loans/offer-templates/browse — the authenticated Browse Lender
+ * Offers list, already excluding anything the current borrower has a real
+ * LoanOffer relationship with. Lighter than MarketplacePreview (no
+ * offers+requests mix, no category counts) since this screen only ever
+ * shows lender offers. */
+export interface BrowseOfferTemplatesResponse {
+  listings: MarketplaceListingOffer[];
+  total: number;
+  has_more: boolean;
 }
 
 export interface MarketplaceListingRequest {

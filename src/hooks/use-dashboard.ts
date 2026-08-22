@@ -75,6 +75,13 @@ export function useUploadKycDocument() {
     onSuccess: () => {
       toast.success("Document uploaded");
       qc.invalidateQueries({ queryKey: ["kyc-documents"] });
+      // A KYC document satisfies an offer's/template's required_documents
+      // exactly like a BorrowerDocument does (see _required_documents_status
+      // in the backend, which checks both sources) — refresh anywhere that
+      // status is shown, same set useUploadBorrowerDocument invalidates.
+      qc.invalidateQueries({ queryKey: ["borrower", "offers-received"] });
+      qc.invalidateQueries({ queryKey: ["application"] });
+      qc.invalidateQueries({ queryKey: ["offer-templates"] });
     },
     onError: (err: Error) => toast.error(err.message || "Failed to upload document"),
   });
@@ -99,6 +106,9 @@ export function useUploadBorrowerDocument() {
       // offer was waiting on — refresh so its accept-gate re-evaluates.
       qc.invalidateQueries({ queryKey: ["borrower", "offers-received"] });
       qc.invalidateQueries({ queryKey: ["application"] });
+      // ...and the same for a browsed-but-not-yet-applied-to offer template's
+      // own document readiness checklist (Browse Lender Offers detail page).
+      qc.invalidateQueries({ queryKey: ["offer-templates"] });
     },
     onError: (err: Error) => toast.error(err.message || "Failed to upload document"),
   });
