@@ -3,6 +3,7 @@ import { TopNav } from "@/components/top-nav";
 import { Sidebar } from "@/components/sidebar";
 import { RealtimeProvider } from "@/components/realtime-provider";
 import { PageTransition } from "@/components/motion/page-transition";
+import { FloatingChatButton } from "@/components/floating-chat-button";
 
 export const metadata: Metadata = {
   title: "Dashboard – Mpola Borrower Portal",
@@ -25,6 +26,7 @@ export default function DashboardLayout({
           <PageTransition>{children}</PageTransition>
         </main>
       </div>
+      <FloatingChatButton />
     </div>
   );
 }

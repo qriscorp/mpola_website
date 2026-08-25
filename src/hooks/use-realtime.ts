@@ -102,6 +102,7 @@ export function useRealtimeNotifications() {
           queryClient.invalidateQueries({ queryKey: ["support"] });
           queryClient.invalidateQueries({ queryKey: ["admin", "support-tickets"] });
           queryClient.invalidateQueries({ queryKey: ["admin", "stats"] });
+          queryClient.invalidateQueries({ queryKey: ["chat"] });
 
           if (URGENT_NOTIFICATION_TYPES.has(msg.type)) {
             playAttentionChime();

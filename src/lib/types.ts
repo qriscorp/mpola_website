@@ -868,6 +868,30 @@ export interface DisputeMessage {
   created_at: string;
 }
 
+export interface ChatConversation {
+  loan_id: string;
+  other_party_id: string;
+  other_party_name: string | null;
+  loan_amount: number;
+  loan_status: string;
+  last_message: string | null;
+  last_message_at: string | null;
+  unread_count: number;
+}
+
+export interface ChatMessage {
+  id: string;
+  sender_id: string | null;
+  sender_name: string | null;
+  message: string;
+  created_at: string;
+}
+
+export interface LoanChat {
+  other_party: { id: string | null; name: string | null; kyc_status: string | null };
+  messages: ChatMessage[];
+}
+
 export interface DisputeProposal {
   proposed_by_id: string;
   proposed_by_name: string | null;

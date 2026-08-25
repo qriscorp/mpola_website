@@ -43,6 +43,9 @@ import type {
   Faq,
   Dispute,
   DisputeMessage,
+  ChatConversation,
+  ChatMessage,
+  LoanChat,
   LoginSessionInfo,
   KYCDocument,
   KYCDocumentType,
@@ -2069,6 +2072,23 @@ export const api = {
   getMyLoansForDispute: async (): Promise<ActiveLoan[]> => {
     const res = await apiAuthGet<{ total: number; loans: ActiveLoan[] }>("/loans/active?limit=100");
     return res.loans;
+  },
+
+  // ─── Chat (borrower/lender messaging, scoped to one loan) ───
+  getChatConversations: async (): Promise<ChatConversation[]> => {
+    const res = await apiAuthGet<{ conversations: ChatConversation[] }>("/chat/conversations");
+    return res.conversations;
+  },
+  getChatUnreadCount: async (): Promise<number> => {
+    const res = await apiAuthGet<{ unread_count: number }>("/chat/unread-count");
+    return res.unread_count;
+  },
+  getLoanChat: async (loanId: string): Promise<LoanChat> => {
+    return apiAuthGet(`/chat/loans/${loanId}`);
+  },
+  postChatMessage: async (loanId: string, message: string): Promise<ChatMessage> => {
+    const res = await apiAuthPost<{ message_data: ChatMessage }>(`/chat/loans/${loanId}`, { message });
+    return res.message_data;
   },
 
   // ─── Admin: Disputes ───

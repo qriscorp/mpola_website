@@ -3,6 +3,7 @@ import { LenderSidebar } from "@/components/lender-sidebar";
 import { LenderTopNav } from "@/components/lender-top-nav";
 import { RealtimeProvider } from "@/components/realtime-provider";
 import { PageTransition } from "@/components/motion/page-transition";
+import { FloatingChatButton } from "@/components/floating-chat-button";
 
 export const metadata: Metadata = {
   title: "Lender Portal – Mpola",
@@ -28,6 +29,7 @@ export default function LenderLayout({
           <PageTransition>{children}</PageTransition>
         </main>
       </div>
+      <FloatingChatButton />
     </div>
   );
 }
