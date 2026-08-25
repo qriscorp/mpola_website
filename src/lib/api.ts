@@ -46,6 +46,10 @@ import type {
   ChatConversation,
   ChatMessage,
   LoanChat,
+  AdminChat,
+  AdminChatMessage,
+  AdminChatConversation,
+  AdminChatThread,
   LoginSessionInfo,
   KYCDocument,
   KYCDocumentType,
@@ -2088,6 +2092,28 @@ export const api = {
   },
   postChatMessage: async (loanId: string, message: string): Promise<ChatMessage> => {
     const res = await apiAuthPost<{ message_data: ChatMessage }>(`/chat/loans/${loanId}`, { message });
+    return res.message_data;
+  },
+
+  // ─── Chat (live chat with Mpola Support — alongside, not replacing, tickets) ───
+  getAdminChat: async (): Promise<AdminChat> => apiAuthGet("/chat/admin"),
+  postAdminChatMessage: async (message: string): Promise<AdminChatMessage> => {
+    const res = await apiAuthPost<{ message_data: AdminChatMessage }>("/chat/admin", { message });
+    return res.message_data;
+  },
+
+  // ─── Admin: Live Chat ───
+  getAdminChatConversations: async (): Promise<AdminChatConversation[]> => {
+    const res = await apiAuthGet<{ conversations: AdminChatConversation[] }>("/chat/admin/conversations");
+    return res.conversations;
+  },
+  getAdminChatThread: async (userId: string): Promise<AdminChatThread> =>
+    apiAuthGet(`/chat/admin/conversations/${userId}`),
+  replyAdminChatThread: async (userId: string, message: string): Promise<AdminChatMessage> => {
+    const res = await apiAuthPost<{ message_data: AdminChatMessage }>(
+      `/chat/admin/conversations/${userId}`,
+      { message },
+    );
     return res.message_data;
   },
 

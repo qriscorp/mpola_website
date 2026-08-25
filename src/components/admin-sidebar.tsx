@@ -19,6 +19,7 @@ import {
   LifeBuoy,
   LogOut,
   UserX,
+  MessageCircle,
 } from "lucide-react";
 import { SignOutModal } from "@/components/sign-out-modal";
 import { SwitchToPortalLink } from "@/components/portal-switch-link";
@@ -60,6 +61,12 @@ const platformNav = [
     icon: LifeBuoy,
     badgeKey: "openSupportTickets" as const,
   },
+  {
+    href: "/admin/chat",
+    label: "Live Chat",
+    icon: MessageCircle,
+    badgeKey: "awaitingAdminChatReply" as const,
+  },
 ];
 
 const insightsNav = [
@@ -76,7 +83,12 @@ type NavItem = {
   href: string;
   label: string;
   icon: React.ElementType;
-  badgeKey?: "pendingOfferTemplates" | "unverifiedUsers" | "openDisputes" | "openSupportTickets";
+  badgeKey?:
+    | "pendingOfferTemplates"
+    | "unverifiedUsers"
+    | "openDisputes"
+    | "openSupportTickets"
+    | "awaitingAdminChatReply";
 };
 
 export function AdminSidebarContent({
@@ -95,6 +107,7 @@ export function AdminSidebarContent({
   const unverifiedUsers = stats?.users.awaiting_review ?? 0;
   const openDisputes = stats?.platform.open_disputes ?? 0;
   const openSupportTickets = stats?.platform.open_support_tickets ?? 0;
+  const awaitingAdminChatReply = stats?.platform.awaiting_admin_chat_reply ?? 0;
 
   const navLink = (item: NavItem) => {
     const badge =
@@ -106,7 +119,9 @@ export function AdminSidebarContent({
             ? openDisputes
             : item.badgeKey === "openSupportTickets"
               ? openSupportTickets
-              : undefined;
+              : item.badgeKey === "awaitingAdminChatReply"
+                ? awaitingAdminChatReply
+                : undefined;
     const isActive =
       pathname === item.href ||
       (item.href !== "/admin" && pathname.startsWith(item.href));

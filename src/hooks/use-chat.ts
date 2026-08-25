@@ -42,3 +42,22 @@ export function useSendChatMessage(loanId: string) {
     onError: (err: Error) => toast.error(err.message || "Failed to send message."),
   });
 }
+
+export function useAdminChat() {
+  return useQuery({
+    queryKey: ["chat", "admin"],
+    queryFn: api.getAdminChat,
+  });
+}
+
+export function useSendAdminChatMessage() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (message: string) => api.postAdminChatMessage(message),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["chat", "admin"] });
+      qc.invalidateQueries({ queryKey: ["chat", "unread-count"] });
+    },
+    onError: (err: Error) => toast.error(err.message || "Failed to send message."),
+  });
+}

@@ -357,6 +357,32 @@ export function useReplyAdminSupportTicket(id: string) {
   });
 }
 
+export function useAdminChatConversations() {
+  return useQuery({
+    queryKey: ["admin", "chat-conversations"],
+    queryFn: api.getAdminChatConversations,
+  });
+}
+
+export function useAdminChatThread(userId: string) {
+  return useQuery({
+    queryKey: ["admin", "chat-conversations", "detail", userId],
+    queryFn: () => api.getAdminChatThread(userId),
+    enabled: !!userId,
+  });
+}
+
+export function useReplyAdminChat(userId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (message: string) => api.replyAdminChatThread(userId, message),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin", "chat-conversations"] });
+    },
+    onError: (err: Error) => toast.error(err.message || "Failed to send reply."),
+  });
+}
+
 export function useUpdateSupportTicketStatus(id: string) {
   const qc = useQueryClient();
   return useMutation({

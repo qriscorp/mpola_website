@@ -102,6 +102,7 @@ export function useRealtimeNotifications() {
           queryClient.invalidateQueries({ queryKey: ["support"] });
           queryClient.invalidateQueries({ queryKey: ["admin", "support-tickets"] });
           queryClient.invalidateQueries({ queryKey: ["admin", "stats"] });
+          queryClient.invalidateQueries({ queryKey: ["admin", "chat-conversations"] });
           queryClient.invalidateQueries({ queryKey: ["chat"] });
 
           if (URGENT_NOTIFICATION_TYPES.has(msg.type)) {
@@ -217,6 +218,22 @@ export function useRealtimeNotifications() {
                 ? {
                     label: "View",
                     onClick: () => router.push(`/admin/support/${ticketId}`),
+                  }
+                : undefined,
+            });
+          } else if (msg.type === "admin_chat_message") {
+            // Present only when an admin is the recipient (a user messaged
+            // support) — a user receiving an admin's reply gets data: {},
+            // and there's no dedicated route for their side, just the
+            // floating chat modal, so it falls through to the plain toast.
+            const userId = msg.data?.user_id;
+            toast.info(msg.title, {
+              description: msg.message,
+              duration: 15000,
+              action: userId
+                ? {
+                    label: "View",
+                    onClick: () => router.push(`/admin/chat/${userId}`),
                   }
                 : undefined,
             });

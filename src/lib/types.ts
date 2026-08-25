@@ -434,6 +434,7 @@ export interface AdminStats {
     pending_offer_templates: number;
     open_disputes: number;
     open_support_tickets: number;
+    awaiting_admin_chat_reply: number;
   };
   loan_type_mix: { type: string; count: number; percentage: number }[];
   application_status_breakdown: { status: string; count: number }[];
@@ -890,6 +891,34 @@ export interface ChatMessage {
 export interface LoanChat {
   other_party: { id: string | null; name: string | null; kyc_status: string | null };
   messages: ChatMessage[];
+}
+
+export interface AdminChatMessage {
+  id: string;
+  sender_id: string | null;
+  sender_name: string | null;
+  is_admin: boolean;
+  message: string;
+  created_at: string;
+}
+
+export interface AdminChat {
+  other_party: { name: string | null };
+  messages: AdminChatMessage[];
+}
+
+export interface AdminChatConversation {
+  user_id: string;
+  name: string | null;
+  role: string | null;
+  last_message: string;
+  last_message_at: string;
+  needs_reply: boolean;
+}
+
+export interface AdminChatThread {
+  other_party: { id: string; name: string | null; role: string | null; kyc_status: string | null };
+  messages: AdminChatMessage[];
 }
 
 export interface DisputeProposal {
