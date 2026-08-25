@@ -32,7 +32,7 @@ export function AdminChatPopup({
         </div>
         <div className="flex-1 overflow-hidden flex">
           {selectedUserId ? (
-            <AdminChatThreadPane userId={selectedUserId} />
+            <AdminChatThreadPane userId={selectedUserId} onReleased={() => onSelect(null)} />
           ) : (
             <div className="flex-1 overflow-y-auto">
               <AdminConversationList onSelect={onSelect} />

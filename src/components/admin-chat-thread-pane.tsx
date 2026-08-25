@@ -1,9 +1,10 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { ArrowLeft, Send, Paperclip, X, FileText, Check, CheckCheck } from "lucide-react";
+import { ArrowLeft, Send, Paperclip, X, FileText, Check, CheckCheck, LogOut } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { useAdminChatThread, useReplyAdminChat } from "@/hooks/use-admin";
+import { useAdminChatThread, useReplyAdminChat, useReleaseAdminChat } from "@/hooks/use-admin";
+import { useUser } from "@/hooks/use-dashboard";
 
 function isImageFile(name: string | null): boolean {
   if (!name) return false;
@@ -15,9 +16,23 @@ function isImageFile(name: string | null): boolean {
  * single "Mpola Support" voice, matching the shared-inbox model — no
  * per-admin ownership). Used by both /admin/chat's right pane and the
  * floating popup's thread view. */
-export function AdminChatThreadPane({ userId, onBack }: { userId: string; onBack?: () => void }) {
+export function AdminChatThreadPane({
+  userId,
+  onBack,
+  onReleased,
+}: {
+  userId: string;
+  onBack?: () => void;
+  // Releasing hands the conversation back to the queue — but this pane's
+  // own GET auto-claims an unassigned conversation on open, so staying
+  // mounted here would immediately re-claim it back to this admin on the
+  // next refetch. Deselecting (closing the pane) avoids that.
+  onReleased?: () => void;
+}) {
   const { data: thread, isLoading } = useAdminChatThread(userId);
   const reply = useReplyAdminChat(userId);
+  const release = useReleaseAdminChat(userId);
+  const { data: me } = useUser();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [text, setText] = useState("");
@@ -53,13 +68,32 @@ export function AdminChatThreadPane({ userId, onBack }: { userId: string; onBack
             <ArrowLeft className="w-4 h-4" />
           </button>
         )}
-        <p className="font-bold text-sm text-[#1B2B3A] dark:text-white">
-          {thread.other_party.name ?? "—"}
-        </p>
-        {thread.other_party.role && (
-          <Badge variant="outline" className="text-xs capitalize">
-            {thread.other_party.role}
-          </Badge>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <p className="font-bold text-sm text-[#1B2B3A] dark:text-white truncate">
+              {thread.other_party.name ?? "—"}
+            </p>
+            {thread.other_party.role && (
+              <Badge variant="outline" className="text-xs capitalize shrink-0">
+                {thread.other_party.role}
+              </Badge>
+            )}
+          </div>
+          {thread.assigned_to_id && (
+            <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">
+              {thread.assigned_to_id === me?.id ? "Handled by you" : `Handled by ${thread.assigned_to_name ?? "another admin"}`}
+            </p>
+          )}
+        </div>
+        {thread.assigned_to_id && (thread.assigned_to_id === me?.id || me?.isSuperAdmin) && (
+          <button
+            onClick={() => release.mutate(undefined, { onSuccess: () => onReleased?.() })}
+            disabled={release.isPending}
+            className="shrink-0 flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 disabled:opacity-40"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            Release
+          </button>
         )}
       </div>
 
@@ -120,6 +154,13 @@ export function AdminChatThreadPane({ userId, onBack }: { userId: string; onBack
         )}
       </div>
 
+      {!thread.can_reply ? (
+        <div className="px-4 py-3 border-t border-gray-100 dark:border-gray-800 text-center">
+          <p className="text-xs text-gray-400">
+            Being handled by {thread.assigned_to_name ?? "another admin"} — you can read along but not reply.
+          </p>
+        </div>
+      ) : (
       <div className="px-4 pt-2 border-t border-gray-100 dark:border-gray-800">
         {pendingFile && (
           <div className="flex items-center gap-2 mb-2 px-2.5 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 text-xs">
@@ -174,6 +215,7 @@ export function AdminChatThreadPane({ userId, onBack }: { userId: string; onBack
           </button>
         </div>
       </div>
+      )}
     </div>
   );
 }

@@ -384,6 +384,17 @@ export function useReplyAdminChat(userId: string) {
   });
 }
 
+export function useReleaseAdminChat(userId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => api.releaseAdminChatThread(userId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin", "chat-conversations"] });
+    },
+    onError: (err: Error) => toast.error(err.message || "Failed to release conversation."),
+  });
+}
+
 export function useUpdateSupportTicketStatus(id: string) {
   const qc = useQueryClient();
   return useMutation({

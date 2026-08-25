@@ -23,8 +23,9 @@ export default function AdminChatPage() {
           Live Chat
         </h1>
         <p className="text-sm text-muted-foreground">
-          Direct conversations with borrowers and lenders — any admin can reply. For
-          formal, categorized issues, see Support Tickets instead.
+          Direct conversations with borrowers and lenders — opening one claims it for
+          you; release it to hand it back to the queue. For formal, categorized issues,
+          see Support Tickets instead.
         </p>
       </div>
 
@@ -41,7 +42,11 @@ export default function AdminChatPage() {
         </div>
         <div className={`flex-1 min-w-0 ${selectedUserId ? "flex" : "hidden sm:flex"}`}>
           {selectedUserId ? (
-            <AdminChatThreadPane userId={selectedUserId} onBack={() => setSelectedUserId(null)} />
+            <AdminChatThreadPane
+              userId={selectedUserId}
+              onBack={() => setSelectedUserId(null)}
+              onReleased={() => setSelectedUserId(null)}
+            />
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center gap-2 text-gray-400">
               <MessagesSquare className="w-10 h-10" />

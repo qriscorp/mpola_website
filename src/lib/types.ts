@@ -931,11 +931,16 @@ export interface AdminChatConversation {
   last_message: string;
   last_message_at: string;
   needs_reply: boolean;
+  assigned_to_id: string | null;
+  assigned_to_name: string | null;
 }
 
 export interface AdminChatThread {
   other_party: { id: string; name: string | null; role: string | null; kyc_status: string | null };
   user_read_at: string | null;
+  assigned_to_id: string | null;
+  assigned_to_name: string | null;
+  can_reply: boolean;
   messages: AdminChatMessage[];
 }
 

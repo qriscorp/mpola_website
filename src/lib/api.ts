@@ -2124,6 +2124,9 @@ export const api = {
     );
     return res.message_data;
   },
+  releaseAdminChatThread: async (userId: string): Promise<void> => {
+    await apiAuthPost(`/chat/admin/conversations/${userId}/release`, {});
+  },
 
   // ─── Admin: Disputes ───
   getAdminDisputes: async (
