@@ -44,6 +44,7 @@ import type {
   Dispute,
   DisputeMessage,
   ChatConversation,
+  ChatConversationsResponse,
   ChatMessage,
   LoanChat,
   AdminChat,
@@ -2079,10 +2080,8 @@ export const api = {
   },
 
   // ─── Chat (borrower/lender messaging, scoped to one loan) ───
-  getChatConversations: async (): Promise<ChatConversation[]> => {
-    const res = await apiAuthGet<{ conversations: ChatConversation[] }>("/chat/conversations");
-    return res.conversations;
-  },
+  getChatConversations: async (): Promise<ChatConversationsResponse> =>
+    apiAuthGet("/chat/conversations"),
   getChatUnreadCount: async (): Promise<number> => {
     const res = await apiAuthGet<{ unread_count: number }>("/chat/unread-count");
     return res.unread_count;

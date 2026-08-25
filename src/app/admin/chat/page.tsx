@@ -1,129 +1,55 @@
 "use client";
 
-import Link from "next/link";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { MessageCircle, ArrowRight } from "lucide-react";
-import { useAdminChatConversations } from "@/hooks/use-admin";
-import { CardSkeleton, TableSkeleton } from "@/components/skeletons";
-import { FadeSwap } from "@/components/motion/fade-swap";
-
-function timeAgo(iso: string | null): string {
-  if (!iso) return "";
-  const diffMs = Date.now() - new Date(iso).getTime();
-  const mins = Math.floor(diffMs / 60000);
-  if (mins < 1) return "now";
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  return `${Math.floor(hrs / 24)}d ago`;
-}
+import { useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { MessageCircle, MessagesSquare } from "lucide-react";
+import { AdminConversationList } from "@/components/admin-conversation-list";
+import { AdminChatThreadPane } from "@/components/admin-chat-thread-pane";
 
 export default function AdminChatPage() {
-  const { data: conversations, isLoading } = useAdminChatConversations();
-  const list = conversations ?? [];
+  // Deep-linked from a real-time toast (see use-realtime.ts's
+  // admin_chat_message branch) as /admin/chat?userId=... — there's no
+  // separate detail route anymore, this page is a single two-pane view.
+  const searchParams = useSearchParams();
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(
+    searchParams.get("userId"),
+  );
 
   return (
-    <FadeSwap
-      loading={isLoading}
-      skeleton={
-        <div className="space-y-6">
-          <h1 className="text-2xl font-bold text-[#1B2B3A] dark:text-white">Live Chat</h1>
-          <CardSkeleton count={1} height="h-12" />
-          <TableSkeleton rows={8} />
-        </div>
-      }
-    >
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-[#1B2B3A] dark:text-white flex items-center gap-2">
-            <MessageCircle className="h-6 w-6 text-[#2BB5A0]" />
-            Live Chat
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Direct conversations with borrowers and lenders — any admin can reply. For
-            formal, categorized issues, see Support Tickets instead.
-          </p>
-        </div>
-
-        <Card className="bg-white dark:bg-gray-900">
-          <CardHeader>
-            <p className="text-sm text-muted-foreground">
-              {list.length} conversation{list.length === 1 ? "" : "s"}
-            </p>
-          </CardHeader>
-          <CardContent className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="text-xs uppercase text-muted-foreground">User</TableHead>
-                  <TableHead className="text-xs uppercase text-muted-foreground hidden sm:table-cell">Role</TableHead>
-                  <TableHead className="text-xs uppercase text-muted-foreground">Last message</TableHead>
-                  <TableHead className="text-xs uppercase text-muted-foreground hidden md:table-cell">Status</TableHead>
-                  <TableHead className="text-xs uppercase text-muted-foreground hidden lg:table-cell">Active</TableHead>
-                  <TableHead className="text-xs uppercase text-muted-foreground w-24">Action</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {list.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center py-10 text-muted-foreground">
-                      Nothing here — all caught up.
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  list.map((c) => (
-                    <TableRow key={c.user_id}>
-                      <TableCell className="text-sm font-medium text-[#1B2B3A] dark:text-white">
-                        {c.name ?? "—"}
-                      </TableCell>
-                      <TableCell className="hidden sm:table-cell">
-                        <Badge variant="outline" className="text-xs capitalize">
-                          {c.role ?? "—"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-sm max-w-xs">
-                        <p className="line-clamp-2 text-gray-600 dark:text-gray-300">{c.last_message}</p>
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell">
-                        {c.needs_reply ? (
-                          <Badge variant="outline" className="text-xs bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400">
-                            Needs reply
-                          </Badge>
-                        ) : (
-                          <Badge variant="outline" className="text-xs bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400">
-                            Replied
-                          </Badge>
-                        )}
-                      </TableCell>
-                      <TableCell className="hidden lg:table-cell text-sm text-muted-foreground">
-                        {timeAgo(c.last_message_at)}
-                      </TableCell>
-                      <TableCell>
-                        <Link
-                          href={`/admin/chat/${c.user_id}`}
-                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#2BB5A0] text-white text-xs font-semibold hover:bg-[#239385] transition-colors"
-                        >
-                          Open
-                          <ArrowRight className="h-3.5 w-3.5" />
-                        </Link>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+    <div className="flex flex-col h-[calc(100vh-8rem)]">
+      <div className="mb-4">
+        <h1 className="text-2xl font-bold text-[#1B2B3A] dark:text-white flex items-center gap-2">
+          <MessageCircle className="h-6 w-6 text-[#2BB5A0]" />
+          Live Chat
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          Direct conversations with borrowers and lenders — any admin can reply. For
+          formal, categorized issues, see Support Tickets instead.
+        </p>
       </div>
-    </FadeSwap>
+
+      <div className="flex-1 min-h-0 flex rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-hidden">
+        {/* Below sm: list and thread are mutually exclusive, thread has a
+            back button. At sm and up: both panes always visible side by
+            side, no back button needed. */}
+        <div
+          className={`w-full sm:w-80 shrink-0 border-r border-gray-100 dark:border-gray-800 overflow-y-auto ${
+            selectedUserId ? "hidden sm:block" : ""
+          }`}
+        >
+          <AdminConversationList selectedUserId={selectedUserId} onSelect={setSelectedUserId} />
+        </div>
+        <div className={`flex-1 min-w-0 ${selectedUserId ? "flex" : "hidden sm:flex"}`}>
+          {selectedUserId ? (
+            <AdminChatThreadPane userId={selectedUserId} onBack={() => setSelectedUserId(null)} />
+          ) : (
+            <div className="flex-1 flex flex-col items-center justify-center gap-2 text-gray-400">
+              <MessagesSquare className="w-10 h-10" />
+              <p className="text-sm">Pick a conversation to start replying.</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }

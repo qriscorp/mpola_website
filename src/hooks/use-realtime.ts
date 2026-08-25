@@ -233,7 +233,7 @@ export function useRealtimeNotifications() {
               action: userId
                 ? {
                     label: "View",
-                    onClick: () => router.push(`/admin/chat/${userId}`),
+                    onClick: () => router.push(`/admin/chat?userId=${userId}`),
                   }
                 : undefined,
             });

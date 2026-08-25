@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { X, Send, ArrowLeft, MessageCircle, LifeBuoy, Paperclip, FileText } from "lucide-react";
+import { X, Send, ArrowLeft, MessageCircle, LifeBuoy, Paperclip, FileText, Check, CheckCheck } from "lucide-react";
 import { useUser } from "@/hooks/use-dashboard";
 import {
   useChatConversations,
@@ -42,6 +42,7 @@ function ThreadView({
   isLoading,
   messages,
   myId,
+  readAt,
   onBack,
   onSend,
   sending,
@@ -54,6 +55,7 @@ function ThreadView({
   isLoading: boolean;
   messages: ThreadMessage[];
   myId: string | undefined;
+  readAt: string | null | undefined;
   onBack: () => void;
   onSend: () => void;
   sending: boolean;
@@ -115,9 +117,17 @@ function ThreadView({
                     </a>
                   )}
                   {m.message && <p className="text-sm whitespace-pre-wrap">{m.message}</p>}
-                  <p className="text-[10px] opacity-70 mt-1">
-                    {new Date(m.created_at).toLocaleString()}
-                  </p>
+                  <div className="flex items-center gap-1 justify-end mt-1">
+                    <p className="text-[10px] opacity-70">
+                      {new Date(m.created_at).toLocaleString()}
+                    </p>
+                    {mine &&
+                      (readAt && m.created_at <= readAt ? (
+                        <CheckCheck className="w-3.5 h-3.5 opacity-90" />
+                      ) : (
+                        <Check className="w-3.5 h-3.5 opacity-70" />
+                      ))}
+                  </div>
                 </div>
               </div>
             );
@@ -210,6 +220,7 @@ function LoanConversationThread({ loanId, onBack }: { loanId: string; onBack: ()
       isLoading={isLoading}
       messages={chat?.messages ?? []}
       myId={user?.id}
+      readAt={chat?.other_party_read_at}
       onBack={onBack}
       onSend={handleSend}
       sending={sendMessage.isPending}
@@ -248,6 +259,7 @@ function AdminConversationThread({ onBack }: { onBack: () => void }) {
       isLoading={isLoading}
       messages={chat?.messages ?? []}
       myId={user?.id}
+      readAt={chat?.admin_last_seen_at}
       onBack={onBack}
       onSend={handleSend}
       sending={sendMessage.isPending}
@@ -266,7 +278,9 @@ function ConversationList({
   onSelectLoan: (loanId: string) => void;
   onSelectAdmin: () => void;
 }) {
-  const { data: conversations, isLoading } = useChatConversations();
+  const { data, isLoading } = useChatConversations();
+  const conversations = data?.conversations;
+  const adminChat = data?.admin_chat;
 
   return (
     <div className="overflow-y-auto">
@@ -278,9 +292,21 @@ function ConversationList({
           <LifeBuoy className="w-4 h-4" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-bold text-[#1B2B3A] dark:text-white">Mpola Support</p>
-          <p className="text-xs text-gray-500 dark:text-gray-400">Chat with our team</p>
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-sm font-bold text-[#1B2B3A] dark:text-white">Mpola Support</p>
+            {adminChat?.last_message_at && (
+              <span className="text-[10px] text-gray-400 shrink-0">{timeAgo(adminChat.last_message_at)}</span>
+            )}
+          </div>
+          <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+            {adminChat?.last_message ?? "Chat with our team"}
+          </p>
         </div>
+        {!!adminChat?.unread_count && (
+          <span className="shrink-0 min-w-5 h-5 px-1.5 rounded-full bg-[#2BB5A0] text-white text-[10px] font-bold flex items-center justify-center">
+            {adminChat.unread_count}
+          </span>
+        )}
       </button>
 
       {isLoading ? (

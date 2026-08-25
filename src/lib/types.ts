@@ -892,7 +892,19 @@ export interface ChatMessage {
 
 export interface LoanChat {
   other_party: { id: string | null; name: string | null; kyc_status: string | null };
+  other_party_read_at: string | null;
   messages: ChatMessage[];
+}
+
+export interface AdminChatPreview {
+  last_message: string | null;
+  last_message_at: string | null;
+  unread_count: number;
+}
+
+export interface ChatConversationsResponse {
+  conversations: ChatConversation[];
+  admin_chat: AdminChatPreview;
 }
 
 export interface AdminChatMessage {
@@ -908,6 +920,7 @@ export interface AdminChatMessage {
 
 export interface AdminChat {
   other_party: { name: string | null };
+  admin_last_seen_at: string | null;
   messages: AdminChatMessage[];
 }
 
@@ -922,6 +935,7 @@ export interface AdminChatConversation {
 
 export interface AdminChatThread {
   other_party: { id: string; name: string | null; role: string | null; kyc_status: string | null };
+  user_read_at: string | null;
   messages: AdminChatMessage[];
 }
 
