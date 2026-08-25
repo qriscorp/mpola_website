@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { MessageCircle, MessagesSquare } from "lucide-react";
 import { AdminConversationList } from "@/components/admin-conversation-list";
 import { AdminChatThreadPane } from "@/components/admin-chat-thread-pane";
 
-export default function AdminChatPage() {
+function AdminChatPageContent() {
   // Deep-linked from a real-time toast (see use-realtime.ts's
   // admin_chat_message branch) as /admin/chat?userId=... — there's no
   // separate detail route anymore, this page is a single two-pane view.
@@ -56,5 +56,13 @@ export default function AdminChatPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AdminChatPage() {
+  return (
+    <Suspense fallback={null}>
+      <AdminChatPageContent />
+    </Suspense>
   );
 }
