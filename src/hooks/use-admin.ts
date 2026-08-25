@@ -375,7 +375,8 @@ export function useAdminChatThread(userId: string) {
 export function useReplyAdminChat(userId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (message: string) => api.replyAdminChatThread(userId, message),
+    mutationFn: ({ message, file }: { message: string; file?: File }) =>
+      api.replyAdminChatThread(userId, message, file),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin", "chat-conversations"] });
     },

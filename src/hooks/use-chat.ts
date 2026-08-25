@@ -34,7 +34,8 @@ export function useLoanChat(loanId: string | null) {
 export function useSendChatMessage(loanId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (message: string) => api.postChatMessage(loanId, message),
+    mutationFn: ({ message, file }: { message: string; file?: File }) =>
+      api.postChatMessage(loanId, message, file),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["chat", "loan", loanId] });
       qc.invalidateQueries({ queryKey: ["chat", "conversations"] });
@@ -53,7 +54,8 @@ export function useAdminChat() {
 export function useSendAdminChatMessage() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (message: string) => api.postAdminChatMessage(message),
+    mutationFn: ({ message, file }: { message: string; file?: File }) =>
+      api.postAdminChatMessage(message, file),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["chat", "admin"] });
       qc.invalidateQueries({ queryKey: ["chat", "unread-count"] });

@@ -884,7 +884,9 @@ export interface ChatMessage {
   id: string;
   sender_id: string | null;
   sender_name: string | null;
-  message: string;
+  message: string | null;
+  file_url: string | null;
+  file_name: string | null;
   created_at: string;
 }
 
@@ -898,7 +900,9 @@ export interface AdminChatMessage {
   sender_id: string | null;
   sender_name: string | null;
   is_admin: boolean;
-  message: string;
+  message: string | null;
+  file_url: string | null;
+  file_name: string | null;
   created_at: string;
 }
 

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { X, Send, ArrowLeft, MessageCircle, LifeBuoy } from "lucide-react";
+import { useRef, useState } from "react";
+import { X, Send, ArrowLeft, MessageCircle, LifeBuoy, Paperclip, FileText } from "lucide-react";
 import { useUser } from "@/hooks/use-dashboard";
 import {
   useChatConversations,
@@ -23,10 +23,17 @@ function timeAgo(iso: string | null): string {
   return `${Math.floor(hrs / 24)}d`;
 }
 
+function isImageFile(name: string | null): boolean {
+  if (!name) return false;
+  return /\.(jpe?g|png)$/i.test(name);
+}
+
 type ThreadMessage = {
   id: string;
   sender_id: string | null;
-  message: string;
+  message: string | null;
+  file_url: string | null;
+  file_name: string | null;
   created_at: string;
 };
 
@@ -40,6 +47,8 @@ function ThreadView({
   sending,
   text,
   setText,
+  pendingFile,
+  setPendingFile,
 }: {
   title: string;
   isLoading: boolean;
@@ -50,7 +59,11 @@ function ThreadView({
   sending: boolean;
   text: string;
   setText: (v: string) => void;
+  pendingFile: File | null;
+  setPendingFile: (f: File | null) => void;
 }) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-100 dark:border-gray-800">
@@ -79,7 +92,29 @@ function ThreadView({
                       : "bg-gray-100 dark:bg-gray-800 text-[#1B2B3A] dark:text-white"
                   }`}
                 >
-                  <p className="text-sm whitespace-pre-wrap">{m.message}</p>
+                  {m.file_url && isImageFile(m.file_name) && (
+                    <a href={m.file_url} target="_blank" rel="noopener noreferrer" className="block mb-1.5">
+                      <img
+                        src={m.file_url}
+                        alt={m.file_name ?? "attachment"}
+                        className="max-w-full max-h-48 rounded-lg object-cover"
+                      />
+                    </a>
+                  )}
+                  {m.file_url && !isImageFile(m.file_name) && (
+                    <a
+                      href={m.file_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`flex items-center gap-1.5 text-xs font-medium underline mb-1.5 ${
+                        mine ? "text-white" : "text-[#2BB5A0]"
+                      }`}
+                    >
+                      <FileText className="w-3.5 h-3.5 shrink-0" />
+                      <span className="truncate">{m.file_name ?? "Attachment"}</span>
+                    </a>
+                  )}
+                  {m.message && <p className="text-sm whitespace-pre-wrap">{m.message}</p>}
                   <p className="text-[10px] opacity-70 mt-1">
                     {new Date(m.created_at).toLocaleString()}
                   </p>
@@ -90,27 +125,59 @@ function ThreadView({
         )}
       </div>
 
-      <div className="flex gap-2 px-4 py-3 border-t border-gray-100 dark:border-gray-800">
-        <textarea
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              onSend();
-            }
-          }}
-          placeholder="Write a message…"
-          rows={1}
-          className="flex-1 resize-none rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:border-[#2BB5A0] dark:text-white"
-        />
-        <button
-          onClick={onSend}
-          disabled={sending || !text.trim()}
-          className="shrink-0 w-9 h-9 rounded-lg bg-[#2BB5A0] text-white flex items-center justify-center hover:bg-[#239E8C] disabled:opacity-40 transition-colors"
-        >
-          <Send className="w-4 h-4" />
-        </button>
+      <div className="px-4 pt-2 border-t border-gray-100 dark:border-gray-800">
+        {pendingFile && (
+          <div className="flex items-center gap-2 mb-2 px-2.5 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 text-xs">
+            <Paperclip className="w-3.5 h-3.5 shrink-0 text-gray-500" />
+            <span className="flex-1 truncate text-gray-600 dark:text-gray-300">{pendingFile.name}</span>
+            <button
+              onClick={() => setPendingFile(null)}
+              className="shrink-0 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
+        <div className="flex gap-2 pb-3">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".pdf,.jpg,.jpeg,.png"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) setPendingFile(f);
+              e.target.value = "";
+            }}
+          />
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="shrink-0 w-9 h-9 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 flex items-center justify-center hover:border-[#2BB5A0] hover:text-[#2BB5A0] transition-colors"
+            aria-label="Attach a file"
+          >
+            <Paperclip className="w-4 h-4" />
+          </button>
+          <textarea
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                onSend();
+              }
+            }}
+            placeholder="Write a message…"
+            rows={1}
+            className="flex-1 resize-none rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:border-[#2BB5A0] dark:text-white"
+          />
+          <button
+            onClick={onSend}
+            disabled={sending || (!text.trim() && !pendingFile)}
+            className="shrink-0 w-9 h-9 rounded-lg bg-[#2BB5A0] text-white flex items-center justify-center hover:bg-[#239E8C] disabled:opacity-40 transition-colors"
+          >
+            <Send className="w-4 h-4" />
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -121,11 +188,20 @@ function LoanConversationThread({ loanId, onBack }: { loanId: string; onBack: ()
   const { data: chat, isLoading } = useLoanChat(loanId);
   const sendMessage = useSendChatMessage(loanId);
   const [text, setText] = useState("");
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
 
   const handleSend = () => {
     const trimmed = text.trim();
-    if (!trimmed) return;
-    sendMessage.mutate(trimmed, { onSuccess: () => setText("") });
+    if (!trimmed && !pendingFile) return;
+    sendMessage.mutate(
+      { message: trimmed, file: pendingFile ?? undefined },
+      {
+        onSuccess: () => {
+          setText("");
+          setPendingFile(null);
+        },
+      },
+    );
   };
 
   return (
@@ -139,6 +215,8 @@ function LoanConversationThread({ loanId, onBack }: { loanId: string; onBack: ()
       sending={sendMessage.isPending}
       text={text}
       setText={setText}
+      pendingFile={pendingFile}
+      setPendingFile={setPendingFile}
     />
   );
 }
@@ -148,11 +226,20 @@ function AdminConversationThread({ onBack }: { onBack: () => void }) {
   const { data: chat, isLoading } = useAdminChat();
   const sendMessage = useSendAdminChatMessage();
   const [text, setText] = useState("");
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
 
   const handleSend = () => {
     const trimmed = text.trim();
-    if (!trimmed) return;
-    sendMessage.mutate(trimmed, { onSuccess: () => setText("") });
+    if (!trimmed && !pendingFile) return;
+    sendMessage.mutate(
+      { message: trimmed, file: pendingFile ?? undefined },
+      {
+        onSuccess: () => {
+          setText("");
+          setPendingFile(null);
+        },
+      },
+    );
   };
 
   return (
@@ -166,6 +253,8 @@ function AdminConversationThread({ onBack }: { onBack: () => void }) {
       sending={sendMessage.isPending}
       text={text}
       setText={setText}
+      pendingFile={pendingFile}
+      setPendingFile={setPendingFile}
     />
   );
 }

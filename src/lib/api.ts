@@ -2090,15 +2090,21 @@ export const api = {
   getLoanChat: async (loanId: string): Promise<LoanChat> => {
     return apiAuthGet(`/chat/loans/${loanId}`);
   },
-  postChatMessage: async (loanId: string, message: string): Promise<ChatMessage> => {
-    const res = await apiAuthPost<{ message_data: ChatMessage }>(`/chat/loans/${loanId}`, { message });
+  postChatMessage: async (loanId: string, message: string, file?: File): Promise<ChatMessage> => {
+    const formData = new FormData();
+    if (message) formData.append("message", message);
+    if (file) formData.append("file", file);
+    const res = await apiAuthUpload<{ message_data: ChatMessage }>(`/chat/loans/${loanId}`, formData);
     return res.message_data;
   },
 
   // ─── Chat (live chat with Mpola Support — alongside, not replacing, tickets) ───
   getAdminChat: async (): Promise<AdminChat> => apiAuthGet("/chat/admin"),
-  postAdminChatMessage: async (message: string): Promise<AdminChatMessage> => {
-    const res = await apiAuthPost<{ message_data: AdminChatMessage }>("/chat/admin", { message });
+  postAdminChatMessage: async (message: string, file?: File): Promise<AdminChatMessage> => {
+    const formData = new FormData();
+    if (message) formData.append("message", message);
+    if (file) formData.append("file", file);
+    const res = await apiAuthUpload<{ message_data: AdminChatMessage }>("/chat/admin", formData);
     return res.message_data;
   },
 
@@ -2109,10 +2115,13 @@ export const api = {
   },
   getAdminChatThread: async (userId: string): Promise<AdminChatThread> =>
     apiAuthGet(`/chat/admin/conversations/${userId}`),
-  replyAdminChatThread: async (userId: string, message: string): Promise<AdminChatMessage> => {
-    const res = await apiAuthPost<{ message_data: AdminChatMessage }>(
+  replyAdminChatThread: async (userId: string, message: string, file?: File): Promise<AdminChatMessage> => {
+    const formData = new FormData();
+    if (message) formData.append("message", message);
+    if (file) formData.append("file", file);
+    const res = await apiAuthUpload<{ message_data: AdminChatMessage }>(
       `/chat/admin/conversations/${userId}`,
-      { message },
+      formData,
     );
     return res.message_data;
   },
